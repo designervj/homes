@@ -425,7 +425,7 @@ Agent assigned → Pipeline begins
 
 ## Environment Setup
 
-### Prerequisites
+### Prerequisites 
 
 - Node.js 20+
 - Git
