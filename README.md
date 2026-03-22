@@ -56,17 +56,17 @@ The existing WordPress site at `lucknowhomes.in` is a collection of static broch
 
 ### Current Property Portfolio
 
-These are the 7 projects currently listed — seeded as initial data:
+These are the 7 projects seeded as initial data:
 
-| Project | Location | Type | Pricing |
-|---|---|---|---|
-| Okas Enclave | Sushant Golf City | Residential Plots | ₹5,000/sq.m. onwards |
-| Attalika Palms | Pursaini, opp. DLF Garden City | Villas & Resale Plots | Starting ₹65 Lac |
-| Stellar Okas Golf View | Sector-H, Sushant Golf City | Premium Plots (Resale) | Up to ₹3.80 Cr |
-| Kailasha Enclave | Sultanpur Road, near IT City | Township Plots (Resale) | TBD |
-| Greenberry Signature | Vrindavan Yojana, Awas Vikas | High-Rise Apartments | ₹5,200/sqft onwards |
-| Lavanya Enclave | Amar Shaheed Path, Aurangabad | Apartments & Plots | ₹6,500/sqft onwards |
-| Vikas Vihar | Lucknow Metropolitan | Mixed Residential | TBD |
+| Project | Slug | Location | Type | Price |
+|---|---|---|---|---|
+| Okas Enclave | `okas-enclave` | Sushant Golf City | Plot | ₹56.25 Lac onwards |
+| Attalika Palms | `attalika-palms` | Pursaini, opp. DLF Garden City | Villa | ₹65 Lac onwards |
+| Stellar Okas Golf View | `stellar-okas-golf-view` | Sector-H, Sushant Golf City | Plot (Resale) | Up to ₹3.80 Cr |
+| Kailasha Enclave | `kailasha-enclave` | Sultanpur Road, near IT City | Plot | ₹40 Lac onwards |
+| Greenberry Signature | `greenberry-signature` | Vrindavan Yojana, Awas Vikas | Apartment | ₹5,200/sqft |
+| Lavanya Enclave | `lavanya-enclave` | Amar Shaheed Path, Aurangabad | Apartment & Plot | ₹6,500/sqft |
+| Vikas Vihar | `vikas-vihar` | Lucknow Metropolitan | Mixed | ₹30 Lac onwards |
 
 ### The One Principle That Makes This Scalable
 
@@ -127,7 +127,7 @@ Business logic never lives in a React component. This makes the codebase testabl
 | Database | MongoDB (Atlas) | 7+ | Flexible schema for real estate data |
 | ODM | Mongoose | 8+ | Schema modeling + validation |
 | Styling | Tailwind CSS | 3+ | Utility-first, purged CSS |
-| Components | ShadCN UI | Latest | Accessible, ownable components |
+| Components | ShadCN UI (Nova) | Latest | Accessible, ownable components |
 | Authentication | NextAuth v5 (beta) | 5+ | App Router native, MongoDB adapter |
 | Forms | React Hook Form + Zod | — | Validation at form + server layer |
 | Tables | TanStack Table | v8 | Headless, sortable, filterable |
@@ -150,125 +150,70 @@ homes/
 │   │   │   │   ├── page.tsx             # All projects listing
 │   │   │   │   └── [slug]/
 │   │   │   │       └── page.tsx         # Individual project page (SSR)
-│   │   │   ├── services/
-│   │   │   │   └── page.tsx
-│   │   │   ├── about/
-│   │   │   │   └── page.tsx
-│   │   │   ├── blogs/
-│   │   │   │   └── page.tsx
-│   │   │   └── contact/
-│   │   │       └── page.tsx
+│   │   │   ├── services/page.tsx
+│   │   │   ├── about/page.tsx
+│   │   │   ├── blogs/page.tsx
+│   │   │   └── contact/page.tsx
 │   │   │
 │   │   ├── (dashboard)/                 # Protected admin route group
 │   │   │   ├── layout.tsx               # Dashboard shell (sidebar + header)
 │   │   │   ├── admin/
 │   │   │   │   ├── page.tsx             # Overview / analytics
-│   │   │   │   ├── properties/
-│   │   │   │   │   ├── page.tsx         # Property list table
-│   │   │   │   │   ├── new/
-│   │   │   │   │   │   └── page.tsx     # Add property form
-│   │   │   │   │   └── [id]/
-│   │   │   │   │       └── page.tsx     # Edit property
-│   │   │   │   ├── leads/
-│   │   │   │   │   ├── page.tsx         # Leads Kanban board
-│   │   │   │   │   └── [id]/
-│   │   │   │   │       └── page.tsx     # Lead detail + activity log
-│   │   │   │   ├── enquiries/
-│   │   │   │   │   └── page.tsx         # Raw enquiry inbox
-│   │   │   │   └── site-visits/
-│   │   │   │       └── page.tsx         # Scheduled visits calendar
-│   │   │   │
-│   │   │   └── auth/
-│   │   │       └── login/
-│   │   │           └── page.tsx
+│   │   │   │   ├── properties/          # Property CRUD
+│   │   │   │   ├── leads/               # Kanban + detail
+│   │   │   │   ├── enquiries/           # Raw form inbox
+│   │   │   │   └── site-visits/         # Scheduled visits
+│   │   │   └── auth/login/page.tsx
 │   │   │
 │   │   ├── api/
-│   │   │   ├── auth/
-│   │   │   │   └── [...nextauth]/
-│   │   │   │       └── route.ts         # NextAuth handler
-│   │   │   ├── properties/
-│   │   │   │   └── route.ts
-│   │   │   ├── leads/
-│   │   │   │   └── route.ts
-│   │   │   └── enquiries/
-│   │   │       └── route.ts
+│   │   │   ├── auth/[...nextauth]/route.ts
+│   │   │   ├── properties/route.ts
+│   │   │   ├── leads/route.ts
+│   │   │   └── enquiries/route.ts
 │   │   │
 │   │   ├── globals.css
-│   │   └── layout.tsx                   # Root layout (fonts, providers)
+│   │   └── layout.tsx
 │   │
 │   ├── components/
 │   │   ├── ui/                          # ShadCN auto-generated components
-│   │   │
 │   │   ├── public/
-│   │   │   ├── navigation/
-│   │   │   │   ├── Navbar.tsx
-│   │   │   │   └── ProjectsDropdown.tsx
-│   │   │   ├── hero/
-│   │   │   │   ├── HeroSection.tsx
-│   │   │   │   └── SearchBar.tsx
-│   │   │   ├── properties/
-│   │   │   │   ├── PropertyCard.tsx
-│   │   │   │   ├── PropertyGrid.tsx
-│   │   │   │   ├── PropertyDetailHero.tsx
-│   │   │   │   ├── SpecsTable.tsx
-│   │   │   │   ├── AmenitiesGrid.tsx
-│   │   │   │   ├── NearbyPlaces.tsx
-│   │   │   │   └── ReraBadge.tsx
-│   │   │   └── forms/
-│   │   │       ├── EnquiryForm.tsx      # Sidebar form on property page
-│   │   │       └── ContactForm.tsx      # Global contact / CTA form
-│   │   │
+│   │   │   ├── navigation/              # Navbar, ProjectsDropdown
+│   │   │   ├── hero/                    # HeroSection, SearchBar
+│   │   │   ├── properties/              # PropertyCard, SpecsTable, ReraBadge...
+│   │   │   └── forms/                   # EnquiryForm, ContactForm
 │   │   ├── dashboard/
 │   │   │   ├── Sidebar.tsx
 │   │   │   ├── Header.tsx
-│   │   │   ├── leads/
-│   │   │   │   ├── LeadsKanban.tsx
-│   │   │   │   ├── LeadsTable.tsx
-│   │   │   │   ├── LeadCard.tsx
-│   │   │   │   └── StageSelector.tsx
-│   │   │   ├── properties/
-│   │   │   │   ├── PropertyTable.tsx
-│   │   │   │   └── PropertyForm.tsx
-│   │   │   └── analytics/
-│   │   │       ├── StatsCards.tsx
-│   │   │       └── ConversionChart.tsx
-│   │   │
+│   │   │   ├── leads/                   # Kanban, Table, Card, StageSelector
+│   │   │   ├── properties/              # PropertyTable, PropertyForm
+│   │   │   └── analytics/               # StatsCards, ConversionChart
 │   │   └── shared/
-│   │       ├── PageHeader.tsx
-│   │       └── LoadingSpinner.tsx
 │   │
 │   ├── lib/
 │   │   ├── db/
-│   │   │   ├── connection.ts            # Mongoose singleton (anti-storming)
+│   │   │   ├── connection.ts            ✅ MongoDB singleton (anti-storming)
 │   │   │   ├── models/
-│   │   │   │   ├── Property.ts          # Core property schema
-│   │   │   │   ├── Lead.ts              # CRM lead schema
-│   │   │   │   ├── Enquiry.ts           # Raw form submissions
-│   │   │   │   ├── User.ts              # Admin + agent users
-│   │   │   │   └── SiteVisit.ts         # Scheduled site visits
-│   │   │   └── actions/
-│   │   │       ├── property.actions.ts  # CRUD + search Server Actions
-│   │   │       ├── lead.actions.ts      # Pipeline management Server Actions
-│   │   │       ├── enquiry.actions.ts   # Form submission Server Actions
-│   │   │       └── sitevisit.actions.ts
-│   │   │
-│   │   ├── auth/
-│   │   │   └── config.ts                # NextAuth v5 configuration
-│   │   │
+│   │   │   │   ├── Property.ts          ✅ Full attribute-sheet schema
+│   │   │   │   ├── Lead.ts              ✅ 7-stage CRM pipeline
+│   │   │   │   ├── Enquiry.ts           ✅ Raw form submissions
+│   │   │   │   ├── User.ts              ✅ Admin + agent roles
+│   │   │   │   └── SiteVisit.ts         ✅ Scheduling + outcomes
+│   │   │   └── actions/                 # Server Actions (Phase 3)
+│   │   ├── auth/config.ts               # NextAuth config (Phase 2)
 │   │   └── utils/
-│   │       ├── formatters.ts            # Price, area, date formatters
-│   │       ├── validators.ts            # Zod schemas (shared)
-│   │       └── constants.ts             # Enums, stage labels, property types
+│   │       ├── constants.ts             ✅ All enums, labels, formatters
+│   │       ├── validators.ts            # Zod schemas (Phase 3)
+│   │       └── formatters.ts            # Price, date formatters (Phase 3)
 │   │
 │   └── types/
-│       ├── property.ts                  # IProperty, IPropertyFilters
-│       ├── lead.ts                      # ILead, LeadStage enum
-│       ├── user.ts                      # IUser, UserRole enum
-│       └── index.ts                     # Re-exports
+│       └── index.ts                     ✅ All TypeScript interfaces
+│
+├── scripts/
+│   └── seed.ts                          ✅ Seeds all 7 properties + admin user
 │
 ├── .env.local                           # Environment variables (gitignored)
-├── .env.example                         # Template for onboarding
-├── tailwind.config.ts
+├── .env.example
+├── tailwind.config.ts                   ✅ Custom navy + gold tokens
 ├── next.config.ts
 ├── tsconfig.json
 └── package.json
@@ -278,86 +223,73 @@ homes/
 
 ## Database Schema Design
 
-Five MongoDB collections power the entire platform. Every schema decision is documented with its rationale.
+Five MongoDB collections power the entire platform.
 
-### 1. `properties` Collection
+### 1. `properties` Collection ✅
 
-The most complex schema. Built directly from the Property Attribute Sheet covering all 6 data groups.
+Built directly from the Property Attribute Sheet. Covers all 6 data groups.
+
+**Indexes:**
+```
+{ "location": "2dsphere" }                                         — Geo-queries
+{ status, "specifications.propertyType", "financials.listedPrice"} — Search filter
+{ "specifications.category", "specifications.transactionType", status } — Category
+{ title, description, developerName, locality, city } TEXT         — Full-text search
+{ isFeatured, status, createdAt }                                  — Featured listings
+```
 
 **Key design decisions:**
-- `propertyType` as a discriminator: `plot | apartment | villa | commercial`
-- GeoJSON `Point` on `location.coordinates` for geospatial queries
-- `reraId` is a required field — not optional
-- All financials as a nested object (prevents document sprawl)
-- `nearbyPlaces` embedded (always queried with property, never independently)
-- `mediaAssets[]` array for images, floor plans, virtual tour URLs
-- `status` lifecycle: `active → blocked → sold → archived`
-- `slug` field for clean URLs: `/projects/okas-enclave`
+- `reraId` required when `reraRegistered: true`
+- GeoJSON `Point` on `location.coordinates` for `$near` and `$geoWithin` queries
+- `mediaAssets[]` with type discriminator: `image | floorplan | brochure | video | virtual_tour`
+- `coverImage` and `formattedPrice` as computed virtual fields — not stored
+- `slug` unique indexed for clean URL lookups (`/projects/okas-enclave`)
 
-**Attribute groups covered:**
-- Property Identity (category, type, BHK, furnishing, age, possession, facing, floor)
-- Size & Layout (built-up, carpet, super built-up, plot area, dimensions, parking)
-- Pricing & Financials (listed price, price/sqft, maintenance, brokerage, stamp duty, GST)
-- Features & Amenities (society amenities, water supply, power, Vastu, gated community)
-- Legal & Ownership (RERA ID, title clearance, OC, CC, encumbrance, bank approvals)
-- Brokerage & Policy (listed by, contact preference, site visit availability, virtual tour)
+### 2. `leads` Collection ✅
 
-### 2. `leads` Collection
-
-Created every time an enquiry is manually converted by an agent. References `propertyId`.
-
-**Pipeline stages (enum):**
+**Pipeline stages:**
 ```
 new → contacted → qualified → site_visit_scheduled → negotiation → converted → lost
 ```
 
-**Key fields:**
-- `source`: `website | whatsapp | 99acres | magicbricks | referral | walkin`
-- `interestedIn[]`: site visit, home loan (from form checkboxes)
-- `assignedTo`: agent user `_id`
-- `activityLog[]`: timestamped timeline of every agent action
-- `score`: integer (manual or computed lead quality score)
+**Indexes:**
+```
+{ stage, assignedTo, createdAt }   — Kanban board queries
+{ propertyId, stage }              — Per-property lead reporting
+{ source, stage }                  — Source analytics
+{ phone }                          — Agent phone lookup
+```
 
-### 3. `enquiries` Collection
+**Key design decisions:**
+- `activityLog[]` records every agent action with timestamp + stage snapshot
+- `closedAt` auto-set via pre-save middleware when stage → `converted` or `lost`
+- `isActive` and `daysSinceCreated` computed as virtual fields
 
-Raw form submissions from every public page. Separate from leads deliberately — not all enquiries become tracked leads. An agent reviews the inbox and promotes an enquiry to a lead with one click.
+### 3. `enquiries` Collection ✅
 
-**Key fields:**
-- `propertyId` (optional — general contact forms have no property reference)
-- `interestedIn[]`: site visit, home loan
-- `status`: `new | reviewed | converted | spam`
-- `convertedLeadId`: populated when agent promotes to lead
+Raw public form submissions. Deliberately separate from leads.
 
-### 4. `users` Collection
+**Flow:** `Enquiry (new)` → agent reviews → `Enquiry (converted)` + `Lead (new)` created
 
-Two roles for now: `admin` and `agent`.
+### 4. `users` Collection ✅
 
-- Admins manage everything — all properties, all leads, all enquiries
-- Agents are assigned leads and update pipeline stages
-- Password stored as bcrypt hash — never plaintext
-- `isActive` flag for deactivating accounts without deletion
+Roles: `super_admin | admin | agent`
 
-### 5. `siteVisits` Collection
+- Password stored as **bcrypt hash** (cost factor 12)
+- `password` field has `select: false` — excluded from all queries by default
+- `toJSON` transform strips password from all serialised output
+- `initials` virtual computed from name
 
-Created when a lead reaches `site_visit_scheduled`. References the lead, property, and assigned agent.
+### 5. `siteVisits` Collection ✅
 
-**Key fields:**
-- `scheduledAt`: datetime of the visit
-- `status`: `scheduled | completed | no_show | rescheduled`
-- `agentNotes`: free text from the visiting agent post-visit
-- `outcome`: `positive | neutral | negative | converted`
+**Statuses:** `scheduled → completed | no_show | rescheduled | cancelled`
 
-### Index Strategy
-
-| Collection | Index | Type | Purpose |
-|---|---|---|---|
-| properties | `location` | 2dsphere | Geo-queries (within radius) |
-| properties | `{status, propertyType, 'financials.listedPrice'}` | Compound | Search filtering |
-| properties | `slug` | Unique | URL-based lookups |
-| leads | `{stage, assignedTo}` | Compound | Kanban board queries |
-| leads | `{propertyId, stage}` | Compound | Per-property lead reporting |
-| enquiries | `{status, createdAt}` | Compound | Inbox sorting |
-| users | `email` | Unique | Auth lookups |
+**Indexes:**
+```
+{ assignedAgentId, scheduledAt, status }  — Agent calendar view
+{ propertyId, scheduledAt }               — Property visit history
+{ scheduledAt, status }                   — Dashboard upcoming widget
+```
 
 ---
 
@@ -368,24 +300,24 @@ Created when a lead reaches `site_visit_scheduled`. References the lead, propert
 | Page | Route | Rendering | Description |
 |---|---|---|---|
 | Homepage | `/` | SSG | Hero, search, featured projects, services, CTA |
-| All Projects | `/projects` | SSR | Filterable grid — type, location, budget, status |
-| Project Detail | `/projects/[slug]` | SSR | Full property page — specs, gallery, map, enquiry form |
+| All Projects | `/projects` | SSR | Filterable grid — type, location, budget |
+| Project Detail | `/projects/[slug]` | SSR | Full specs, gallery, map, enquiry form |
 | Services | `/services` | SSG | Buy, Site Visit, Loan Advisory |
-| About | `/about` | SSG | Team, credentials, company story |
+| About | `/about` | SSG | Team, credentials |
 | Contact | `/contact` | SSG | General enquiry form |
 
 ### Admin Dashboard
 
 | Module | Route | Description |
 |---|---|---|
-| Overview | `/admin` | Stats cards, recent activity, quick actions |
-| Properties | `/admin/properties` | Full property table — sortable, filterable, status toggle |
-| Add Property | `/admin/properties/new` | Multi-step form covering all 6 attribute groups |
-| Edit Property | `/admin/properties/[id]` | Same form, pre-populated |
-| Enquiry Inbox | `/admin/enquiries` | Raw form submissions, mark reviewed, promote to lead |
-| Leads Board | `/admin/leads` | Kanban pipeline — drag-to-move stages |
-| Lead Detail | `/admin/leads/[id]` | Full activity log, contact details, property reference |
-| Site Visits | `/admin/site-visits` | Scheduled visits calendar + no-show tracking |
+| Overview | `/admin` | Stats cards, recent activity |
+| Properties | `/admin/properties` | Sortable/filterable table + status toggle |
+| Add Property | `/admin/properties/new` | Multi-step form — all 6 attribute groups |
+| Edit Property | `/admin/properties/[id]` | Pre-populated form |
+| Enquiry Inbox | `/admin/enquiries` | Review submissions, promote to lead |
+| Leads Board | `/admin/leads` | Kanban pipeline |
+| Lead Detail | `/admin/leads/[id]` | Activity log, contact, property |
+| Site Visits | `/admin/site-visits` | Calendar + no-show tracking |
 | Login | `/auth/login` | Admin authentication |
 
 ### Lead Capture Flow
@@ -393,15 +325,15 @@ Created when a lead reaches `site_visit_scheduled`. References the lead, propert
 ```
 Public form submitted
        ↓
-Server Action validates with Zod
+Server Action validates (Zod)
        ↓
-Writes to `enquiries` collection (immediate)
+Writes to `enquiries` collection
        ↓
-Agent reviews in Enquiry Inbox
+Agent reviews Enquiry Inbox
        ↓
-Agent clicks "Convert to Lead"
+"Convert to Lead" (one click)
        ↓
-Lead document created with stage = "new"
+Lead created: stage = "new"
        ↓
 Agent assigned → Pipeline begins
 ```
@@ -412,132 +344,138 @@ Agent assigned → Pipeline begins
 
 | Phase | Focus | Status |
 |---|---|---|
-| **Phase 0** | Bootstrap — scaffold, folder structure, dependencies | ✅ Complete |
-| **Phase 1** | Database — all 5 Mongoose schemas + connection singleton | 🔄 Next |
-| **Phase 2** | Auth + RBAC — NextAuth v5, protected routes, role middleware | ⏳ Pending |
-| **Phase 3** | Server Actions — all business logic before any UI | ⏳ Pending |
-| **Phase 4** | CRM Dashboard — Kanban, tables, property management | ⏳ Pending |
+| **Phase 0** | Bootstrap — scaffold, folder structure, dependencies, ShadCN | ✅ Complete |
+| **Phase 1** | Database — 5 Mongoose schemas, connection singleton, seed script | ✅ Complete |
+| **Phase 2** | Auth + RBAC — NextAuth v5, protected routes, role middleware | 🔄 Next |
+| **Phase 3** | Server Actions — all business logic (properties, leads, enquiries) | ⏳ Pending |
+| **Phase 4** | CRM Dashboard — Kanban, tables, property management UI | ⏳ Pending |
 | **Phase 5** | Public Portal — homepage, project pages, lead forms | ⏳ Pending |
 | **Phase 6** | Analytics & Polish — charts, SEO, performance, mobile | ⏳ Pending |
-| **Phase 7** | Data Migration — seed all 7 current projects, import leads | ⏳ Pending |
+| **Phase 7** | Data Migration — verify seed data, QA, deploy | ⏳ Pending |
 
 ---
 
 ## Environment Setup
 
-### Prerequisites 
+### Prerequisites
 
 - Node.js 20+
 - Git
-- MongoDB Compass (recommended for visual DB inspection)
+- MongoDB Compass (recommended)
 
 ### Installation
 
 ```bash
-# 1. Clone the repository
 git clone <repo-url>
 cd homes
-
-# 2. Install dependencies
 npm install
-
-# 3. Set up environment variables
 cp .env.example .env.local
-# Fill in your values (see below)
-
-# 4. Run development server
+# fill in MONGODB_URI and NEXTAUTH_SECRET
 npm run dev
 ```
+
+### Seeding the Database
+
+Add to `package.json`:
+```json
+"scripts": {
+  "seed": "npx tsx scripts/seed.ts"
+}
+```
+
+Then run:
+```bash
+npm run seed
+```
+
+Creates:
+- Admin user: `admin@homes.in` / `Admin@Homes2025!`
+- All 7 Lucknow properties with full schema data
+
+> ⚠️ Change the default password immediately after first login.
 
 ### Environment Variables
 
 ```env
-# Database
 MONGODB_URI=mongodb+srv://<user>:<password>@<cluster>.mongodb.net/homes
-
-# Authentication
-NEXTAUTH_SECRET=<generate with: openssl rand -base64 32>
+NEXTAUTH_SECRET=<openssl rand -base64 32>
 NEXTAUTH_URL=http://localhost:3000
-
-# App Config
 NEXT_PUBLIC_APP_NAME=Homes
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 ```
-
-### Database
-
-- **Provider:** MongoDB Atlas
-- **Database name:** `homes`
-- **Connection:** Singleton pattern in `src/lib/db/connection.ts` — prevents connection storming in serverless environments by caching the Mongoose connection in the Node.js global namespace
 
 ---
 
 ## Design System
 
-### Brand Identity
+### Brand Palette
 
-| Token | Value | Usage |
+| Token | Hex | Usage |
 |---|---|---|
 | `--navy` | `#0B1521` | Primary background |
 | `--navy-mid` | `#12202E` | Card surfaces |
 | `--navy-light` | `#1A2E42` | Elevated surfaces |
-| `--gold` | `#C9A96E` | Primary accent, CTAs, badges |
+| `--gold` | `#C9A96E` | Primary accent, CTAs |
 | `--gold-light` | `#E2C99A` | Hover states, pricing |
-| `--gold-pale` | `#F5ECD9` | Subtle backgrounds |
 | `--ivory` | `#F8F4EE` | Light section backgrounds |
 
 ### Typography
 
-| Role | Font | Weight |
+| Role | Font | Weights |
 |---|---|---|
-| Display / Headlines | Playfair Display | 400, 500, 600, 700 |
+| Headlines | Playfair Display | 400, 500, 600, 700 |
 | Body / UI | DM Sans | 300, 400, 500, 600 |
-
-### Component Conventions
-
-- **RERA badges** always rendered in green (`#6EE7B7` on dark) — compliance as a trust signal
-- **Pricing** shown on every property card — transparency is a brand value
-- **Lead capture forms** — site visit and home loan interest captured as checkboxes on every property page
-- **Server Actions** handle all form submissions — no client-side API calls for mutations
 
 ---
 
 ## Current Project Status
 
-**Phase 0 — Complete ✅**
+### ✅ Phase 0 — Complete
+Next.js 15 + TypeScript + Tailwind + ShadCN (Nova/Zinc) scaffolded. Folder structure locked. Dependencies installed. Git baseline committed.
 
-- Next.js 15 App Router scaffolded with TypeScript + Tailwind
-- ShadCN UI initialised with Nova preset (Lucide / Geist), Zinc base color
-- All dependencies installed
-- Folder structure created
-- `.env.local` configured with MongoDB URI and NextAuth secret
-- `tailwind.config.ts` updated with custom navy + gold tokens
-- Baseline committed to Git
+### ✅ Phase 1 — Complete
 
-**Up Next — Phase 1: Database Layer**
+**Files to copy into your project:**
 
-Building all 5 Mongoose schemas with full TypeScript interfaces:
-- `Property` model — 6 attribute groups, GeoJSON, RERA required field
-- `Lead` model — 7-stage pipeline enum, activity log
-- `Enquiry` model — raw form submissions
-- `User` model — admin + agent roles, bcrypt auth
-- `SiteVisit` model — scheduling, outcomes
-- MongoDB connection singleton — serverless-safe
-- Seed script — all 7 current projects as initial data
+| Source | Destination |
+|---|---|
+| `connection.ts` | `src/lib/db/connection.ts` |
+| `Property.ts` | `src/lib/db/models/Property.ts` |
+| `Lead.ts` | `src/lib/db/models/Lead.ts` |
+| `Enquiry.ts` | `src/lib/db/models/Enquiry.ts` |
+| `User.ts` | `src/lib/db/models/User.ts` |
+| `SiteVisit.ts` | `src/lib/db/models/SiteVisit.ts` |
+| `constants.ts` | `src/lib/utils/constants.ts` |
+| `index.ts` (types) | `src/types/index.ts` |
+| `seed.ts` | `scripts/seed.ts` |
+
+**After copying files, run:**
+```bash
+npm run seed
+# Then verify in MongoDB Compass:
+# Database: homes
+# Collections: properties (7 docs), users (1 doc)
+```
+
+### 🔄 Up Next — Phase 2: Auth + RBAC
+
+- NextAuth v5 with MongoDB adapter + credentials provider
+- `middleware.ts` protecting `/admin/*`
+- Session extended with `userId` and `role`
+- `withRole()` guard for Server Actions
+- Login page UI (ShadCN form)
 
 ---
 
 ## Contributing
 
-This is an active development project. Before making changes:
-
-1. Check the current phase in the table above
-2. All business logic goes in `src/lib/db/actions/` as Server Actions — never in components
-3. All new MongoDB fields must have a corresponding TypeScript type in `src/types/`
-4. Component naming: PascalCase, co-located with their styles
-5. Every new property attribute must trace back to the Property Attribute Sheet
+1. All business logic → `src/lib/db/actions/` as Server Actions
+2. New DB fields → add TypeScript interface in `src/types/index.ts`
+3. New constants → `src/lib/utils/constants.ts`
+4. New property attributes → must trace back to the Property Attribute Sheet
+5. Passwords → bcrypt only, never plaintext, never in logs
 
 ---
 
-*Built with Next.js, MongoDB, Tailwind CSS, and ShadCN UI.*
+*Built with Next.js 15, MongoDB Atlas, Tailwind CSS, and ShadCN UI.*
 *Designed for scale — one codebase, any real estate business.*
