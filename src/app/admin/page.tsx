@@ -1,0 +1,192 @@
+import { auth } from "@/lib/auth/config";
+import { Building2, Users2, MessageSquare, CalendarCheck, TrendingUp, ArrowUpRight } from "lucide-react";
+import { getPropertyStats } from "@/lib/db/actions/property.actions";
+import { getLeadStats } from "@/lib/db/actions/lead.actions";
+import { getEnquiryStats } from "@/lib/db/actions/enquiry.actions";
+import { getUpcomingVisits, getSiteVisitStats } from "@/lib/db/actions/sitevisit.actions";
+import { LEAD_STAGE_LABELS } from "@/lib/utils/constants";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = { title: "Overview" };
+
+export default async function AdminPage() {
+  const session = await auth();
+  const user = session!.user;
+
+  const hour = new Date().getHours();
+  const greeting =
+    hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
+
+  const [propertyStats, leadStats, enquiryStats, visitStats, upcomingVisits] =
+    await Promise.all([
+      getPropertyStats(),
+      getLeadStats(),
+      getEnquiryStats(),
+      getSiteVisitStats(),
+      getUpcomingVisits(5),
+    ]);
+
+  const ps = propertyStats.data;
+  const ls = leadStats.data;
+  const es = enquiryStats.data;
+  const vs = visitStats.data;
+  const uv = upcomingVisits.data ?? [];
+
+  return (
+    <div className="space-y-8 max-w-7xl">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="font-serif text-2xl font-medium text-white">
+            {greeting}, {user.name.split(" ")[0]}
+          </h1>
+          <p className="text-sm text-[#5A7080] mt-1">
+            Here&apos;s what&apos;s happening today.
+          </p>
+        </div>
+        <span className="text-xs text-[#2A3E52] bg-[#12202E] border border-white/[0.06] px-3 py-1.5 rounded-full">
+          {new Date().toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long" })}
+        </span>
+      </div>
+
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {[
+          { label: "Active Properties", value: ps?.active ?? "—", sub: `${ps?.total ?? 0} total`, icon: Building2, color: "text-[#C9A96E]", bg: "bg-[#C9A96E]/10" },
+          { label: "New Enquiries", value: es?.new ?? "—", sub: `${es?.total ?? 0} total`, icon: MessageSquare, color: "text-blue-400", bg: "bg-blue-500/10" },
+          { label: "Active Leads", value: ls?.active ?? "—", sub: `${ls?.conversionRate ?? 0}% conversion`, icon: Users2, color: "text-purple-400", bg: "bg-purple-500/10" },
+          { label: "Visits This Week", value: vs?.thisWeek ?? "—", sub: `${vs?.completed ?? 0} completed`, icon: CalendarCheck, color: "text-emerald-400", bg: "bg-emerald-500/10" },
+        ].map((stat) => {
+          const Icon = stat.icon;
+          return (
+            <div key={stat.label} className="bg-[#12202E] border border-white/[0.06] rounded-xl p-5">
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-xs text-[#5A7080] uppercase tracking-wide">{stat.label}</p>
+                <div className={`w-8 h-8 ${stat.bg} rounded-lg flex items-center justify-center`}>
+                  <Icon className={`w-4 h-4 ${stat.color}`} />
+                </div>
+              </div>
+              <p className="font-serif text-3xl font-medium text-white">{stat.value}</p>
+              <p className="text-xs text-[#3A5060] mt-1">{stat.sub}</p>
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div className="lg:col-span-2 bg-[#12202E] border border-white/[0.06] rounded-xl p-5">
+          <div className="flex items-center justify-between mb-5">
+            <h2 className="text-sm font-medium text-white flex items-center gap-2">
+              <TrendingUp className="w-4 h-4 text-[#C9A96E]" /> Lead Pipeline
+            </h2>
+            <a href="/admin/leads" className="text-xs text-[#C9A96E] hover:text-[#E2C99A] flex items-center gap-1">
+              View Kanban <ArrowUpRight className="w-3 h-3" />
+            </a>
+          </div>
+          {ls?.byStage && Object.keys(ls.byStage).length > 0 ? (
+            <div className="space-y-3">
+              {Object.entries(ls.byStage).filter(([, c]) => (c as number) > 0).sort(([, a], [, b]) => (b as number) - (a as number)).map(([stage, count]) => {
+                const pct = Math.round(((count as number) / (ls.total || 1)) * 100);
+                return (
+                  <div key={stage} className="flex items-center gap-3">
+                    <span className="text-xs text-[#5A7080] w-36 flex-shrink-0">{LEAD_STAGE_LABELS[stage] ?? stage}</span>
+                    <div className="flex-1 bg-white/[0.04] rounded-full h-1.5">
+                      <div className={`h-1.5 rounded-full ${stage === "converted" ? "bg-emerald-400" : stage === "lost" ? "bg-red-400/50" : "bg-[#C9A96E]"}`} style={{ width: `${pct}%` }} />
+                    </div>
+                    <span className="text-xs text-white w-6 text-right">{count as number}</span>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <p className="text-sm text-[#3A5060]">No leads yet. Convert your first enquiry to get started.</p>
+          )}
+        </div>
+
+        <div className="bg-[#12202E] border border-white/[0.06] rounded-xl p-5">
+          <div className="flex items-center justify-between mb-5">
+            <h2 className="text-sm font-medium text-white flex items-center gap-2">
+              <Building2 className="w-4 h-4 text-[#C9A96E]" /> By Property Type
+            </h2>
+            <a href="/admin/properties" className="text-xs text-[#C9A96E] hover:text-[#E2C99A] flex items-center gap-1">
+              Manage <ArrowUpRight className="w-3 h-3" />
+            </a>
+          </div>
+          {ps?.byType && Object.keys(ps.byType).length > 0 ? (
+            <div className="space-y-3">
+              {Object.entries(ps.byType).map(([type, count]) => (
+                <div key={type} className="flex items-center justify-between">
+                  <span className="text-sm text-[#8A9BAE]">{type}</span>
+                  <span className="text-sm font-medium text-white bg-white/[0.04] px-2.5 py-0.5 rounded-full">{count as number}</span>
+                </div>
+              ))}
+              <div className="pt-2 border-t border-white/[0.04] flex justify-between">
+                <span className="text-xs text-[#3A5060]">Featured</span>
+                <span className="text-xs text-[#C9A96E] font-medium">{ps.featured}</span>
+              </div>
+            </div>
+          ) : (
+            <p className="text-sm text-[#3A5060]">No properties yet.</p>
+          )}
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div className="bg-[#12202E] border border-white/[0.06] rounded-xl p-5">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-sm font-medium text-white flex items-center gap-2">
+              <CalendarCheck className="w-4 h-4 text-[#C9A96E]" /> Upcoming Site Visits
+            </h2>
+            <a href="/admin/site-visits" className="text-xs text-[#C9A96E] hover:text-[#E2C99A] flex items-center gap-1">
+              All visits <ArrowUpRight className="w-3 h-3" />
+            </a>
+          </div>
+          {uv.length > 0 ? (
+            <div className="space-y-3">
+              {uv.map((visit) => (
+                <div key={visit._id} className="flex items-start gap-3 p-3 bg-white/[0.02] rounded-lg border border-white/[0.04]">
+                  <div className="w-9 h-9 rounded-lg bg-[#C9A96E]/10 flex flex-col items-center justify-center flex-shrink-0">
+                    <span className="text-[9px] text-[#C9A96E] leading-none font-medium">{new Date(visit.scheduledAt).toLocaleDateString("en-IN", { month: "short" }).toUpperCase()}</span>
+                    <span className="text-sm text-[#C9A96E] font-semibold leading-tight">{new Date(visit.scheduledAt).getDate()}</span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-white truncate">{visit.clientName}</p>
+                    <p className="text-xs text-[#5A7080] truncate">{visit.propertyName}</p>
+                    <p className="text-xs text-[#3A5060] mt-0.5">{new Date(visit.scheduledAt).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}{visit.assignedAgentName ? ` · ${visit.assignedAgentName}` : ""}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-[#3A5060]">No upcoming site visits scheduled.</p>
+          )}
+        </div>
+
+        <div className="bg-[#12202E] border border-white/[0.06] rounded-xl p-5">
+          <h2 className="text-sm font-medium text-white mb-4">Quick Actions</h2>
+          <div className="grid grid-cols-2 gap-3">
+            {[
+              { label: "Add Property", href: "/admin/properties/new", color: "bg-[#C9A96E]/10 border-[#C9A96E]/20 text-[#C9A96E] hover:bg-[#C9A96E]/20" },
+              { label: "View Enquiries", href: "/admin/enquiries", color: "bg-blue-500/10 border-blue-500/20 text-blue-400 hover:bg-blue-500/20" },
+              { label: "Leads Board", href: "/admin/leads", color: "bg-purple-500/10 border-purple-500/20 text-purple-400 hover:bg-purple-500/20" },
+              { label: "Site Visits", href: "/admin/site-visits", color: "bg-emerald-500/10 border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20" },
+            ].map((a) => (
+              <a key={a.label} href={a.href} className={`flex items-center justify-center text-sm font-medium px-3 py-4 rounded-xl border transition-colors ${a.color}`}>{a.label}</a>
+            ))}
+          </div>
+          {ls?.bySource && Object.keys(ls.bySource).length > 0 && (
+            <div className="mt-4 pt-4 border-t border-white/[0.04]">
+              <p className="text-xs text-[#3A5060] uppercase tracking-wide mb-3">Lead Sources</p>
+              <div className="space-y-1.5">
+                {Object.entries(ls.bySource).sort(([, a], [, b]) => (b as number) - (a as number)).slice(0, 4).map(([source, count]) => (
+                  <div key={source} className="flex justify-between">
+                    <span className="text-xs text-[#5A7080] capitalize">{source.replace(/_/g, " ")}</span>
+                    <span className="text-xs text-white">{count as number}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}

@@ -1,0 +1,214 @@
+"use client";
+
+import { useState, useEffect, useRef } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import {
+  Building2, ChevronDown, Menu, X, MapPin,
+  Home, Phone, BookOpen, Info, Mail,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+
+// ─── PROJECTS DATA ────────────────────────────────────────────────────────────
+
+const PROJECTS = [
+  { name: "Okas Enclave",          slug: "okas-enclave",          type: "Plots",     location: "Sushant Golf City" },
+  { name: "Attalika Palms",        slug: "attalika-palms",        type: "Villas",    location: "Pursaini, Lucknow" },
+  { name: "Stellar Okas Golf View",slug: "stellar-okas-golf-view",type: "Plots",     location: "Sushant Golf City" },
+  { name: "Kailasha Enclave",      slug: "kailasha-enclave",      type: "Plots",     location: "Sultanpur Road" },
+  { name: "Greenberry Signature",  slug: "greenberry-signature",  type: "Apartments",location: "Vrindavan Yojana" },
+  { name: "Lavanya Enclave",       slug: "lavanya-enclave",       type: "Apts & Plots",location: "Amar Shaheed Path" },
+  { name: "Vikas Vihar",           slug: "vikas-vihar",           type: "Mixed",     location: "Lucknow" },
+];
+
+const NAV_LINKS = [
+  { href: "/",        label: "Home" },
+  { href: "/about",   label: "About" },
+  { href: "/services",label: "Services" },
+  { href: "/blogs",   label: "Blogs" },
+  { href: "/contact", label: "Contact" },
+];
+
+// ─── COMPONENT ────────────────────────────────────────────────────────────────
+
+export function Navbar() {
+  const pathname = usePathname();
+  const [scrolled, setScrolled]           = useState(false);
+  const [mobileOpen, setMobileOpen]       = useState(false);
+  const [dropdownOpen, setDropdownOpen]   = useState(false);
+  const dropdownRef                        = useRef<HTMLDivElement>(null);
+
+  // Scroll detection
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 48);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  // Close mobile menu on route change
+  useEffect(() => { setMobileOpen(false); }, [pathname]);
+
+  return (
+    <>
+      <header
+        className={cn(
+          "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
+          scrolled
+            ? "bg-[#0B1521]/95 backdrop-blur-xl border-b border-white/[0.06] shadow-2xl"
+            : "bg-transparent"
+        )}
+      >
+        <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+
+          {/* Logo */}
+          <Link href="/" className="flex items-center gap-2.5 flex-shrink-0">
+            <div className="w-8 h-8 bg-[#C9A96E] rounded-lg flex items-center justify-center">
+              <Building2 className="w-4 h-4 text-[#0B1521]" />
+            </div>
+            <span className="font-serif text-xl font-semibold text-white tracking-tight">
+              Homes<span className="text-[#C9A96E]">.</span>
+            </span>
+          </Link>
+
+          {/* Desktop nav */}
+          <div className="hidden lg:flex items-center gap-1">
+            <Link href="/" className={cn("px-3 py-2 text-sm rounded-lg transition-colors", pathname === "/" ? "text-white" : "text-[#8A9BAE] hover:text-white hover:bg-white/[0.04]")}>
+              Home
+            </Link>
+            <Link href="/about" className={cn("px-3 py-2 text-sm rounded-lg transition-colors", pathname === "/about" ? "text-white" : "text-[#8A9BAE] hover:text-white hover:bg-white/[0.04]")}>
+              About
+            </Link>
+
+            {/* Projects dropdown */}
+            <div className="relative" ref={dropdownRef}>
+              <button
+                onClick={() => setDropdownOpen((v) => !v)}
+                className={cn(
+                  "flex items-center gap-1.5 px-3 py-2 text-sm rounded-lg transition-colors",
+                  pathname.startsWith("/projects") ? "text-white" : "text-[#8A9BAE] hover:text-white hover:bg-white/[0.04]"
+                )}
+              >
+                Projects
+                <ChevronDown className={cn("w-3.5 h-3.5 transition-transform duration-200", dropdownOpen && "rotate-180")} />
+              </button>
+
+              {dropdownOpen && (
+                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-[340px] bg-[#12202E] border border-white/[0.08] rounded-2xl shadow-2xl overflow-hidden">
+                  <div className="p-2">
+                    {PROJECTS.map((project) => (
+                      <Link
+                        key={project.slug}
+                        href={`/projects/${project.slug}`}
+                        onClick={() => setDropdownOpen(false)}
+                        className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/[0.05] transition-colors group"
+                      >
+                        <div className="w-2 h-2 rounded-full bg-[#C9A96E] flex-shrink-0 opacity-60 group-hover:opacity-100 transition-opacity" />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-white group-hover:text-[#E2C99A] transition-colors truncate">
+                            {project.name}
+                          </p>
+                          <div className="flex items-center gap-2 mt-0.5">
+                            <span className="text-[11px] text-[#3A5060] bg-white/[0.04] px-1.5 py-0.5 rounded-md">
+                              {project.type}
+                            </span>
+                            <span className="flex items-center gap-0.5 text-[11px] text-[#3A5060]">
+                              <MapPin className="w-2.5 h-2.5" /> {project.location}
+                            </span>
+                          </div>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                  <div className="border-t border-white/[0.06] p-2">
+                    <Link
+                      href="/projects"
+                      onClick={() => setDropdownOpen(false)}
+                      className="flex items-center justify-center gap-2 w-full py-2.5 text-sm text-[#C9A96E] hover:text-[#E2C99A] hover:bg-[#C9A96E]/5 rounded-xl transition-colors font-medium"
+                    >
+                      View All Projects →
+                    </Link>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <Link href="/services" className={cn("px-3 py-2 text-sm rounded-lg transition-colors", pathname === "/services" ? "text-white" : "text-[#8A9BAE] hover:text-white hover:bg-white/[0.04]")}>
+              Services
+            </Link>
+            <Link href="/blogs" className={cn("px-3 py-2 text-sm rounded-lg transition-colors", pathname === "/blogs" ? "text-white" : "text-[#8A9BAE] hover:text-white hover:bg-white/[0.04]")}>
+              Blogs
+            </Link>
+            <Link href="/contact" className={cn("px-3 py-2 text-sm rounded-lg transition-colors", pathname === "/contact" ? "text-white" : "text-[#8A9BAE] hover:text-white hover:bg-white/[0.04]")}>
+              Contact
+            </Link>
+          </div>
+
+          {/* CTA + mobile toggle */}
+          <div className="flex items-center gap-3">
+            <Link
+              href="/#enquire"
+              className="hidden sm:flex items-center gap-2 px-4 py-2 bg-[#C9A96E] hover:bg-[#E2C99A] text-[#0B1521] text-sm font-semibold rounded-lg transition-colors"
+            >
+              Book Site Visit
+            </Link>
+            <button
+              onClick={() => setMobileOpen((v) => !v)}
+              className="lg:hidden p-2 text-[#8A9BAE] hover:text-white transition-colors"
+            >
+              {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
+          </div>
+        </nav>
+      </header>
+
+      {/* Mobile menu */}
+      {mobileOpen && (
+        <div className="fixed inset-0 z-40 bg-[#0B1521]/98 backdrop-blur-xl flex flex-col pt-16">
+          <div className="flex-1 overflow-y-auto px-4 py-6 space-y-1">
+            {NAV_LINKS.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className="flex items-center gap-3 px-4 py-3 rounded-xl text-base text-[#8A9BAE] hover:text-white hover:bg-white/[0.04] transition-colors"
+              >
+                {link.label}
+              </Link>
+            ))}
+            <div className="pt-2">
+              <p className="text-xs text-[#3A5060] uppercase tracking-widest px-4 mb-2">Projects</p>
+              {PROJECTS.map((p) => (
+                <Link
+                  key={p.slug}
+                  href={`/projects/${p.slug}`}
+                  className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm text-[#8A9BAE] hover:text-white hover:bg-white/[0.04] transition-colors"
+                >
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#C9A96E]" />
+                  {p.name}
+                </Link>
+              ))}
+            </div>
+          </div>
+          <div className="p-4 border-t border-white/[0.06]">
+            <Link
+              href="/#enquire"
+              className="flex items-center justify-center gap-2 w-full py-3.5 bg-[#C9A96E] hover:bg-[#E2C99A] text-[#0B1521] font-semibold rounded-xl transition-colors"
+            >
+              Book Site Visit
+            </Link>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}

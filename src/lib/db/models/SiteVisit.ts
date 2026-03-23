@@ -11,19 +11,19 @@ const SiteVisitSchema = new Schema<SiteVisitDocument>(
   {
     // ── References ────────────────────────────────────────────────────────────
     leadId: {
-      type: Schema.Types.ObjectId,
+      type: Schema.Types.ObjectId as any,
       ref: "Lead",
       required: true,
     },
     propertyId: {
-      type: Schema.Types.ObjectId,
+      type: Schema.Types.ObjectId as any,
       ref: "Property",
       required: true,
     },
     propertyName: { type: String, trim: true },
     propertySlug: { type: String, trim: true },
     assignedAgentId: {
-      type: Schema.Types.ObjectId,
+      type: Schema.Types.ObjectId as any,
       ref: "User",
       required: true,
     },
@@ -83,7 +83,7 @@ SiteVisitSchema.index({ scheduledAt: 1, status: 1 });
 // ─── MIDDLEWARE ───────────────────────────────────────────────────────────────
 
 // Auto-set completedAt when status changes to completed
-SiteVisitSchema.pre("save", function (next) {
+SiteVisitSchema.pre("save", async function () {
   if (
     this.isModified("status") &&
     this.status === "completed" &&
@@ -91,7 +91,6 @@ SiteVisitSchema.pre("save", function (next) {
   ) {
     this.completedAt = new Date();
   }
-  next();
 });
 
 // ─── EXPORT ───────────────────────────────────────────────────────────────────

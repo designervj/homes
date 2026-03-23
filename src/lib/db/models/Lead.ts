@@ -132,7 +132,7 @@ LeadSchema.virtual("daysSinceCreated").get(function () {
 // ─── MIDDLEWARE ───────────────────────────────────────────────────────────────
 
 // Auto-set closedAt when stage becomes converted or lost
-LeadSchema.pre("save", function (next) {
+LeadSchema.pre("save", async function () {
   if (
     this.isModified("stage") &&
     (this.stage === "converted" || this.stage === "lost") &&
@@ -140,7 +140,6 @@ LeadSchema.pre("save", function (next) {
   ) {
     this.closedAt = new Date();
   }
-  next();
 });
 
 // ─── EXPORT ───────────────────────────────────────────────────────────────────
