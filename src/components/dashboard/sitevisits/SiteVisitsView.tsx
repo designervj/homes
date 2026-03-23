@@ -30,15 +30,15 @@ const STATUS_STYLES: Record<string, string> = {
   completed: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
   no_show: "bg-red-500/10 text-red-400 border-red-500/20",
   rescheduled: "bg-yellow-500/10 text-yellow-400 border-yellow-500/20",
-  cancelled: "bg-white/5 text-[#5A7080] border-white/10",
+  cancelled: "bg-white/5 text-[#5A7080] border-border",
 };
 
 const OUTCOME_STYLES: Record<string, string> = {
   positive: "text-emerald-400",
-  converted: "text-[#C9A96E]",
-  neutral: "text-[#8A9BAE]",
+  converted: "text-primary",
+  neutral: "text-muted-foreground",
   negative: "text-red-400",
-  pending: "text-[#3A5060]",
+  pending: "text-muted-foreground",
 };
 
 // ─── VISIT CARD ───────────────────────────────────────────────────────────────
@@ -62,24 +62,24 @@ function VisitCard({ visit, onAction }: { visit: ISiteVisit; onAction: () => voi
   const statusStyle = STATUS_STYLES[visit.status] ?? STATUS_STYLES.cancelled;
 
   return (
-    <div className={`bg-[#12202E] border rounded-xl p-5 transition-all ${visit.status === "scheduled" ? "border-blue-500/15" : "border-white/[0.06]"}`}>
+    <div className={`bg-card border rounded-xl p-5 transition-all ${visit.status === "scheduled" ? "border-blue-500/15" : "border-border"}`}>
       <div className="flex items-start justify-between gap-4 mb-4">
         <div className="flex items-start gap-3">
           {/* Date block */}
-          <div className="w-12 h-12 rounded-xl bg-[#C9A96E]/10 border border-[#C9A96E]/20 flex flex-col items-center justify-center flex-shrink-0">
-            <span className="text-[9px] text-[#C9A96E] font-medium leading-none">
+          <div className="w-12 h-12 rounded-xl bg-primary/10 border border-primary/20 flex flex-col items-center justify-center flex-shrink-0">
+            <span className="text-[9px] text-primary font-medium leading-none">
               {scheduledDate.toLocaleDateString("en-IN", { month: "short" }).toUpperCase()}
             </span>
-            <span className="text-lg font-serif font-semibold text-[#C9A96E] leading-tight">
+            <span className="text-lg font-serif font-semibold text-primary leading-tight">
               {scheduledDate.getDate()}
             </span>
           </div>
           <div>
             <p className="text-sm font-medium text-white">{visit.clientName}</p>
-            <a href={`tel:${visit.clientPhone}`} className="flex items-center gap-1 text-xs text-[#5A7080] hover:text-[#C9A96E] transition-colors mt-0.5">
+            <a href={`tel:${visit.clientPhone}`} className="flex items-center gap-1 text-xs text-[#5A7080] hover:text-primary transition-colors mt-0.5">
               <Phone className="w-3 h-3" /> {visit.clientPhone}
             </a>
-            <p className="flex items-center gap-1 text-xs text-[#3A5060] mt-0.5">
+            <p className="flex items-center gap-1 text-xs text-muted-foreground mt-0.5">
               <Clock className="w-3 h-3" />
               {scheduledDate.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}
               {!isUpcoming && " · " + scheduledDate.toLocaleDateString("en-IN", { day: "numeric", month: "short" })}
@@ -96,7 +96,7 @@ function VisitCard({ visit, onAction }: { visit: ISiteVisit; onAction: () => voi
       <div className="grid grid-cols-2 gap-3 mb-4">
         {visit.propertyName && (
           <div className="flex items-center gap-1.5 text-xs text-[#5A7080]">
-            <Building2 className="w-3 h-3 flex-shrink-0 text-[#C9A96E]" />
+            <Building2 className="w-3 h-3 flex-shrink-0 text-primary" />
             <span className="truncate">{visit.propertyName}</span>
           </div>
         )}
@@ -117,7 +117,7 @@ function VisitCard({ visit, onAction }: { visit: ISiteVisit; onAction: () => voi
 
       {/* Agent notes */}
       {visit.agentNotes && (
-        <p className="text-xs text-[#5A7080] bg-white/[0.02] px-3 py-2 rounded-lg border border-white/[0.04] mb-3 line-clamp-2">
+        <p className="text-xs text-[#5A7080] bg-accent/40 px-3 py-2 rounded-lg border border-white/[0.04] mb-3 line-clamp-2">
           {visit.agentNotes}
         </p>
       )}
@@ -144,7 +144,7 @@ function VisitCard({ visit, onAction }: { visit: ISiteVisit; onAction: () => voi
           <button
             onClick={() => handle("cancelled")}
             disabled={isPending}
-            className="text-xs text-[#3A5060] hover:text-[#5A7080] px-2 py-1.5 transition-colors ml-auto"
+            className="text-xs text-muted-foreground hover:text-[#5A7080] px-2 py-1.5 transition-colors ml-auto"
           >
             Cancel
           </button>
@@ -186,12 +186,12 @@ export function SiteVisitsView({ visits, upcoming, stats, pagination, currentSta
             { label: "Scheduled", value: stats.scheduled, color: "text-blue-400" },
             { label: "Completed", value: stats.completed, color: "text-emerald-400" },
             { label: "No Show", value: stats.noShow, color: "text-red-400" },
-            { label: "This Week", value: stats.thisWeek, color: "text-[#C9A96E]" },
+            { label: "This Week", value: stats.thisWeek, color: "text-primary" },
             { label: "Total", value: stats.total, color: "text-white" },
             { label: "Conv. Rate", value: `${stats.conversionRate}%`, color: "text-purple-400" },
           ].map((s) => (
-            <div key={s.label} className="bg-[#12202E] border border-white/[0.06] rounded-xl p-3">
-              <p className="text-[10px] text-[#3A5060] uppercase tracking-wide mb-1">{s.label}</p>
+            <div key={s.label} className="bg-card border border-border rounded-xl p-3">
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wide mb-1">{s.label}</p>
               <p className={`text-lg font-serif font-medium ${s.color}`}>{s.value}</p>
             </div>
           ))}
@@ -200,13 +200,13 @@ export function SiteVisitsView({ visits, upcoming, stats, pagination, currentSta
 
       {/* Upcoming quick view */}
       {upcoming.length > 0 && currentStatus === "scheduled" && (
-        <div className="bg-[#C9A96E]/5 border border-[#C9A96E]/15 rounded-xl p-4">
-          <p className="text-xs text-[#C9A96E] uppercase tracking-wide mb-3 flex items-center gap-2">
+        <div className="bg-primary/5 border border-primary/15 rounded-xl p-4">
+          <p className="text-xs text-primary uppercase tracking-wide mb-3 flex items-center gap-2">
             <Calendar className="w-3.5 h-3.5" /> Next Up
           </p>
           <div className="flex gap-3 flex-wrap">
             {upcoming.map((v) => (
-              <div key={v._id} className="bg-[#0B1521] border border-white/[0.06] rounded-lg px-3 py-2">
+              <div key={v._id} className="bg-background border border-border rounded-lg px-3 py-2">
                 <p className="text-xs font-medium text-white">{v.clientName}</p>
                 <p className="text-[10px] text-[#5A7080]">
                   {new Date(v.scheduledAt).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}
@@ -220,12 +220,12 @@ export function SiteVisitsView({ visits, upcoming, stats, pagination, currentSta
       )}
 
       {/* Tabs */}
-      <div className="flex gap-1 border-b border-white/[0.06]">
+      <div className="flex gap-1 border-b border-border">
         {STATUS_TABS.map((tab) => (
           <button
             key={tab.key}
             onClick={() => setStatus(tab.key)}
-            className={`px-4 py-2.5 text-sm border-b-2 transition-all -mb-px ${currentStatus === tab.key ? "text-[#C9A96E] border-[#C9A96E] font-medium" : "text-[#3A5060] border-transparent hover:text-[#8A9BAE]"}`}
+            className={`px-4 py-2.5 text-sm border-b-2 transition-all -mb-px ${currentStatus === tab.key ? "text-primary border-primary font-medium" : "text-muted-foreground border-transparent hover:text-muted-foreground"}`}
           >
             {tab.label}
           </button>
@@ -237,7 +237,7 @@ export function SiteVisitsView({ visits, upcoming, stats, pagination, currentSta
         <div className="flex flex-col items-center justify-center py-20">
           <CalendarCheck className="w-10 h-10 text-[#2A3E52] mb-4" />
           <p className="text-[#5A7080] font-medium">No site visits here</p>
-          <p className="text-sm text-[#3A5060] mt-1">
+          <p className="text-sm text-muted-foreground mt-1">
             {currentStatus === "scheduled" ? "No upcoming visits scheduled." : "No visits match this filter."}
           </p>
         </div>
@@ -251,11 +251,11 @@ export function SiteVisitsView({ visits, upcoming, stats, pagination, currentSta
 
       {/* Pagination */}
       {pagination && pagination.totalPages > 1 && (
-        <div className="flex justify-between items-center pt-4 border-t border-white/[0.06]">
-          <p className="text-xs text-[#3A5060]">Page {pagination.page} of {pagination.totalPages}</p>
+        <div className="flex justify-between items-center pt-4 border-t border-border">
+          <p className="text-xs text-muted-foreground">Page {pagination.page} of {pagination.totalPages}</p>
           <div className="flex gap-2">
-            <button disabled={pagination.page <= 1} onClick={() => router.push(`/admin/site-visits?status=${currentStatus}&page=${pagination.page - 1}`)} className="px-3 py-1.5 text-xs text-[#5A7080] border border-white/[0.06] rounded-lg disabled:opacity-40 hover:border-white/20 transition-colors">Previous</button>
-            <button disabled={pagination.page >= pagination.totalPages} onClick={() => router.push(`/admin/site-visits?status=${currentStatus}&page=${pagination.page + 1}`)} className="px-3 py-1.5 text-xs text-[#5A7080] border border-white/[0.06] rounded-lg disabled:opacity-40 hover:border-white/20 transition-colors">Next</button>
+            <button disabled={pagination.page <= 1} onClick={() => router.push(`/admin/site-visits?status=${currentStatus}&page=${pagination.page - 1}`)} className="px-3 py-1.5 text-xs text-[#5A7080] border border-border rounded-lg disabled:opacity-40 hover:border-border transition-colors">Previous</button>
+            <button disabled={pagination.page >= pagination.totalPages} onClick={() => router.push(`/admin/site-visits?status=${currentStatus}&page=${pagination.page + 1}`)} className="px-3 py-1.5 text-xs text-[#5A7080] border border-border rounded-lg disabled:opacity-40 hover:border-border transition-colors">Next</button>
           </div>
         </div>
       )}

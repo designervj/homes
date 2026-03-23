@@ -81,18 +81,18 @@ function LeadCard({ lead, agents, onAction }: {
     : 0;
 
   return (
-    <div className={`bg-[#0B1521] border rounded-xl p-4 hover:border-white/10 transition-all group relative ${config.border}`}>
+    <div className={`bg-background border rounded-xl p-4 hover:border-border transition-all group relative ${config.border}`}>
       {/* Lead name + score */}
       <div className="flex items-start justify-between mb-2">
         <div>
           <p className="text-sm font-medium text-white">{lead.name}</p>
-          <a href={`tel:${lead.phone}`} className="flex items-center gap-1 text-xs text-[#5A7080] hover:text-[#C9A96E] transition-colors mt-0.5">
+          <a href={`tel:${lead.phone}`} className="flex items-center gap-1 text-xs text-[#5A7080] hover:text-primary transition-colors mt-0.5">
             <Phone className="w-3 h-3" /> {lead.phone}
           </a>
         </div>
         {lead.score !== undefined && lead.score > 0 && (
-          <div className="flex items-center gap-0.5 text-[11px] text-[#C9A96E]">
-            <Star className="w-3 h-3 fill-[#C9A96E]" />
+          <div className="flex items-center gap-0.5 text-[11px] text-primary">
+            <Star className="w-3 h-3 fill-primary" />
             {lead.score}
           </div>
         )}
@@ -100,7 +100,7 @@ function LeadCard({ lead, agents, onAction }: {
 
       {/* Property */}
       {lead.propertyName && (
-        <div className="flex items-center gap-1.5 text-[11px] text-[#3A5060] mb-3">
+        <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground mb-3">
           <Building2 className="w-3 h-3 flex-shrink-0" />
           <span className="truncate">{lead.propertyName}</span>
         </div>
@@ -110,7 +110,7 @@ function LeadCard({ lead, agents, onAction }: {
       {lead.interestedIn && lead.interestedIn.length > 0 && (
         <div className="flex flex-wrap gap-1 mb-3">
           {lead.interestedIn.map((i) => (
-            <span key={i} className="text-[10px] px-1.5 py-0.5 rounded-full bg-white/[0.04] text-[#5A7080] capitalize">
+            <span key={i} className="text-[10px] px-1.5 py-0.5 rounded-full bg-accent text-[#5A7080] capitalize">
               {i.replace(/_/g, " ")}
             </span>
           ))}
@@ -122,17 +122,17 @@ function LeadCard({ lead, agents, onAction }: {
         <div className="flex items-center gap-2">
           {/* Agent avatar */}
           {lead.assignedAgentName ? (
-            <div className="w-5 h-5 rounded-full bg-[#C9A96E]/20 flex items-center justify-center">
-              <span className="text-[9px] font-semibold text-[#C9A96E]">
+            <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center">
+              <span className="text-[9px] font-semibold text-primary">
                 {lead.assignedAgentName.charAt(0)}
               </span>
             </div>
           ) : (
-            <div className="w-5 h-5 rounded-full bg-white/[0.04] flex items-center justify-center">
-              <Users2 className="w-2.5 h-2.5 text-[#3A5060]" />
+            <div className="w-5 h-5 rounded-full bg-accent flex items-center justify-center">
+              <Users2 className="w-2.5 h-2.5 text-muted-foreground" />
             </div>
           )}
-          <span className="text-[10px] text-[#3A5060]">{days}d</span>
+          <span className="text-[10px] text-muted-foreground">{days}d</span>
         </div>
 
         <div className="flex items-center gap-1.5">
@@ -140,24 +140,24 @@ function LeadCard({ lead, agents, onAction }: {
           <div className="relative">
             <button
               onClick={() => setShowMove((v) => !v)}
-              className="text-[10px] text-[#3A5060] hover:text-[#8A9BAE] px-1.5 py-1 rounded transition-colors"
+              className="text-[10px] text-muted-foreground hover:text-muted-foreground px-1.5 py-1 rounded transition-colors"
             >
               Move
             </button>
             {showMove && (
-              <div className="absolute right-0 bottom-7 bg-[#12202E] border border-white/[0.08] rounded-xl p-1.5 z-20 w-44 shadow-xl">
+              <div className="absolute right-0 bottom-7 bg-card border border-border rounded-xl p-1.5 z-20 w-44 shadow-xl">
                 {LEAD_STAGES.filter((s) => s !== lead.stage && s !== "lost").map((s) => (
                   <button
                     key={s}
                     onClick={() => moveTo(s)}
                     disabled={isPending}
-                    className="w-full text-left text-xs text-[#8A9BAE] hover:text-white hover:bg-white/[0.04] px-2.5 py-1.5 rounded-lg transition-colors flex items-center gap-2"
+                    className="w-full text-left text-xs text-muted-foreground hover:text-white hover:bg-accent px-2.5 py-1.5 rounded-lg transition-colors flex items-center gap-2"
                   >
                     <span className={`w-1.5 h-1.5 rounded-full ${STAGE_CONFIG[s].dot}`} />
                     {LEAD_STAGE_LABELS[s]}
                   </button>
                 ))}
-                <div className="border-t border-white/[0.06] mt-1 pt-1">
+                <div className="border-t border-border mt-1 pt-1">
                   <button
                     onClick={() => moveTo("lost")}
                     disabled={isPending}
@@ -176,7 +176,7 @@ function LeadCard({ lead, agents, onAction }: {
             <button
               onClick={moveToNext}
               disabled={isPending}
-              className="flex items-center gap-0.5 text-[10px] text-[#C9A96E] hover:text-[#E2C99A] font-medium transition-colors"
+              className="flex items-center gap-0.5 text-[10px] text-primary hover:text-primary-light font-medium transition-colors"
             >
               {isPending ? <Loader2 className="w-2.5 h-2.5 animate-spin" /> : <ChevronRight className="w-3 h-3" />}
             </button>
@@ -185,7 +185,7 @@ function LeadCard({ lead, agents, onAction }: {
           {/* Detail link */}
           <a
             href={`/admin/leads/${lead._id}`}
-            className="text-[10px] text-[#3A5060] hover:text-[#C9A96E] transition-colors"
+            className="text-[10px] text-muted-foreground hover:text-primary transition-colors"
           >
             <ArrowUpRight className="w-3 h-3" />
           </a>
@@ -214,7 +214,7 @@ function KanbanColumn({ stage, leads, agents, onAction }: {
             {LEAD_STAGE_LABELS[stage]}
           </span>
         </div>
-        <span className="text-xs text-[#3A5060] bg-white/[0.04] px-2 py-0.5 rounded-full">
+        <span className="text-xs text-muted-foreground bg-accent px-2 py-0.5 rounded-full">
           {leads.length}
         </span>
       </div>
@@ -222,7 +222,7 @@ function KanbanColumn({ stage, leads, agents, onAction }: {
       {/* Cards */}
       <div className="flex flex-col gap-2.5 flex-1">
         {leads.length === 0 ? (
-          <div className="border border-dashed border-white/[0.06] rounded-xl p-4 text-center">
+          <div className="border border-dashed border-border rounded-xl p-4 text-center">
             <p className="text-xs text-[#2A3E52]">No leads</p>
           </div>
         ) : (
@@ -253,7 +253,7 @@ export function LeadsKanban({ boardData, stats, agents }: LeadsKanbanProps) {
         </div>
         <a
           href="/admin/leads/new"
-          className="flex items-center gap-2 px-4 py-2 bg-[#C9A96E] hover:bg-[#E2C99A] text-[#0B1521] text-sm font-medium rounded-lg transition-colors"
+          className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-light text-foreground text-sm font-medium rounded-lg transition-colors"
         >
           <Users2 className="w-4 h-4" /> Add Lead
         </a>
@@ -264,13 +264,13 @@ export function LeadsKanban({ boardData, stats, agents }: LeadsKanbanProps) {
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
           {[
             { label: "Total", value: stats.total, color: "text-white" },
-            { label: "Active", value: stats.active, color: "text-[#C9A96E]" },
+            { label: "Active", value: stats.active, color: "text-primary" },
             { label: "Converted", value: stats.converted, color: "text-emerald-400" },
             { label: "Lost", value: stats.lost, color: "text-red-400" },
             { label: "Conv. Rate", value: `${stats.conversionRate}%`, color: "text-purple-400" },
           ].map((s) => (
-            <div key={s.label} className="bg-[#12202E] border border-white/[0.06] rounded-xl p-3">
-              <p className="text-[10px] text-[#3A5060] uppercase tracking-wide mb-1">{s.label}</p>
+            <div key={s.label} className="bg-card border border-border rounded-xl p-3">
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wide mb-1">{s.label}</p>
               <p className={`text-xl font-serif font-medium ${s.color}`}>{s.value}</p>
             </div>
           ))}
@@ -279,8 +279,8 @@ export function LeadsKanban({ boardData, stats, agents }: LeadsKanbanProps) {
 
       {/* Converted + Lost summary */}
       <div className="flex gap-3">
-        <div className="flex-1 flex items-center gap-3 bg-[#12202E] border border-white/[0.06] rounded-xl px-4 py-3">
-          <TrendingUp className="w-4 h-4 text-[#C9A96E]" />
+        <div className="flex-1 flex items-center gap-3 bg-card border border-border rounded-xl px-4 py-3">
+          <TrendingUp className="w-4 h-4 text-primary" />
           <div className="flex gap-4 flex-wrap">
             {["converted", "lost"].map((s) => (
               <div key={s} className="flex items-center gap-2">

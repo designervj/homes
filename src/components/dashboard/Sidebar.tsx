@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
   Building2,
@@ -85,16 +86,20 @@ export function DashboardSidebar({ role }: DashboardSidebarProps) {
   );
 
   return (
-    <aside className="w-60 min-h-screen bg-[#0B1521] border-r border-white/[0.06] flex flex-col flex-shrink-0">
+    <aside className="w-60 min-h-screen bg-background border-r border-border flex flex-col flex-shrink-0">
 
       {/* Logo */}
-      <div className="h-16 flex items-center gap-3 px-5 border-b border-white/[0.06]">
-        <div className="w-8 h-8 bg-[#C9A96E] rounded-md flex items-center justify-center flex-shrink-0">
-          <Building2 className="w-4 h-4 text-[#0B1521]" />
-        </div>
-        <span className="font-serif text-lg font-semibold text-white tracking-tight">
-          Homes<span className="text-[#C9A96E]">.</span>
-        </span>
+      <div className="h-20 flex items-center px-6 border-b border-border">
+        <Link href="/admin" className="block w-36 h-auto relative">
+          <Image
+            src="/homes/Homes-Logo.webp"
+            alt="Homes Logo"
+            width={160}
+            height={50}
+            className="object-contain"
+            priority
+          />
+        </Link>
       </div>
 
       {/* Section label */}
@@ -121,24 +126,24 @@ export function DashboardSidebar({ role }: DashboardSidebarProps) {
               className={cn(
                 "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all duration-150 group",
                 isActive
-                  ? "bg-[#C9A96E]/10 text-[#C9A96E] font-medium"
-                  : "text-[#5A7080] hover:text-[#B4C4D3] hover:bg-white/[0.04]"
+                  ? "bg-primary/10 text-primary font-medium"
+                  : "text-[#5A7080] hover:text-[#B4C4D3] hover:bg-accent"
               )}
             >
               <Icon
                 className={cn(
                   "w-4 h-4 flex-shrink-0 transition-colors",
-                  isActive ? "text-[#C9A96E]" : "text-[#3A5060] group-hover:text-[#7A9BAE]"
+                  isActive ? "text-primary" : "text-muted-foreground group-hover:text-[#7A9BAE]"
                 )}
               />
               <span className="flex-1">{item.label}</span>
               {item.badge && (
-                <span className="text-[10px] bg-[#C9A96E]/20 text-[#C9A96E] px-1.5 py-0.5 rounded-full font-medium">
+                <span className="text-[10px] bg-primary/20 text-primary px-1.5 py-0.5 rounded-full font-medium">
                   {item.badge}
                 </span>
               )}
               {isActive && (
-                <ChevronRight className="w-3 h-3 text-[#C9A96E] opacity-60" />
+                <ChevronRight className="w-3 h-3 text-primary opacity-60" />
               )}
             </Link>
           );
@@ -146,11 +151,11 @@ export function DashboardSidebar({ role }: DashboardSidebarProps) {
       </nav>
 
       {/* Bottom — view public site */}
-      <div className="p-3 border-t border-white/[0.06]">
+      <div className="p-3 border-t border-border">
         <Link
           href="/"
           target="_blank"
-          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-[#3A5060] hover:text-[#7A9BAE] hover:bg-white/[0.04] transition-all"
+          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-muted-foreground hover:text-[#7A9BAE] hover:bg-accent transition-all"
         >
           <Building2 className="w-4 h-4" />
           <span>View Public Site</span>

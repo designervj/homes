@@ -34,19 +34,19 @@ function FormSection({
   onToggle: () => void; children: React.ReactNode;
 }) {
   return (
-    <div className="bg-[#12202E] border border-white/[0.06] rounded-xl overflow-hidden">
+    <div className="bg-card border border-border rounded-xl overflow-hidden">
       <button
         type="button"
         onClick={onToggle}
-        className="w-full flex items-center justify-between px-6 py-4 hover:bg-white/[0.02] transition-colors"
+        className="w-full flex items-center justify-between px-6 py-4 hover:bg-accent/40 transition-colors"
       >
         <div className="flex items-center gap-3">
-          <span className="w-6 h-6 rounded-full bg-[#C9A96E]/15 border border-[#C9A96E]/30 flex items-center justify-center text-[11px] font-medium text-[#C9A96E]">
+          <span className="w-6 h-6 rounded-full bg-primary/15 border border-primary/30 flex items-center justify-center text-[11px] font-medium text-primary">
             {number}
           </span>
           <span className="text-sm font-medium text-white">{title}</span>
         </div>
-        {open ? <ChevronUp className="w-4 h-4 text-[#3A5060]" /> : <ChevronDown className="w-4 h-4 text-[#3A5060]" />}
+        {open ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
       </button>
       {open && <div className="px-6 pb-6 pt-2 border-t border-white/[0.04]">{children}</div>}
     </div>
@@ -55,7 +55,7 @@ function FormSection({
 
 // ─── FIELD HELPERS ────────────────────────────────────────────────────────────
 
-const inputCls = "w-full bg-white/[0.04] border border-white/[0.10] rounded-lg px-3.5 py-2.5 text-sm text-white placeholder:text-[#3A5060] outline-none focus:border-[#C9A96E]/50 transition-all";
+const inputCls = "w-full bg-accent border border-white/[0.10] rounded-lg px-3.5 py-2.5 text-sm text-white placeholder:text-muted-foreground outline-none focus:border-primary/50 transition-all";
 const labelCls = "block text-xs text-[#5A7080] mb-1.5 uppercase tracking-wide";
 const gridCls  = "grid grid-cols-1 sm:grid-cols-2 gap-4";
 const grid3cls  = "grid grid-cols-1 sm:grid-cols-3 gap-4";
@@ -80,7 +80,7 @@ export function PropertyForm({ property }: PropertyFormProps) {
 
   const { register, handleSubmit, formState: { errors }, watch, setValue } =
     useForm<PropertyInput>({
-      resolver: zodResolver(PropertyValidator),
+      resolver: zodResolver(PropertyValidator) as any,
       defaultValues: isEdit
         ? {
             title: property.title,
@@ -88,7 +88,7 @@ export function PropertyForm({ property }: PropertyFormProps) {
             developerName: property.developerName,
             projectName: property.projectName,
             tagline: property.tagline,
-            status: property.status,
+            status: (property.status as "active" | "blocked" | "sold" | "archived") ?? "active",
             isFeatured: property.isFeatured,
             location: property.location,
             specifications: property.specifications as never,
@@ -160,7 +160,7 @@ export function PropertyForm({ property }: PropertyFormProps) {
           <button
             type="button"
             onClick={() => router.back()}
-            className="text-[#3A5060] hover:text-white transition-colors"
+            className="text-muted-foreground hover:text-white transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
           </button>
@@ -176,7 +176,7 @@ export function PropertyForm({ property }: PropertyFormProps) {
         <button
           type="submit"
           disabled={isPending}
-          className="flex items-center gap-2 px-5 py-2.5 bg-[#C9A96E] hover:bg-[#E2C99A] text-[#0B1521] text-sm font-semibold rounded-lg transition-colors disabled:opacity-60"
+          className="flex items-center gap-2 px-5 py-2.5 bg-primary hover:bg-primary-light text-foreground text-sm font-semibold rounded-lg transition-colors disabled:opacity-60"
         >
           {isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
           {isEdit ? "Save Changes" : "Create Property"}
@@ -225,7 +225,7 @@ export function PropertyForm({ property }: PropertyFormProps) {
             </div>
             <div className="flex items-center gap-3 pt-6">
               <input type="checkbox" {...register("isFeatured")} id="featured" className="w-4 h-4 accent-[#C9A96E]" />
-              <label htmlFor="featured" className="text-sm text-[#8A9BAE] cursor-pointer">Mark as Featured (shows on homepage)</label>
+              <label htmlFor="featured" className="text-sm text-muted-foreground cursor-pointer">Mark as Featured (shows on homepage)</label>
             </div>
           </div>
         </div>
@@ -317,7 +317,7 @@ export function PropertyForm({ property }: PropertyFormProps) {
             </div>
             <div className="flex items-center gap-2 pt-5">
               <input type="checkbox" {...register("specifications.isCornerUnit")} className="w-4 h-4 accent-[#C9A96E]" />
-              <label className="text-sm text-[#8A9BAE]">Corner Unit / Plot</label>
+              <label className="text-sm text-muted-foreground">Corner Unit / Plot</label>
             </div>
           </div>
         </div>
@@ -371,7 +371,7 @@ export function PropertyForm({ property }: PropertyFormProps) {
           <div className={gridCls}>
             <div className="flex items-center gap-3 pt-1">
               <input type="checkbox" {...register("sizeLayout.parkingAvailable")} className="w-4 h-4 accent-[#C9A96E]" />
-              <label className="text-sm text-[#8A9BAE]">Parking Available</label>
+              <label className="text-sm text-muted-foreground">Parking Available</label>
             </div>
             <div>
               <label className={labelCls}>Parking Type</label>
@@ -440,11 +440,11 @@ export function PropertyForm({ property }: PropertyFormProps) {
             <div className="flex flex-col gap-3 pt-1">
               <label className="flex items-center gap-2.5 cursor-pointer">
                 <input type="checkbox" {...register("financials.gstApplicable")} className="w-4 h-4 accent-[#C9A96E]" />
-                <span className="text-sm text-[#8A9BAE]">GST Applicable (Under Construction)</span>
+                <span className="text-sm text-muted-foreground">GST Applicable (Under Construction)</span>
               </label>
               <label className="flex items-center gap-2.5 cursor-pointer">
                 <input type="checkbox" {...register("financials.homeLoanAvailable")} className="w-4 h-4 accent-[#C9A96E]" />
-                <span className="text-sm text-[#8A9BAE]">Home Loan Available</span>
+                <span className="text-sm text-muted-foreground">Home Loan Available</span>
               </label>
             </div>
           </div>
@@ -476,9 +476,9 @@ export function PropertyForm({ property }: PropertyFormProps) {
           </div>
           <div className="flex flex-wrap gap-3">
             {["isGatedCommunity", "isVastuCompliant", "isPetFriendly", "isGreenBuilding", "hasSmartHome", "isWheelchairAccessible"].map((field) => (
-              <label key={field} className="flex items-center gap-2 cursor-pointer bg-white/[0.03] border border-white/[0.06] px-3 py-2 rounded-xl hover:border-white/[0.12] transition-colors">
+              <label key={field} className="flex items-center gap-2 cursor-pointer bg-white/[0.03] border border-border px-3 py-2 rounded-xl hover:border-white/[0.12] transition-colors">
                 <input type="checkbox" {...register(`features.${field}` as never)} className="w-3.5 h-3.5 accent-[#C9A96E]" />
-                <span className="text-xs text-[#8A9BAE] capitalize">{field.replace(/is|has/g, "").replace(/([A-Z])/g, " $1").trim()}</span>
+                <span className="text-xs text-muted-foreground capitalize">{field.replace(/is|has/g, "").replace(/([A-Z])/g, " $1").trim()}</span>
               </label>
             ))}
           </div>
@@ -493,15 +493,15 @@ export function PropertyForm({ property }: PropertyFormProps) {
                   className={cn(
                     "text-xs px-3 py-1.5 rounded-xl border transition-all",
                     selectedAmenities.includes(amenity)
-                      ? "bg-[#C9A96E]/15 border-[#C9A96E]/40 text-[#C9A96E]"
-                      : "bg-white/[0.03] border-white/[0.06] text-[#5A7080] hover:border-white/[0.12]"
+                      ? "bg-primary/15 border-primary/40 text-primary"
+                      : "bg-white/[0.03] border-border text-[#5A7080] hover:border-white/[0.12]"
                   )}
                 >
                   {amenity}
                 </button>
               ))}
             </div>
-            <p className="text-xs text-[#3A5060] mt-2">{selectedAmenities.length} selected</p>
+            <p className="text-xs text-muted-foreground mt-2">{selectedAmenities.length} selected</p>
           </div>
         </div>
       </FormSection>
@@ -536,7 +536,7 @@ export function PropertyForm({ property }: PropertyFormProps) {
             </div>
             <div className="flex items-center gap-2.5 pt-5">
               <input type="checkbox" {...register("legalInfo.reraRegistered")} className="w-4 h-4 accent-[#C9A96E]" />
-              <label className="text-sm text-[#8A9BAE]">RERA Registered</label>
+              <label className="text-sm text-muted-foreground">RERA Registered</label>
             </div>
             <div>
               <label className={labelCls}>RERA ID</label>
@@ -575,7 +575,7 @@ export function PropertyForm({ property }: PropertyFormProps) {
                 value={place.category}
                 onChange={(e) => {
                   const updated = [...nearbyPlaces];
-                  updated[index] = { ...updated[index], category: e.target.value };
+                  updated[index] = { ...updated[index], category: e.target.value as any };
                   setNearbyPlaces(updated);
                 }}
                 className={cn(inputCls, "col-span-4")}
@@ -599,7 +599,7 @@ export function PropertyForm({ property }: PropertyFormProps) {
               <button
                 type="button"
                 onClick={() => removeNearbyPlace(index)}
-                className="col-span-1 flex items-center justify-center w-10 h-10 text-[#3A5060] hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
+                className="col-span-1 flex items-center justify-center w-10 h-10 text-muted-foreground hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -608,7 +608,7 @@ export function PropertyForm({ property }: PropertyFormProps) {
           <button
             type="button"
             onClick={addNearbyPlace}
-            className="flex items-center gap-2 text-sm text-[#C9A96E] hover:text-[#E2C99A] border border-[#C9A96E]/20 hover:border-[#C9A96E]/40 px-4 py-2 rounded-xl transition-all"
+            className="flex items-center gap-2 text-sm text-primary hover:text-primary-light border border-primary/20 hover:border-primary/40 px-4 py-2 rounded-xl transition-all"
           >
             <Plus className="w-3.5 h-3.5" /> Add Place
           </button>
@@ -620,14 +620,14 @@ export function PropertyForm({ property }: PropertyFormProps) {
         <button
           type="button"
           onClick={() => router.back()}
-          className="px-5 py-2.5 text-sm text-[#5A7080] border border-white/[0.06] rounded-lg hover:border-white/[0.12] transition-colors"
+          className="px-5 py-2.5 text-sm text-[#5A7080] border border-border rounded-lg hover:border-white/[0.12] transition-colors"
         >
           Cancel
         </button>
         <button
           type="submit"
           disabled={isPending}
-          className="flex items-center gap-2 px-6 py-2.5 bg-[#C9A96E] hover:bg-[#E2C99A] text-[#0B1521] text-sm font-semibold rounded-lg transition-colors disabled:opacity-60"
+          className="flex items-center gap-2 px-6 py-2.5 bg-primary hover:bg-primary-light text-foreground text-sm font-semibold rounded-lg transition-colors disabled:opacity-60"
         >
           {isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
           {isEdit ? "Save Changes" : "Create Property"}

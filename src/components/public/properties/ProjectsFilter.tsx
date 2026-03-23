@@ -37,13 +37,13 @@ export function ProjectsFilter({ currentFilters }: {
       : "";
 
   const pillBase = "px-3.5 py-1.5 rounded-xl border text-sm transition-all cursor-pointer";
-  const active   = "bg-[#C9A96E] text-[#0B1521] border-transparent font-medium";
-  const inactive = "bg-[#12202E] text-[#5A7080] border-white/[0.06] hover:text-white hover:border-white/[0.12]";
+  const active   = "bg-primary text-foreground border-transparent font-medium";
+  const inactive = "bg-card text-[#5A7080] border-border hover:text-white hover:border-white/[0.12]";
 
   return (
     <div className="space-y-3">
       <div className="flex items-center gap-2 flex-wrap">
-        <div className="flex items-center gap-1.5 text-xs text-[#3A5060] mr-2">
+        <div className="flex items-center gap-1.5 text-xs text-muted-foreground mr-2">
           <SlidersHorizontal className="w-3.5 h-3.5" /> Filter:
         </div>
 

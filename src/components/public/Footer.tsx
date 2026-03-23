@@ -28,11 +28,11 @@ export function Footer() {
           {/* Brand */}
           <div className="lg:col-span-1">
             <Link href="/" className="flex items-center gap-2.5 mb-5">
-              <div className="w-8 h-8 bg-[#C9A96E] rounded-lg flex items-center justify-center">
-                <Building2 className="w-4 h-4 text-[#0B1521]" />
+              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+                <Building2 className="w-4 h-4 text-foreground" />
               </div>
               <span className="font-serif text-xl font-semibold text-white">
-                Homes<span className="text-[#C9A96E]">.</span>
+                Homes<span className="text-primary">.</span>
               </span>
             </Link>
             <p className="text-sm text-[#5A7080] leading-relaxed mb-6 max-w-xs">
@@ -41,10 +41,10 @@ export function Footer() {
 
             {/* Contact */}
             <div className="space-y-3">
-              <a href="tel:+918874625303" className="flex items-center gap-2.5 text-sm text-[#5A7080] hover:text-[#C9A96E] transition-colors">
+              <a href="tel:+918874625303" className="flex items-center gap-2.5 text-sm text-[#5A7080] hover:text-primary transition-colors">
                 <Phone className="w-3.5 h-3.5 flex-shrink-0" /> +91 88746 25303
               </a>
-              <a href="mailto:info@homes.in" className="flex items-center gap-2.5 text-sm text-[#5A7080] hover:text-[#C9A96E] transition-colors">
+              <a href="mailto:info@homes.in" className="flex items-center gap-2.5 text-sm text-[#5A7080] hover:text-primary transition-colors">
                 <Mail className="w-3.5 h-3.5 flex-shrink-0" /> info@homes.in
               </a>
               <div className="flex items-start gap-2.5 text-sm text-[#5A7080]">
@@ -56,7 +56,7 @@ export function Footer() {
 
           {/* Projects */}
           <div>
-            <h3 className="text-xs text-[#C9A96E] uppercase tracking-widest font-medium mb-5">
+            <h3 className="text-xs text-primary uppercase tracking-widest font-medium mb-5">
               Projects
             </h3>
             <ul className="space-y-3">
@@ -75,7 +75,7 @@ export function Footer() {
 
           {/* Services */}
           <div>
-            <h3 className="text-xs text-[#C9A96E] uppercase tracking-widest font-medium mb-5">
+            <h3 className="text-xs text-primary uppercase tracking-widest font-medium mb-5">
               Services
             </h3>
             <ul className="space-y-3">
@@ -91,7 +91,7 @@ export function Footer() {
 
           {/* Company + Compliance */}
           <div>
-            <h3 className="text-xs text-[#C9A96E] uppercase tracking-widest font-medium mb-5">
+            <h3 className="text-xs text-primary uppercase tracking-widest font-medium mb-5">
               Company
             </h3>
             <ul className="space-y-3 mb-8">
@@ -103,12 +103,12 @@ export function Footer() {
                 </li>
               ))}
             </ul>
-            <h3 className="text-xs text-[#C9A96E] uppercase tracking-widest font-medium mb-4">
+            <h3 className="text-xs text-primary uppercase tracking-widest font-medium mb-4">
               Compliance
             </h3>
             <ul className="space-y-2">
               {["UP-RERA Registered", "GST Compliant", "LDA Approved Projects", "SBI Approved"].map((c) => (
-                <li key={c} className="flex items-center gap-2 text-xs text-[#3A5060]">
+                <li key={c} className="flex items-center gap-2 text-xs text-muted-foreground">
                   <span className="w-1 h-1 rounded-full bg-emerald-400/60" />
                   {c}
                 </li>

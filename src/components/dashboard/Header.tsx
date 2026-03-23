@@ -23,7 +23,7 @@ const ROLE_LABELS: Record<UserRole, string> = {
 };
 
 const ROLE_COLORS: Record<UserRole, string> = {
-  super_admin: "text-[#C9A96E]",
+  super_admin: "text-primary",
   admin: "text-blue-400",
   agent: "text-emerald-400",
 };
@@ -50,11 +50,11 @@ function getInitials(name: string): string {
 
 export function DashboardHeader({ user }: DashboardHeaderProps) {
   return (
-    <header className="h-16 bg-[#0B1521] border-b border-white/[0.06] flex items-center justify-between px-6 flex-shrink-0">
+    <header className="h-16 bg-background border-b border-border flex items-center justify-between px-6 flex-shrink-0">
 
       {/* Left — breadcrumb placeholder (pages can override via portal) */}
       <div className="flex items-center gap-2">
-        <span className="text-sm text-[#3A5060]">
+        <span className="text-sm text-muted-foreground">
           Homes Admin
         </span>
       </div>
@@ -66,7 +66,7 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
         <Button
           variant="ghost"
           size="icon"
-          className="w-8 h-8 text-[#3A5060] hover:text-[#8A9BAE] hover:bg-white/[0.04]"
+          className="w-8 h-8 text-muted-foreground hover:text-muted-foreground hover:bg-accent"
         >
           <Bell className="w-4 h-4" />
         </Button>
@@ -74,9 +74,9 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
         {/* User dropdown */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button className="flex items-center gap-2.5 hover:bg-white/[0.04] rounded-lg px-2 py-1.5 transition-colors">
+            <button className="flex items-center gap-2.5 hover:bg-accent rounded-lg px-2 py-1.5 transition-colors">
               <Avatar className="w-7 h-7">
-                <AvatarFallback className="bg-[#C9A96E]/20 text-[#C9A96E] text-xs font-semibold">
+                <AvatarFallback className="bg-primary/20 text-primary text-xs font-semibold">
                   {getInitials(user.name)}
                 </AvatarFallback>
               </Avatar>
@@ -88,15 +88,15 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
                   {ROLE_LABELS[user.role]}
                 </span>
               </div>
-              <ChevronDown className="w-3 h-3 text-[#3A5060] ml-1" />
+              <ChevronDown className="w-3 h-3 text-muted-foreground ml-1" />
             </button>
           </DropdownMenuTrigger>
 
           <DropdownMenuContent
             align="end"
-            className="w-52 bg-[#12202E] border-white/[0.08] text-white"
+            className="w-52 bg-card border-border text-white"
           >
-            <DropdownMenuLabel className="text-[#8A9BAE] text-xs font-normal">
+            <DropdownMenuLabel className="text-muted-foreground text-xs font-normal">
               Signed in as
               <span className="block text-white font-medium text-sm mt-0.5 truncate">
                 {user.email}

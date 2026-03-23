@@ -31,20 +31,20 @@ const VALUES = [
 
 export default function AboutPage() {
   return (
-    <div className="bg-[#0B1521] min-h-screen pt-24 pb-20">
+    <div className="bg-background min-h-screen pt-24 pb-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-24">
 
         {/* Hero */}
         <div className="max-w-3xl">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-7 h-px bg-[#C9A96E]" />
-            <span className="text-xs text-[#C9A96E] uppercase tracking-widest font-medium">Our Story</span>
+            <div className="w-7 h-px bg-primary" />
+            <span className="text-xs text-primary uppercase tracking-widest font-medium">Our Story</span>
           </div>
-          <h1 className="font-serif text-5xl sm:text-6xl font-medium text-white mb-6 leading-tight">
-            Trusted Advisory,<br />
-            <span className="text-gradient-gold italic">Every Step</span>
-          </h1>
-          <p className="text-lg text-[#8A9BAE] leading-relaxed max-w-2xl">
+            <h1 className="font-serif text-4xl sm:text-5xl lg:text-5xl font-semibold text-white leading-tight mb-6">
+              Guiding You <br className="hidden sm:block" />
+              <span className="text-gradient-primary italic">Every Step</span> of the Way.
+            </h1>
+          <p className="text-lg text-muted-foreground leading-relaxed max-w-2xl">
             Homes was built on a single premise — property buyers in Lucknow deserved better. Better information, better legal clarity, and an advisor who actually works for them.
           </p>
         </div>
@@ -57,8 +57,8 @@ export default function AboutPage() {
             { icon: BadgeCheck,num: "100%", label: "RERA Verified" },
             { icon: Star,      num: "5★",   label: "Client Rating" },
           ].map(({ icon: Icon, num, label }) => (
-            <div key={label} className="bg-[#12202E] border border-white/[0.06] rounded-xl p-6 text-center">
-              <Icon className="w-5 h-5 text-[#C9A96E] mx-auto mb-3" />
+            <div key={label} className="bg-card border border-border rounded-xl p-6 text-center">
+              <Icon className="w-5 h-5 text-primary mx-auto mb-3" />
               <p className="font-serif text-3xl font-semibold text-white mb-1">{num}</p>
               <p className="text-xs text-[#5A7080]">{label}</p>
             </div>
@@ -69,13 +69,13 @@ export default function AboutPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
           <div>
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-7 h-px bg-[#C9A96E]" />
-              <span className="text-xs text-[#C9A96E] uppercase tracking-widest font-medium">Who We Are</span>
+              <div className="w-7 h-px bg-primary" />
+              <span className="text-xs text-primary uppercase tracking-widest font-medium">Who We Are</span>
             </div>
             <h2 className="font-serif text-3xl font-medium text-white mb-6">
               A Consultancy Built on Relationships, Not Commissions
             </h2>
-            <div className="space-y-4 text-[#8A9BAE] leading-relaxed text-[15px]">
+            <div className="space-y-4 text-muted-foreground leading-relaxed text-[15px]">
               <p>
                 Homes operates as a strategic intermediary and brokerage — connecting prospective homebuyers and institutional investors with residential assets developed by trusted builders across Uttar Pradesh.
               </p>
@@ -87,13 +87,13 @@ export default function AboutPage() {
               </p>
             </div>
             <div className="flex items-start gap-2 mt-6 text-sm text-[#5A7080]">
-              <MapPin className="w-4 h-4 text-[#C9A96E] mt-0.5 flex-shrink-0" />
+              <MapPin className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
               Royal Plaza, Sushant Golf City, Sultanpur Road, Lucknow – 226030
             </div>
           </div>
           <div className="space-y-3">
             {VALUES.map((value) => (
-              <div key={value.title} className="bg-[#12202E] border border-white/[0.06] rounded-xl p-5">
+              <div key={value.title} className="bg-card border border-border rounded-xl p-5">
                 <p className="text-sm font-medium text-white mb-2">{value.title}</p>
                 <p className="text-sm text-[#5A7080] leading-relaxed">{value.desc}</p>
               </div>
@@ -104,19 +104,19 @@ export default function AboutPage() {
         {/* Team */}
         <div>
           <div className="flex items-center gap-3 mb-10">
-            <div className="w-7 h-px bg-[#C9A96E]" />
-            <span className="text-xs text-[#C9A96E] uppercase tracking-widest font-medium">Our Team</span>
+            <div className="w-7 h-px bg-primary" />
+            <span className="text-xs text-primary uppercase tracking-widest font-medium">Our Team</span>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             {TEAM.map((member) => (
-              <div key={member.name} className="bg-[#12202E] border border-white/[0.06] rounded-2xl p-7">
+              <div key={member.name} className="bg-card border border-border rounded-2xl p-7">
                 <div className="flex items-start gap-4 mb-5">
-                  <div className="w-14 h-14 rounded-xl bg-[#C9A96E]/15 border border-[#C9A96E]/25 flex items-center justify-center flex-shrink-0">
-                    <span className="font-serif text-lg font-semibold text-[#C9A96E]">{member.initials}</span>
+                  <div className="w-14 h-14 rounded-xl bg-primary/15 border border-primary/25 flex items-center justify-center flex-shrink-0">
+                    <span className="font-serif text-lg font-semibold text-primary">{member.initials}</span>
                   </div>
                   <div>
                     <p className="text-base font-medium text-white">{member.name}</p>
-                    <p className="text-sm text-[#C9A96E] mt-0.5">{member.role}</p>
+                    <p className="text-sm text-primary mt-0.5">{member.role}</p>
                   </div>
                 </div>
                 <p className="text-sm text-[#5A7080] leading-relaxed">{member.bio}</p>
@@ -126,7 +126,7 @@ export default function AboutPage() {
         </div>
 
         {/* Compliance */}
-        <div className="bg-[#12202E] border border-[#C9A96E]/15 rounded-2xl p-8">
+        <div className="bg-card border border-primary/15 rounded-2xl p-8">
           <div className="flex items-center gap-3 mb-6">
             <BadgeCheck className="w-5 h-5 text-emerald-400" />
             <h2 className="font-serif text-xl font-medium text-white">Our Compliance Commitment</h2>

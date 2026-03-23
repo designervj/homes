@@ -31,7 +31,7 @@ const STATUS_TABS = [
   { key: "new", label: "New", color: "text-blue-400" },
   { key: "reviewed", label: "Reviewed", color: "text-yellow-400" },
   { key: "converted", label: "Converted", color: "text-emerald-400" },
-  { key: "all", label: "All", color: "text-[#8A9BAE]" },
+  { key: "all", label: "All", color: "text-muted-foreground" },
 ];
 
 function timeAgo(date: Date | string): string {
@@ -88,23 +88,23 @@ function EnquiryCard({ enquiry, onAction }: {
   const isConverted = enquiry.status === "converted";
 
   return (
-    <div className={`bg-[#12202E] border rounded-xl p-5 transition-all ${isNew ? "border-blue-500/20" : "border-white/[0.06]"}`}>
+    <div className={`bg-card border rounded-xl p-5 transition-all ${isNew ? "border-blue-500/20" : "border-border"}`}>
       <div className="flex items-start justify-between gap-4 mb-4">
         <div className="flex items-start gap-3">
           {/* Avatar */}
-          <div className="w-10 h-10 rounded-full bg-[#C9A96E]/10 border border-[#C9A96E]/20 flex items-center justify-center flex-shrink-0">
-            <span className="text-sm font-semibold text-[#C9A96E]">
+          <div className="w-10 h-10 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center flex-shrink-0">
+            <span className="text-sm font-semibold text-primary">
               {enquiry.name?.charAt(0).toUpperCase()}
             </span>
           </div>
           <div>
             <p className="text-sm font-medium text-white">{enquiry.name}</p>
             <div className="flex items-center gap-3 mt-0.5">
-              <a href={`tel:${enquiry.phone}`} className="flex items-center gap-1 text-xs text-[#5A7080] hover:text-[#C9A96E] transition-colors">
+              <a href={`tel:${enquiry.phone}`} className="flex items-center gap-1 text-xs text-[#5A7080] hover:text-primary transition-colors">
                 <Phone className="w-3 h-3" /> {enquiry.phone}
               </a>
               {enquiry.email && (
-                <a href={`mailto:${enquiry.email}`} className="flex items-center gap-1 text-xs text-[#5A7080] hover:text-[#C9A96E] transition-colors">
+                <a href={`mailto:${enquiry.email}`} className="flex items-center gap-1 text-xs text-[#5A7080] hover:text-primary transition-colors">
                   <Mail className="w-3 h-3" /> {enquiry.email}
                 </a>
               )}
@@ -114,7 +114,7 @@ function EnquiryCard({ enquiry, onAction }: {
 
         <div className="flex items-center gap-2 flex-shrink-0">
           {isNew && <span className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" />}
-          <span className="text-xs text-[#3A5060] flex items-center gap-1">
+          <span className="text-xs text-muted-foreground flex items-center gap-1">
             <Clock className="w-3 h-3" />
             {timeAgo(enquiry.createdAt!)}
           </span>
@@ -123,9 +123,9 @@ function EnquiryCard({ enquiry, onAction }: {
 
       {/* Property reference */}
       {enquiry.propertyName && (
-        <div className="flex items-center gap-2 mb-3 p-2.5 bg-white/[0.02] rounded-lg border border-white/[0.04]">
-          <Building2 className="w-3.5 h-3.5 text-[#C9A96E] flex-shrink-0" />
-          <span className="text-xs text-[#8A9BAE]">{enquiry.propertyName}</span>
+        <div className="flex items-center gap-2 mb-3 p-2.5 bg-accent/40 rounded-lg border border-white/[0.04]">
+          <Building2 className="w-3.5 h-3.5 text-primary flex-shrink-0" />
+          <span className="text-xs text-muted-foreground">{enquiry.propertyName}</span>
         </div>
       )}
 
@@ -133,7 +133,7 @@ function EnquiryCard({ enquiry, onAction }: {
       {enquiry.interestedIn && enquiry.interestedIn.length > 0 && (
         <div className="flex flex-wrap gap-1.5 mb-3">
           {enquiry.interestedIn.map((interest) => (
-            <span key={interest} className="text-[11px] px-2 py-0.5 rounded-full bg-[#C9A96E]/10 text-[#C9A96E] border border-[#C9A96E]/20 capitalize">
+            <span key={interest} className="text-[11px] px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20 capitalize">
               {interest.replace(/_/g, " ")}
             </span>
           ))}
@@ -147,14 +147,14 @@ function EnquiryCard({ enquiry, onAction }: {
 
       {/* Message */}
       {enquiry.message && (
-        <p className="text-xs text-[#5A7080] bg-white/[0.02] rounded-lg px-3 py-2.5 border border-white/[0.04] mb-3 line-clamp-2">
+        <p className="text-xs text-[#5A7080] bg-accent/40 rounded-lg px-3 py-2.5 border border-white/[0.04] mb-3 line-clamp-2">
           &quot;{enquiry.message}&quot;
         </p>
       )}
 
       {/* Source badge */}
       <div className="flex items-center justify-between">
-        <span className="text-[11px] text-[#3A5060] capitalize bg-white/[0.03] px-2 py-1 rounded-md">
+        <span className="text-[11px] text-muted-foreground capitalize bg-white/[0.03] px-2 py-1 rounded-md">
           via {enquiry.source?.replace(/_/g, " ") ?? "website"}
         </span>
 
@@ -165,7 +165,7 @@ function EnquiryCard({ enquiry, onAction }: {
               <button
                 onClick={handleSpam}
                 disabled={isPending}
-                className="text-xs text-[#3A5060] hover:text-red-400 transition-colors px-2 py-1"
+                className="text-xs text-muted-foreground hover:text-red-400 transition-colors px-2 py-1"
               >
                 Spam
               </button>
@@ -174,7 +174,7 @@ function EnquiryCard({ enquiry, onAction }: {
               <button
                 onClick={handleReview}
                 disabled={isPending}
-                className="text-xs text-[#5A7080] hover:text-white border border-white/[0.08] hover:border-white/20 px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5"
+                className="text-xs text-[#5A7080] hover:text-white border border-border hover:border-border px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5"
               >
                 {loadingAction === "review" && isPending ? <Loader2 className="w-3 h-3 animate-spin" /> : <CheckCircle className="w-3 h-3" />}
                 Review
@@ -183,7 +183,7 @@ function EnquiryCard({ enquiry, onAction }: {
             <button
               onClick={handleConvert}
               disabled={isPending}
-              className="text-xs font-medium bg-[#C9A96E] hover:bg-[#E2C99A] text-[#0B1521] px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5"
+              className="text-xs font-medium bg-primary hover:bg-primary-light text-foreground px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5"
             >
               {loadingAction === "convert" && isPending ? <Loader2 className="w-3 h-3 animate-spin" /> : <ArrowUpRight className="w-3 h-3" />}
               Convert to Lead
@@ -222,7 +222,7 @@ export function EnquiryInbox({ enquiries, stats, currentStatus, pagination }: En
             Review public form submissions and convert them to leads.
           </p>
         </div>
-        <div className="flex items-center gap-2 text-xs text-[#5A7080] bg-[#12202E] border border-white/[0.06] px-3 py-2 rounded-lg">
+        <div className="flex items-center gap-2 text-xs text-[#5A7080] bg-card border border-border px-3 py-2 rounded-lg">
           <Filter className="w-3.5 h-3.5" />
           {pagination?.total ?? 0} total
         </div>
@@ -235,9 +235,9 @@ export function EnquiryInbox({ enquiries, stats, currentStatus, pagination }: En
             { label: "New", value: stats.new, color: "text-blue-400", bg: "bg-blue-500/10" },
             { label: "Reviewed", value: stats.reviewed, color: "text-yellow-400", bg: "bg-yellow-500/10" },
             { label: "Converted", value: stats.converted, color: "text-emerald-400", bg: "bg-emerald-500/10" },
-            { label: "Total", value: stats.total, color: "text-[#C9A96E]", bg: "bg-[#C9A96E]/10" },
+            { label: "Total", value: stats.total, color: "text-primary", bg: "bg-primary/10" },
           ].map((s) => (
-            <div key={s.label} className="bg-[#12202E] border border-white/[0.06] rounded-xl p-4">
+            <div key={s.label} className="bg-card border border-border rounded-xl p-4">
               <p className="text-xs text-[#5A7080] mb-1">{s.label}</p>
               <p className={`text-2xl font-serif font-medium ${s.color}`}>{s.value}</p>
             </div>
@@ -246,7 +246,7 @@ export function EnquiryInbox({ enquiries, stats, currentStatus, pagination }: En
       )}
 
       {/* Status tabs */}
-      <div className="flex gap-1 border-b border-white/[0.06]">
+      <div className="flex gap-1 border-b border-border">
         {STATUS_TABS.map((tab) => {
           const isActive = currentStatus === tab.key;
           const count = tab.key === "new" ? stats?.new : tab.key === "reviewed" ? stats?.reviewed : tab.key === "converted" ? stats?.converted : stats?.total;
@@ -254,11 +254,11 @@ export function EnquiryInbox({ enquiries, stats, currentStatus, pagination }: En
             <button
               key={tab.key}
               onClick={() => setStatus(tab.key)}
-              className={`px-4 py-2.5 text-sm border-b-2 transition-all -mb-px ${isActive ? `${tab.color} border-current font-medium` : "text-[#3A5060] border-transparent hover:text-[#8A9BAE]"}`}
+              className={`px-4 py-2.5 text-sm border-b-2 transition-all -mb-px ${isActive ? `${tab.color} border-current font-medium` : "text-muted-foreground border-transparent hover:text-muted-foreground"}`}
             >
               {tab.label}
               {count !== undefined && (
-                <span className={`ml-1.5 text-xs ${isActive ? "" : "text-[#3A5060]"}`}>({count})</span>
+                <span className={`ml-1.5 text-xs ${isActive ? "" : "text-muted-foreground"}`}>({count})</span>
               )}
             </button>
           );
@@ -270,7 +270,7 @@ export function EnquiryInbox({ enquiries, stats, currentStatus, pagination }: En
         <div className="flex flex-col items-center justify-center py-20 text-center">
           <MessageSquare className="w-10 h-10 text-[#2A3E52] mb-4" />
           <p className="text-[#5A7080] font-medium">No enquiries here</p>
-          <p className="text-sm text-[#3A5060] mt-1">
+          <p className="text-sm text-muted-foreground mt-1">
             {currentStatus === "new" ? "All caught up! New enquiries will appear here." : "No enquiries match this filter."}
           </p>
         </div>
@@ -284,22 +284,22 @@ export function EnquiryInbox({ enquiries, stats, currentStatus, pagination }: En
 
       {/* Pagination */}
       {pagination && pagination.totalPages > 1 && (
-        <div className="flex items-center justify-between pt-4 border-t border-white/[0.06]">
-          <p className="text-xs text-[#3A5060]">
+        <div className="flex items-center justify-between pt-4 border-t border-border">
+          <p className="text-xs text-muted-foreground">
             Page {pagination.page} of {pagination.totalPages}
           </p>
           <div className="flex gap-2">
             <button
               disabled={pagination.page <= 1}
               onClick={() => router.push(`/admin/enquiries?status=${currentStatus}&page=${pagination.page - 1}`)}
-              className="px-3 py-1.5 text-xs text-[#5A7080] border border-white/[0.06] rounded-lg disabled:opacity-40 hover:border-white/20 transition-colors"
+              className="px-3 py-1.5 text-xs text-[#5A7080] border border-border rounded-lg disabled:opacity-40 hover:border-border transition-colors"
             >
               Previous
             </button>
             <button
               disabled={pagination.page >= pagination.totalPages}
               onClick={() => router.push(`/admin/enquiries?status=${currentStatus}&page=${pagination.page + 1}`)}
-              className="px-3 py-1.5 text-xs text-[#5A7080] border border-white/[0.06] rounded-lg disabled:opacity-40 hover:border-white/20 transition-colors"
+              className="px-3 py-1.5 text-xs text-[#5A7080] border border-border rounded-lg disabled:opacity-40 hover:border-border transition-colors"
             >
               Next
             </button>

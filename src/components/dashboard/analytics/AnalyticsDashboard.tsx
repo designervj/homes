@@ -55,11 +55,11 @@ const CustomTooltip = ({ active, payload, label }: {
 }) => {
   if (!active || !payload?.length) return null;
   return (
-    <div className="bg-[#12202E] border border-white/[0.1] rounded-xl px-4 py-3 shadow-xl">
+    <div className="bg-card border border-white/[0.1] rounded-xl px-4 py-3 shadow-xl">
       {label && <p className="text-xs text-[#5A7080] mb-1">{label}</p>}
       {payload.map((p, i) => (
         <p key={i} className="text-sm font-medium text-white">
-          {p.name && <span className="text-[#8A9BAE] mr-1">{p.name}:</span>}
+          {p.name && <span className="text-muted-foreground mr-1">{p.name}:</span>}
           {p.value}
         </p>
       ))}
@@ -74,7 +74,7 @@ function KpiCard({ label, value, sub, icon: Icon, color, bg }: {
   icon: React.ElementType; color: string; bg: string;
 }) {
   return (
-    <div className="bg-[#12202E] border border-white/[0.06] rounded-xl p-5">
+    <div className="bg-card border border-border rounded-xl p-5">
       <div className="flex items-center justify-between mb-3">
         <p className="text-xs text-[#5A7080] uppercase tracking-wide">{label}</p>
         <div className={`w-8 h-8 ${bg} rounded-lg flex items-center justify-center`}>
@@ -82,7 +82,7 @@ function KpiCard({ label, value, sub, icon: Icon, color, bg }: {
         </div>
       </div>
       <p className="font-serif text-3xl font-medium text-white">{value}</p>
-      {sub && <p className="text-xs text-[#3A5060] mt-1">{sub}</p>}
+      {sub && <p className="text-xs text-muted-foreground mt-1">{sub}</p>}
     </div>
   );
 }
@@ -91,9 +91,9 @@ function KpiCard({ label, value, sub, icon: Icon, color, bg }: {
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="bg-[#12202E] border border-white/[0.06] rounded-xl p-5">
+    <div className="bg-card border border-border rounded-xl p-5">
       <p className="text-sm font-medium text-white mb-5 flex items-center gap-2">
-        <TrendingUp className="w-4 h-4 text-[#C9A96E]" />
+        <TrendingUp className="w-4 h-4 text-primary" />
         {title}
       </p>
       {children}
@@ -105,7 +105,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 
 function EmptyChart({ message }: { message: string }) {
   return (
-    <div className="flex items-center justify-center h-40 text-sm text-[#3A5060]">
+    <div className="flex items-center justify-center h-40 text-sm text-muted-foreground">
       {message}
     </div>
   );
@@ -172,8 +172,8 @@ export function AnalyticsDashboard({
           value={leadStats?.total ?? "—"}
           sub={`${leadStats?.conversionRate ?? 0}% conversion rate`}
           icon={Users2}
-          color="text-[#C9A96E]"
-          bg="bg-[#C9A96E]/10"
+          color="text-primary"
+          bg="bg-primary/10"
         />
         <KpiCard
           label="Enquiries"
@@ -278,7 +278,7 @@ export function AnalyticsDashboard({
                     <div key={item.name} className="flex items-center justify-between text-xs">
                       <div className="flex items-center gap-2">
                         <span className="w-2 h-2 rounded-full" style={{ background: PIE_COLORS[i % PIE_COLORS.length] }} />
-                        <span className="text-[#8A9BAE]">{item.name}</span>
+                        <span className="text-muted-foreground">{item.name}</span>
                       </div>
                       <span className="text-white font-medium">{item.value}</span>
                     </div>
@@ -317,7 +317,7 @@ export function AnalyticsDashboard({
                     <div key={item.name} className="flex items-center justify-between text-xs">
                       <div className="flex items-center gap-2">
                         <span className="w-2 h-2 rounded-full" style={{ background: item.fill }} />
-                        <span className="text-[#8A9BAE]">{item.name}</span>
+                        <span className="text-muted-foreground">{item.name}</span>
                       </div>
                       <span className="text-white font-medium">{item.value}</span>
                     </div>
@@ -344,7 +344,7 @@ export function AnalyticsDashboard({
                       <span className="text-[#5A7080]">{item.label}</span>
                       <span className="text-white font-medium">{item.value}</span>
                     </div>
-                    <div className="w-full bg-white/[0.04] rounded-full h-1.5">
+                    <div className="w-full bg-accent rounded-full h-1.5">
                       <div
                         className="h-1.5 rounded-full transition-all"
                         style={{
@@ -355,10 +355,10 @@ export function AnalyticsDashboard({
                     </div>
                   </div>
                 ))}
-                <div className="pt-4 border-t border-white/[0.06]">
+                <div className="pt-4 border-t border-border">
                   <div className="flex justify-between text-xs">
                     <span className="text-[#5A7080]">Visit → Convert Rate</span>
-                    <span className="text-[#C9A96E] font-medium">{visitStats.conversionRate}%</span>
+                    <span className="text-primary font-medium">{visitStats.conversionRate}%</span>
                   </div>
                 </div>
               </div>
@@ -372,9 +372,9 @@ export function AnalyticsDashboard({
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-white/[0.06]">
+                <tr className="border-b border-border">
                   {["Stage", "Count", "% of Total", "Status"].map((h) => (
-                    <th key={h} className="text-left text-[10px] text-[#3A5060] uppercase tracking-widest font-medium pb-3 pr-6">
+                    <th key={h} className="text-left text-[10px] text-muted-foreground uppercase tracking-widest font-medium pb-3 pr-6">
                       {h}
                     </th>
                   ))}
@@ -392,13 +392,13 @@ export function AnalyticsDashboard({
                         <td className="py-3 pr-6">
                           <div className="flex items-center gap-2">
                             <span className="w-2 h-2 rounded-full" style={{ background: STAGE_COLORS[stage] ?? GOLD }} />
-                            <span className="text-sm text-[#8A9BAE]">{LEAD_STAGE_LABELS[stage] ?? stage}</span>
+                            <span className="text-sm text-muted-foreground">{LEAD_STAGE_LABELS[stage] ?? stage}</span>
                           </div>
                         </td>
                         <td className="py-3 pr-6 text-sm font-medium text-white">{count as number}</td>
                         <td className="py-3 pr-6">
                           <div className="flex items-center gap-3">
-                            <div className="flex-1 max-w-[100px] bg-white/[0.04] rounded-full h-1.5">
+                            <div className="flex-1 max-w-[100px] bg-accent rounded-full h-1.5">
                               <div
                                 className="h-1.5 rounded-full"
                                 style={{ width: `${pct}%`, background: STAGE_COLORS[stage] ?? GOLD }}
@@ -411,7 +411,7 @@ export function AnalyticsDashboard({
                           <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
                             isGood ? "bg-emerald-500/10 text-emerald-400" :
                             isBad  ? "bg-red-500/10 text-red-400" :
-                                     "bg-white/[0.04] text-[#5A7080]"
+                                     "bg-accent text-[#5A7080]"
                           }`}>
                             {isGood ? "Closed Won" : isBad ? "Closed Lost" : "Active"}
                           </span>

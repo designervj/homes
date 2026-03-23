@@ -9,14 +9,14 @@ export const metadata: Metadata = {
 
 export default function ContactPage() {
   return (
-    <div className="bg-[#0B1521] min-h-screen pt-24 pb-20">
+    <div className="bg-background min-h-screen pt-24 pb-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
         <div className="max-w-2xl mx-auto text-center mb-14">
           <div className="flex items-center justify-center gap-3 mb-4">
-            <div className="w-7 h-px bg-[#C9A96E]" />
-            <span className="text-xs text-[#C9A96E] uppercase tracking-widest font-medium">Get In Touch</span>
-            <div className="w-7 h-px bg-[#C9A96E]" />
+            <div className="w-7 h-px bg-primary" />
+            <span className="text-xs text-primary uppercase tracking-widest font-medium">Get In Touch</span>
+            <div className="w-7 h-px bg-primary" />
           </div>
           <h1 className="font-serif text-4xl sm:text-5xl font-medium text-white mb-4">
             Talk to a Property Expert
@@ -38,12 +38,12 @@ export default function ContactPage() {
             ].map((item) => {
               const Icon = item.icon;
               const content = (
-                <div className="flex gap-4 p-4 bg-[#12202E] border border-white/[0.06] rounded-xl hover:border-[#C9A96E]/20 transition-colors">
-                  <div className="w-10 h-10 rounded-xl bg-[#C9A96E]/10 border border-[#C9A96E]/20 flex items-center justify-center flex-shrink-0">
-                    <Icon className="w-4 h-4 text-[#C9A96E]" />
+                <div className="flex gap-4 p-4 bg-card border border-border rounded-xl hover:border-primary/20 transition-colors">
+                  <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center flex-shrink-0">
+                    <Icon className="w-4 h-4 text-primary" />
                   </div>
                   <div>
-                    <p className="text-xs text-[#3A5060] uppercase tracking-wide mb-0.5">{item.label}</p>
+                    <p className="text-xs text-muted-foreground uppercase tracking-wide mb-0.5">{item.label}</p>
                     <p className="text-sm font-medium text-white">{item.value}</p>
                     <p className="text-xs text-[#5A7080] mt-0.5">{item.sub}</p>
                   </div>
@@ -58,7 +58,7 @@ export default function ContactPage() {
           </div>
 
           {/* Form */}
-          <div className="lg:col-span-3 bg-[#12202E] border border-white/[0.08] rounded-2xl p-8">
+          <div className="lg:col-span-3 bg-card border border-border rounded-2xl p-8">
             <h2 className="font-serif text-xl font-medium text-white mb-6">Send an Enquiry</h2>
             <EnquiryForm variant="inline" />
           </div>

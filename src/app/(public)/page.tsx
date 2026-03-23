@@ -3,7 +3,7 @@ import { Building2, CalendarCheck, BadgeCheck, MapPin, ArrowRight } from "lucide
 import { getFeaturedProperties } from "@/lib/db/actions/property.actions";
 import { PropertyCard } from "@/components/public/properties/PropertyCard";
 import { EnquiryForm } from "@/components/public/forms/EnquiryForm";
-import { HeroSearch } from "@/components/public/hero/HeroSearch";
+import { HeroSection } from "@/components/public/hero/HeroSection";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -17,77 +17,18 @@ export default async function HomePage() {
   const featured = featuredRes.data ?? [];
 
   return (
-    <div className="bg-[#0B1521]">
+    <div className="bg-background">
 
       {/* ── HERO ─────────────────────────────────────────────────────────────── */}
-      <section className="relative min-h-screen flex items-center overflow-hidden pt-16">
-        {/* Background */}
-        <div className="absolute inset-0 bg-grid-pattern opacity-100" />
-        <div className="absolute inset-0 bg-gradient-to-b from-[#0B1521] via-[#0B1521]/95 to-[#0B1521]" />
-        <div
-          className="absolute right-0 top-1/4 w-[700px] h-[700px] rounded-full opacity-[0.06] pointer-events-none"
-          style={{ background: "radial-gradient(circle, #C9A96E 0%, transparent 70%)" }}
-        />
-
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
-          <div className="max-w-3xl">
-            {/* Eyebrow */}
-            <div className="flex items-center gap-3 mb-8 animate-fade-in-up">
-              <div className="flex items-center gap-2 bg-[#C9A96E]/10 border border-[#C9A96E]/20 px-3 py-1.5 rounded-full">
-                <BadgeCheck className="w-3.5 h-3.5 text-emerald-400" />
-                <span className="text-xs text-[#C9A96E] font-medium">RERA Verified Properties</span>
-              </div>
-              <div className="w-12 h-px bg-[#C9A96E]/30" />
-              <span className="text-xs text-[#5A7080]">Lucknow, Uttar Pradesh</span>
-            </div>
-
-            {/* Headline */}
-            <h1 className="font-serif text-5xl sm:text-6xl lg:text-7xl font-medium leading-[1.08] tracking-tight text-white mb-6 animate-fade-in-up delay-100">
-              Find Your{" "}
-              <span className="text-gradient-gold italic">Perfect</span>
-              <br />
-              Property in Lucknow
-            </h1>
-
-            <p className="text-lg text-[#8A9BAE] leading-relaxed max-w-xl mb-10 animate-fade-in-up delay-200">
-              Trusted real estate consultancy connecting buyers with verified residential plots, premium villas, and modern apartments — with full legal transparency.
-            </p>
-
-            {/* Search bar */}
-            <div className="animate-fade-in-up delay-300">
-              <HeroSearch />
-            </div>
-
-            {/* Stats */}
-            <div className="flex items-center gap-8 mt-10 animate-fade-in-up delay-400">
-              {[
-                { num: "500+", label: "Families Served" },
-                { num: "7",    label: "Active Projects" },
-                { num: "100%", label: "RERA Verified" },
-              ].map((stat, i) => (
-                <div key={i} className="flex flex-col gap-0.5">
-                  <span className="font-serif text-3xl font-semibold text-white">{stat.num}</span>
-                  <span className="text-xs text-[#5A7080]">{stat.label}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Scroll indicator */}
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 animate-pulse-slow">
-          <div className="w-px h-12 bg-gradient-to-b from-transparent to-[#C9A96E]/40" />
-          <div className="w-1 h-1 rounded-full bg-[#C9A96E]/40" />
-        </div>
-      </section>
+      <HeroSection />
 
       {/* ── FEATURED PROJECTS ─────────────────────────────────────────────────── */}
       <section className="py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-end justify-between mb-12 flex-wrap gap-6">
           <div>
             <div className="flex items-center gap-3 mb-3">
-              <div className="w-7 h-px bg-[#C9A96E]" />
-              <span className="text-xs text-[#C9A96E] uppercase tracking-widest font-medium">Our Portfolio</span>
+              <div className="w-7 h-px bg-primary" />
+              <span className="text-xs text-primary uppercase tracking-widest font-medium">Our Portfolio</span>
             </div>
             <h2 className="font-serif text-4xl sm:text-5xl font-medium text-white">Featured Projects</h2>
             <p className="text-[#5A7080] mt-3 max-w-md">
@@ -96,7 +37,7 @@ export default async function HomePage() {
           </div>
           <Link
             href="/projects"
-            className="flex items-center gap-2 text-sm text-[#C9A96E] hover:text-[#E2C99A] border border-[#C9A96E]/20 hover:border-[#C9A96E]/40 px-4 py-2.5 rounded-xl transition-all"
+            className="flex items-center gap-2 text-sm text-primary hover:text-primary-light border border-primary/20 hover:border-primary/40 px-4 py-2.5 rounded-xl transition-all"
           >
             View All Projects <ArrowRight className="w-4 h-4" />
           </Link>
@@ -117,7 +58,7 @@ export default async function HomePage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {/* Skeleton placeholders */}
             {[1, 2, 3].map((i) => (
-              <div key={i} className="bg-[#12202E] border border-white/[0.06] rounded-2xl h-72 animate-pulse" />
+              <div key={i} className="bg-card border border-border rounded-2xl h-72 animate-pulse" />
             ))}
           </div>
         )}
@@ -128,9 +69,9 @@ export default async function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <div className="flex items-center justify-center gap-3 mb-3">
-              <div className="w-7 h-px bg-[#C9A96E]" />
-              <span className="text-xs text-[#C9A96E] uppercase tracking-widest font-medium">What We Do</span>
-              <div className="w-7 h-px bg-[#C9A96E]" />
+              <div className="w-7 h-px bg-primary" />
+              <span className="text-xs text-primary uppercase tracking-widest font-medium">What We Do</span>
+              <div className="w-7 h-px bg-primary" />
             </div>
             <h2 className="font-serif text-4xl sm:text-5xl font-medium text-white mb-4">
               End-to-End Advisory
@@ -171,20 +112,20 @@ export default async function HomePage() {
               return (
                 <div
                   key={service.num}
-                  className="relative group bg-[#12202E] border border-white/[0.06] hover:border-[#C9A96E]/25 rounded-2xl p-8 transition-all duration-300 overflow-hidden"
+                  className="relative group bg-card border border-border hover:border-primary/25 rounded-2xl p-8 transition-all duration-300 overflow-hidden"
                 >
                   {/* Top accent line */}
                   <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#C9A96E]/0 to-transparent group-hover:via-[#C9A96E]/40 transition-all duration-500" />
 
-                  <div className="w-12 h-12 rounded-xl bg-[#C9A96E]/10 border border-[#C9A96E]/20 flex items-center justify-center mb-6">
-                    <Icon className="w-5 h-5 text-[#C9A96E]" />
+                  <div className="w-12 h-12 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center mb-6">
+                    <Icon className="w-5 h-5 text-primary" />
                   </div>
-                  <p className="text-[10px] text-[#3A5060] uppercase tracking-widest mb-2">{service.num}</p>
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-widest mb-2">{service.num}</p>
                   <h3 className="font-serif text-2xl font-medium text-white mb-3">{service.title}</h3>
                   <p className="text-sm text-[#5A7080] leading-relaxed mb-6">{service.desc}</p>
                   <Link
                     href={service.href}
-                    className="flex items-center gap-2 text-sm text-[#C9A96E] group-hover:text-[#E2C99A] transition-colors font-medium"
+                    className="flex items-center gap-2 text-sm text-primary group-hover:text-primary-light transition-colors font-medium"
                   >
                     {service.cta} <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
                   </Link>
@@ -196,7 +137,7 @@ export default async function HomePage() {
       </section>
 
       {/* ── GOLD STATS STRIP ──────────────────────────────────────────────────── */}
-      <section className="bg-[#C9A96E] py-14">
+      <section className="bg-primary py-14">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-8 text-center">
             {[
@@ -206,8 +147,8 @@ export default async function HomePage() {
               { num: "48h",  label: "Avg. Site Visit Response" },
             ].map((stat) => (
               <div key={stat.label}>
-                <p className="font-serif text-4xl sm:text-5xl font-semibold text-[#0B1521] mb-2">{stat.num}</p>
-                <p className="text-sm font-medium text-[#0B1521]/60">{stat.label}</p>
+                <p className="font-serif text-4xl sm:text-5xl font-semibold text-foreground mb-2">{stat.num}</p>
+                <p className="text-sm font-medium text-foreground/60">{stat.label}</p>
               </div>
             ))}
           </div>
@@ -219,12 +160,12 @@ export default async function HomePage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
           <div>
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-7 h-px bg-[#C9A96E]" />
-              <span className="text-xs text-[#C9A96E] uppercase tracking-widest font-medium">Why Homes</span>
+              <div className="w-7 h-px bg-primary" />
+              <span className="text-xs text-primary uppercase tracking-widest font-medium">Why Homes</span>
             </div>
-            <h2 className="font-serif text-4xl sm:text-5xl font-medium text-white mb-5">
-              Built on Transparency<br />
-              <span className="text-gradient-gold italic">and Compliance</span>
+            <h2 className="font-serif text-[clamp(2rem,4vw,3.5rem)] leading-tight text-white mb-6">
+              Built on Trust, <br className="hidden sm:block" />
+              <span className="text-gradient-primary italic">and Compliance</span>
             </h2>
             <p className="text-[#5A7080] mb-8 leading-relaxed">
               Every property listed on our platform goes through a structured verification process. We believe that buyers deserve full legal clarity before committing to any transaction.
@@ -237,7 +178,7 @@ export default async function HomePage() {
                 { title: "Bank-Approved Projects",      desc: "Listings include loan eligibility — SBI, HDFC, ICICI — reducing financing friction." },
                 { title: "Transparent Pricing",         desc: "Base price, price per sqft, stamp duty estimates, and GST shown upfront — no hidden costs." },
               ].map((item) => (
-                <div key={item.title} className="flex items-start gap-4 p-4 bg-[#12202E] border border-white/[0.06] rounded-xl">
+                <div key={item.title} className="flex items-start gap-4 p-4 bg-card border border-border rounded-xl">
                   <div className="w-6 h-6 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
                     <BadgeCheck className="w-3.5 h-3.5 text-emerald-400" />
                   </div>
@@ -252,7 +193,7 @@ export default async function HomePage() {
 
           {/* Process steps */}
           <div className="relative pl-6">
-            <div className="absolute left-[11px] top-6 bottom-6 w-px bg-gradient-to-b from-[#C9A96E]/40 via-[#C9A96E]/20 to-transparent" />
+            <div className="absolute left-[11px] top-6 bottom-6 w-px bg-gradient-to-b from-primary/40 via-[#C9A96E]/20 to-transparent" />
             <div className="space-y-8">
               {[
                 { n: "1", title: "Share Your Requirements",    desc: "Tell us your location, budget, and property type preference." },
@@ -261,8 +202,8 @@ export default async function HomePage() {
                 { n: "4", title: "Close & Register",           desc: "We assist with documentation, loan processing, and final registration." },
               ].map((step) => (
                 <div key={step.n} className="flex gap-5">
-                  <div className="w-6 h-6 rounded-full bg-[#12202E] border border-[#C9A96E]/40 flex items-center justify-center flex-shrink-0 z-10">
-                    <span className="font-serif text-sm font-medium text-[#C9A96E]">{step.n}</span>
+                  <div className="w-6 h-6 rounded-full bg-card border border-primary/40 flex items-center justify-center flex-shrink-0 z-10">
+                    <span className="font-serif text-sm font-medium text-primary">{step.n}</span>
                   </div>
                   <div className="pb-2">
                     <p className="text-sm font-medium text-white mb-1">{step.title}</p>
@@ -283,8 +224,8 @@ export default async function HomePage() {
             {/* Left copy */}
             <div>
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-7 h-px bg-[#C9A96E]" />
-                <span className="text-xs text-[#C9A96E] uppercase tracking-widest font-medium">Get In Touch</span>
+                <div className="w-7 h-px bg-primary" />
+                <span className="text-xs text-primary uppercase tracking-widest font-medium">Get In Touch</span>
               </div>
               <h2 className="font-serif text-4xl sm:text-5xl font-medium text-white mb-5">
                 Talk to a Property<br />Expert Today
@@ -302,11 +243,11 @@ export default async function HomePage() {
                   const Icon = item.icon;
                   const content = (
                     <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-xl bg-[#C9A96E]/10 border border-[#C9A96E]/20 flex items-center justify-center flex-shrink-0">
-                        <Icon className="w-4.5 h-4.5 text-[#C9A96E]" />
+                      <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center flex-shrink-0">
+                        <Icon className="w-4.5 h-4.5 text-primary" />
                       </div>
                       <div>
-                        <p className="text-[10px] text-[#3A5060] uppercase tracking-widest">{item.label}</p>
+                        <p className="text-[10px] text-muted-foreground uppercase tracking-widest">{item.label}</p>
                         <p className="text-sm text-white mt-0.5">{item.value}</p>
                       </div>
                     </div>
@@ -321,12 +262,12 @@ export default async function HomePage() {
             </div>
 
             {/* Form card */}
-            <div className="bg-[#12202E] border border-white/[0.08] rounded-2xl p-8">
+            <div className="bg-card border border-border rounded-2xl p-8">
               <h3 className="font-serif text-xl font-medium text-white mb-6">Send an Enquiry</h3>
 
               {/* Property selector */}
               <div className="mb-4">
-                <select className="w-full bg-white/[0.04] border border-white/[0.10] rounded-lg px-3.5 py-2.5 text-sm text-[#8A9BAE] outline-none focus:border-[#C9A96E]/50 transition-all">
+                <select className="w-full bg-accent border border-white/[0.10] rounded-lg px-3.5 py-2.5 text-sm text-muted-foreground outline-none focus:border-primary/50 transition-all">
                   <option value="">Interested in a specific project?</option>
                   {["Okas Enclave","Attalika Palms","Stellar Okas Golf View","Kailasha Enclave","Greenberry Signature","Lavanya Enclave","Vikas Vihar"].map((p) => (
                     <option key={p} value={p}>{p}</option>

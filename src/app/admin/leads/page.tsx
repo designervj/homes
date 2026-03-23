@@ -1,18 +1,24 @@
-import { getLeadById, getAgents } from "@/lib/db/actions/lead.actions";
-import { notFound } from "next/navigation";
-import { LeadDetail } from "@/components/dashboard/leads/LeadDetail";
+import { getLeadsKanban, getLeadStats, getAgents } from "@/lib/db/actions/lead.actions";
+import { LeadsKanban } from "@/components/dashboard/leads/LeadsKanban";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = { title: "Lead Detail" };
+export const metadata: Metadata = { title: "Leads Pipeline" };
 
-export default async function LeadDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
-  const [leadRes, agentsRes] = await Promise.all([
-    getLeadById(id),
+export default async function LeadsPage() {
+  const [kanbanRes, statsRes, agentsRes] = await Promise.all([
+    getLeadsKanban(),
+    getLeadStats(),
     getAgents(),
   ]);
 
-  if (!leadRes.success || !leadRes.data) notFound();
-
-  return <LeadDetail lead={leadRes.data} agents={agentsRes.data ?? []} />;
+  return (
+    <LeadsKanban
+      boardData={kanbanRes.data ?? {
+        new: [], contacted: [], qualified: [],
+        site_visit_scheduled: [], negotiation: [], converted: [], lost: [],
+      }}
+      stats={statsRes.data}
+      agents={agentsRes.data ?? []}
+    />
+  );
 }

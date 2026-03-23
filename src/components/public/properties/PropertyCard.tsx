@@ -16,7 +16,7 @@ const TYPE_COLORS: Record<string, string> = {
   Plot:      "bg-amber-500/10 text-amber-400 border-amber-500/20",
   Apartment: "bg-blue-500/10 text-blue-400 border-blue-500/20",
   Villa:     "bg-purple-500/10 text-purple-400 border-purple-500/20",
-  default:   "bg-white/5 text-[#8A9BAE] border-white/10",
+  default:   "bg-white/5 text-muted-foreground border-border",
 };
 
 export function PropertyCard({ property, featured = false, className }: PropertyCardProps) {
@@ -37,13 +37,13 @@ export function PropertyCard({ property, featured = false, className }: Property
     <Link
       href={`/projects/${property.slug}`}
       className={cn(
-        "group block bg-[#12202E] border border-white/[0.06] rounded-2xl overflow-hidden",
-        "hover:border-[#C9A96E]/30 hover:-translate-y-1 transition-all duration-300",
+        "group block bg-card border border-border rounded-2xl overflow-hidden",
+        "hover:border-primary/30 hover:-translate-y-1 transition-all duration-300",
         className
       )}
     >
       {/* Image */}
-      <div className={cn("relative overflow-hidden bg-[#1A2E42]", featured ? "h-64" : "h-52")}>
+      <div className={cn("relative overflow-hidden bg-muted", featured ? "h-64" : "h-52")}>
         {coverImage?.url ? (
           <Image
             src={coverImage.url}
@@ -64,7 +64,7 @@ export function PropertyCard({ property, featured = false, className }: Property
         )}
 
         {/* Overlay gradient */}
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0B1521]/90 via-[#0B1521]/20 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-[#0B1521]/20 to-transparent" />
 
         {/* Top badges */}
         <div className="absolute top-3 left-3 flex flex-wrap gap-1.5">
@@ -75,19 +75,19 @@ export function PropertyCard({ property, featured = false, className }: Property
             {type}
           </span>
           {property.isFeatured && (
-            <span className="flex items-center gap-0.5 text-[10px] px-2 py-0.5 rounded-full bg-[#C9A96E]/20 text-[#C9A96E] border border-[#C9A96E]/30 font-medium">
-              <Star className="w-2.5 h-2.5 fill-[#C9A96E]" /> Featured
+            <span className="flex items-center gap-0.5 text-[10px] px-2 py-0.5 rounded-full bg-primary/20 text-primary border border-primary/30 font-medium">
+              <Star className="w-2.5 h-2.5 fill-primary" /> Featured
             </span>
           )}
         </div>
 
         {/* Price tag */}
         {price && (
-          <div className="absolute bottom-3 right-3 bg-[#0B1521]/90 backdrop-blur-sm border border-white/[0.08] rounded-lg px-2.5 py-1.5 text-right">
+          <div className="absolute bottom-3 right-3 bg-background/90 backdrop-blur-sm border border-border rounded-lg px-2.5 py-1.5 text-right">
             <p className="text-[9px] text-[#5A7080] leading-none mb-0.5">Starting From</p>
-            <p className="text-sm font-semibold text-[#E2C99A] leading-none">{formatINR(price)}</p>
+            <p className="text-sm font-semibold text-primary-light leading-none">{formatINR(price)}</p>
             {pricePerSqft && (
-              <p className="text-[9px] text-[#3A5060] mt-0.5">₹{pricePerSqft.toLocaleString("en-IN")}/sqft</p>
+              <p className="text-[9px] text-muted-foreground mt-0.5">₹{pricePerSqft.toLocaleString("en-IN")}/sqft</p>
             )}
           </div>
         )}
@@ -97,7 +97,7 @@ export function PropertyCard({ property, featured = false, className }: Property
       <div className="p-5">
         <p className="text-xs text-[#5A7080] mb-1">{property.developerName}</p>
         <h3 className={cn(
-          "font-serif font-medium text-white mb-2 group-hover:text-[#E2C99A] transition-colors line-clamp-2",
+          "font-serif font-medium text-white mb-2 group-hover:text-primary-light transition-colors line-clamp-2",
           featured ? "text-xl" : "text-lg"
         )}>
           {property.projectName ?? property.title}
@@ -105,22 +105,22 @@ export function PropertyCard({ property, featured = false, className }: Property
 
         {/* Location */}
         <div className="flex items-center gap-1.5 text-xs text-[#5A7080] mb-4">
-          <MapPin className="w-3 h-3 text-[#C9A96E] flex-shrink-0" />
+          <MapPin className="w-3 h-3 text-primary flex-shrink-0" />
           <span className="truncate">{property.location?.locality}, {property.location?.city}</span>
         </div>
 
         {/* Specs row */}
-        <div className="flex items-center gap-4 pt-4 border-t border-white/[0.06]">
+        <div className="flex items-center gap-4 pt-4 border-t border-border">
           {property.specifications?.possessionStatus && (
             <div className="flex flex-col gap-0.5">
-              <p className="text-[10px] text-[#3A5060] uppercase tracking-wide">Possession</p>
-              <p className="text-xs font-medium text-[#8A9BAE]">{property.specifications.possessionStatus}</p>
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Possession</p>
+              <p className="text-xs font-medium text-muted-foreground">{property.specifications.possessionStatus}</p>
             </div>
           )}
           {primaryArea && (
             <div className="flex flex-col gap-0.5">
-              <p className="text-[10px] text-[#3A5060] uppercase tracking-wide">Area</p>
-              <p className="text-xs font-medium text-[#8A9BAE] flex items-center gap-1">
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Area</p>
+              <p className="text-xs font-medium text-muted-foreground flex items-center gap-1">
                 <Maximize2 className="w-3 h-3" />
                 {primaryArea.toLocaleString("en-IN")} {areaUnit}
               </p>
@@ -128,13 +128,13 @@ export function PropertyCard({ property, featured = false, className }: Property
           )}
           {property.specifications?.bhkConfig && (
             <div className="flex flex-col gap-0.5">
-              <p className="text-[10px] text-[#3A5060] uppercase tracking-wide">Config</p>
-              <p className="text-xs font-medium text-[#8A9BAE]">{property.specifications.bhkConfig}</p>
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Config</p>
+              <p className="text-xs font-medium text-muted-foreground">{property.specifications.bhkConfig}</p>
             </div>
           )}
           {property.specifications?.transactionType && (
             <div className="ml-auto">
-              <span className="text-[10px] text-[#3A5060] bg-white/[0.03] px-2 py-1 rounded-md">
+              <span className="text-[10px] text-muted-foreground bg-white/[0.03] px-2 py-1 rounded-md">
                 {property.specifications.transactionType}
               </span>
             </div>

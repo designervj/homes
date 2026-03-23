@@ -84,7 +84,7 @@ export function PropertyGallery({ images, projectName }: PropertyGalleryProps) {
 
         {/* Fill empty slots if < 5 thumbs */}
         {Array.from({ length: Math.max(0, 4 - thumbs.length) }).map((_, i) => (
-          <div key={`empty-${i}`} className="bg-[#1A2E42]" />
+          <div key={`empty-${i}`} className="bg-muted" />
         ))}
       </div>
 

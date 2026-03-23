@@ -82,9 +82,9 @@ export function EnquiryForm({
 
   // Input base styles
   const inputCls = cn(
-    "w-full bg-white/[0.04] border border-white/[0.10] rounded-lg px-3.5 py-2.5",
-    "text-sm text-white placeholder:text-[#3A5060]",
-    "outline-none focus:border-[#C9A96E]/50 focus:bg-[#C9A96E]/[0.03]",
+    "w-full bg-accent border border-white/[0.10] rounded-lg px-3.5 py-2.5",
+    "text-sm text-white placeholder:text-muted-foreground",
+    "outline-none focus:border-primary/50 focus:bg-primary/[0.03]",
     "transition-all duration-150"
   );
 
@@ -100,7 +100,7 @@ export function EnquiryForm({
         </div>
         <button
           onClick={() => setSubmitted(false)}
-          className="text-sm text-[#C9A96E] hover:text-[#E2C99A] transition-colors mt-2"
+          className="text-sm text-primary hover:text-primary-light transition-colors mt-2"
         >
           Submit another enquiry
         </button>
@@ -114,7 +114,7 @@ export function EnquiryForm({
       {/* Name */}
       <div>
         <div className="relative">
-          <User className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#3A5060]" />
+          <User className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
           <input
             {...register("name")}
             placeholder="Full Name *"
@@ -127,7 +127,7 @@ export function EnquiryForm({
       {/* Phone */}
       <div>
         <div className="relative">
-          <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#3A5060]" />
+          <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
           <input
             {...register("phone")}
             type="tel"
@@ -141,7 +141,7 @@ export function EnquiryForm({
       {/* Email */}
       <div>
         <div className="relative">
-          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#3A5060]" />
+          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
           <input
             {...register("email")}
             type="email"
@@ -167,9 +167,9 @@ export function EnquiryForm({
           <input
             {...register("siteVisit")}
             type="checkbox"
-            className="w-4 h-4 rounded border-white/20 bg-white/[0.04] accent-[#C9A96E] cursor-pointer"
+            className="w-4 h-4 rounded border-border bg-accent accent-[#C9A96E] cursor-pointer"
           />
-          <span className="text-sm text-[#8A9BAE] group-hover:text-white transition-colors">
+          <span className="text-sm text-muted-foreground group-hover:text-white transition-colors">
             I&apos;d like to schedule a site visit
           </span>
         </label>
@@ -177,9 +177,9 @@ export function EnquiryForm({
           <input
             {...register("homeLoan")}
             type="checkbox"
-            className="w-4 h-4 rounded border-white/20 bg-white/[0.04] accent-[#C9A96E] cursor-pointer"
+            className="w-4 h-4 rounded border-border bg-accent accent-[#C9A96E] cursor-pointer"
           />
-          <span className="text-sm text-[#8A9BAE] group-hover:text-white transition-colors">
+          <span className="text-sm text-muted-foreground group-hover:text-white transition-colors">
             I need home loan assistance
           </span>
         </label>
@@ -191,7 +191,7 @@ export function EnquiryForm({
         disabled={isPending}
         className={cn(
           "w-full flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-sm",
-          "bg-[#C9A96E] hover:bg-[#E2C99A] text-[#0B1521]",
+          "bg-primary hover:bg-primary-light text-foreground",
           "disabled:opacity-60 transition-colors"
         )}
       >
@@ -202,7 +202,7 @@ export function EnquiryForm({
         )}
       </button>
 
-      <p className="text-center text-xs text-[#3A5060]">
+      <p className="text-center text-xs text-muted-foreground">
         We respond within 2–4 hours · No spam, ever.
       </p>
     </form>

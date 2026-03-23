@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
   Building2, ChevronDown, Menu, X, MapPin,
@@ -65,28 +66,30 @@ export function Navbar() {
         className={cn(
           "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
           scrolled
-            ? "bg-[#0B1521]/95 backdrop-blur-xl border-b border-white/[0.06] shadow-2xl"
+            ? "bg-background/95 backdrop-blur-xl border-b border-border shadow-2xl"
             : "bg-transparent"
         )}
       >
         <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
 
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2.5 flex-shrink-0">
-            <div className="w-8 h-8 bg-[#C9A96E] rounded-lg flex items-center justify-center">
-              <Building2 className="w-4 h-4 text-[#0B1521]" />
-            </div>
-            <span className="font-serif text-xl font-semibold text-white tracking-tight">
-              Homes<span className="text-[#C9A96E]">.</span>
-            </span>
+          <Link href="/" className="flex items-center flex-shrink-0">
+            <Image
+              src="/homes/Homes-Logo.webp"
+              alt="Homes Logo"
+              width={140}
+              height={44}
+              className="object-contain"
+              priority
+            />
           </Link>
 
           {/* Desktop nav */}
           <div className="hidden lg:flex items-center gap-1">
-            <Link href="/" className={cn("px-3 py-2 text-sm rounded-lg transition-colors", pathname === "/" ? "text-white" : "text-[#8A9BAE] hover:text-white hover:bg-white/[0.04]")}>
+            <Link href="/" className={cn("px-3 py-2 text-sm rounded-lg transition-colors", pathname === "/" ? "text-white" : "text-muted-foreground hover:text-white hover:bg-accent")}>
               Home
             </Link>
-            <Link href="/about" className={cn("px-3 py-2 text-sm rounded-lg transition-colors", pathname === "/about" ? "text-white" : "text-[#8A9BAE] hover:text-white hover:bg-white/[0.04]")}>
+            <Link href="/about" className={cn("px-3 py-2 text-sm rounded-lg transition-colors", pathname === "/about" ? "text-white" : "text-muted-foreground hover:text-white hover:bg-accent")}>
               About
             </Link>
 
@@ -96,7 +99,7 @@ export function Navbar() {
                 onClick={() => setDropdownOpen((v) => !v)}
                 className={cn(
                   "flex items-center gap-1.5 px-3 py-2 text-sm rounded-lg transition-colors",
-                  pathname.startsWith("/projects") ? "text-white" : "text-[#8A9BAE] hover:text-white hover:bg-white/[0.04]"
+                  pathname.startsWith("/projects") ? "text-white" : "text-muted-foreground hover:text-white hover:bg-accent"
                 )}
               >
                 Projects
@@ -104,25 +107,25 @@ export function Navbar() {
               </button>
 
               {dropdownOpen && (
-                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-[340px] bg-[#12202E] border border-white/[0.08] rounded-2xl shadow-2xl overflow-hidden">
+                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-[340px] bg-card border border-border rounded-2xl shadow-2xl overflow-hidden">
                   <div className="p-2">
                     {PROJECTS.map((project) => (
                       <Link
                         key={project.slug}
                         href={`/projects/${project.slug}`}
                         onClick={() => setDropdownOpen(false)}
-                        className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/[0.05] transition-colors group"
+                        className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-accent/80 transition-colors group"
                       >
-                        <div className="w-2 h-2 rounded-full bg-[#C9A96E] flex-shrink-0 opacity-60 group-hover:opacity-100 transition-opacity" />
+                        <div className="w-2 h-2 rounded-full bg-primary flex-shrink-0 opacity-60 group-hover:opacity-100 transition-opacity" />
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-white group-hover:text-[#E2C99A] transition-colors truncate">
+                          <p className="text-sm font-medium text-white group-hover:text-primary-light transition-colors truncate">
                             {project.name}
                           </p>
                           <div className="flex items-center gap-2 mt-0.5">
-                            <span className="text-[11px] text-[#3A5060] bg-white/[0.04] px-1.5 py-0.5 rounded-md">
+                            <span className="text-[11px] text-muted-foreground bg-accent px-1.5 py-0.5 rounded-md">
                               {project.type}
                             </span>
-                            <span className="flex items-center gap-0.5 text-[11px] text-[#3A5060]">
+                            <span className="flex items-center gap-0.5 text-[11px] text-muted-foreground">
                               <MapPin className="w-2.5 h-2.5" /> {project.location}
                             </span>
                           </div>
@@ -130,11 +133,11 @@ export function Navbar() {
                       </Link>
                     ))}
                   </div>
-                  <div className="border-t border-white/[0.06] p-2">
+                  <div className="border-t border-border p-2">
                     <Link
                       href="/projects"
                       onClick={() => setDropdownOpen(false)}
-                      className="flex items-center justify-center gap-2 w-full py-2.5 text-sm text-[#C9A96E] hover:text-[#E2C99A] hover:bg-[#C9A96E]/5 rounded-xl transition-colors font-medium"
+                      className="flex items-center justify-center gap-2 w-full py-2.5 text-sm text-primary hover:text-primary-light hover:bg-primary/5 rounded-xl transition-colors font-medium"
                     >
                       View All Projects →
                     </Link>
@@ -143,13 +146,13 @@ export function Navbar() {
               )}
             </div>
 
-            <Link href="/services" className={cn("px-3 py-2 text-sm rounded-lg transition-colors", pathname === "/services" ? "text-white" : "text-[#8A9BAE] hover:text-white hover:bg-white/[0.04]")}>
+            <Link href="/services" className={cn("px-3 py-2 text-sm rounded-lg transition-colors", pathname === "/services" ? "text-white" : "text-muted-foreground hover:text-white hover:bg-accent")}>
               Services
             </Link>
-            <Link href="/blogs" className={cn("px-3 py-2 text-sm rounded-lg transition-colors", pathname === "/blogs" ? "text-white" : "text-[#8A9BAE] hover:text-white hover:bg-white/[0.04]")}>
+            <Link href="/blogs" className={cn("px-3 py-2 text-sm rounded-lg transition-colors", pathname === "/blogs" ? "text-white" : "text-muted-foreground hover:text-white hover:bg-accent")}>
               Blogs
             </Link>
-            <Link href="/contact" className={cn("px-3 py-2 text-sm rounded-lg transition-colors", pathname === "/contact" ? "text-white" : "text-[#8A9BAE] hover:text-white hover:bg-white/[0.04]")}>
+            <Link href="/contact" className={cn("px-3 py-2 text-sm rounded-lg transition-colors", pathname === "/contact" ? "text-white" : "text-muted-foreground hover:text-white hover:bg-accent")}>
               Contact
             </Link>
           </div>
@@ -158,13 +161,13 @@ export function Navbar() {
           <div className="flex items-center gap-3">
             <Link
               href="/#enquire"
-              className="hidden sm:flex items-center gap-2 px-4 py-2 bg-[#C9A96E] hover:bg-[#E2C99A] text-[#0B1521] text-sm font-semibold rounded-lg transition-colors"
+              className="hidden sm:flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-light text-foreground text-sm font-semibold rounded-lg transition-colors"
             >
               Book Site Visit
             </Link>
             <button
               onClick={() => setMobileOpen((v) => !v)}
-              className="lg:hidden p-2 text-[#8A9BAE] hover:text-white transition-colors"
+              className="lg:hidden p-2 text-muted-foreground hover:text-white transition-colors"
             >
               {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
@@ -174,35 +177,35 @@ export function Navbar() {
 
       {/* Mobile menu */}
       {mobileOpen && (
-        <div className="fixed inset-0 z-40 bg-[#0B1521]/98 backdrop-blur-xl flex flex-col pt-16">
+        <div className="fixed inset-0 z-40 bg-background/98 backdrop-blur-xl flex flex-col pt-16">
           <div className="flex-1 overflow-y-auto px-4 py-6 space-y-1">
             {NAV_LINKS.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
-                className="flex items-center gap-3 px-4 py-3 rounded-xl text-base text-[#8A9BAE] hover:text-white hover:bg-white/[0.04] transition-colors"
+                className="flex items-center gap-3 px-4 py-3 rounded-xl text-base text-muted-foreground hover:text-white hover:bg-accent transition-colors"
               >
                 {link.label}
               </Link>
             ))}
             <div className="pt-2">
-              <p className="text-xs text-[#3A5060] uppercase tracking-widest px-4 mb-2">Projects</p>
+              <p className="text-xs text-muted-foreground uppercase tracking-widest px-4 mb-2">Projects</p>
               {PROJECTS.map((p) => (
                 <Link
                   key={p.slug}
                   href={`/projects/${p.slug}`}
-                  className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm text-[#8A9BAE] hover:text-white hover:bg-white/[0.04] transition-colors"
+                  className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm text-muted-foreground hover:text-white hover:bg-accent transition-colors"
                 >
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#C9A96E]" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-primary" />
                   {p.name}
                 </Link>
               ))}
             </div>
           </div>
-          <div className="p-4 border-t border-white/[0.06]">
+          <div className="p-4 border-t border-border">
             <Link
               href="/#enquire"
-              className="flex items-center justify-center gap-2 w-full py-3.5 bg-[#C9A96E] hover:bg-[#E2C99A] text-[#0B1521] font-semibold rounded-xl transition-colors"
+              className="flex items-center justify-center gap-2 w-full py-3.5 bg-primary hover:bg-primary-light text-foreground font-semibold rounded-xl transition-colors"
             >
               Book Site Visit
             </Link>

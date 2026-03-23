@@ -26,7 +26,7 @@ export default async function DashboardLayout({
   }
 
   return (
-    <div className="min-h-screen bg-[#0B1521] flex">
+    <div className="min-h-screen bg-background flex">
       <DashboardSidebar role={session.user.role} />
       <div className="flex-1 flex flex-col min-w-0">
         <DashboardHeader user={session.user} />

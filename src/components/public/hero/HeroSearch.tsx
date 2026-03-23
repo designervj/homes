@@ -35,16 +35,16 @@ export function HeroSearch() {
     if (e.key === "Enter") handleSearch();
   };
 
-  const fieldBase = "flex-1 min-w-0 px-4 py-3 bg-transparent outline-none text-sm text-white placeholder:text-[#3A5060]";
+  const fieldBase = "flex-1 min-w-0 px-4 py-3 bg-transparent outline-none text-sm text-white placeholder:text-muted-foreground";
   const selectBase = "flex-1 min-w-0 px-4 py-3 bg-transparent outline-none text-sm cursor-pointer appearance-none";
 
   return (
-    <div className="flex flex-col sm:flex-row bg-white/[0.04] border border-white/[0.10] rounded-2xl overflow-hidden backdrop-blur-sm max-w-2xl">
+    <div className="flex flex-col sm:flex-row bg-accent border border-white/[0.10] rounded-2xl overflow-hidden backdrop-blur-sm max-w-2xl">
 
       {/* Location */}
-      <div className="flex-1 flex items-center border-b sm:border-b-0 sm:border-r border-white/[0.08]">
+      <div className="flex-1 flex items-center border-b sm:border-b-0 sm:border-r border-border">
         <div className="pl-4 pr-2 flex-shrink-0">
-          <span className="text-[9px] text-[#C9A96E] uppercase tracking-widest block mb-0.5">Location</span>
+          <span className="text-[9px] text-primary uppercase tracking-widest block mb-0.5">Location</span>
         </div>
         <input
           value={location}
@@ -56,37 +56,37 @@ export function HeroSearch() {
       </div>
 
       {/* Property Type */}
-      <div className="flex-1 flex items-center border-b sm:border-b-0 sm:border-r border-white/[0.08]">
+      <div className="flex-1 flex items-center border-b sm:border-b-0 sm:border-r border-border">
         <div className="pl-4 pr-2 flex-shrink-0">
-          <span className="text-[9px] text-[#C9A96E] uppercase tracking-widest block mb-0.5">Type</span>
+          <span className="text-[9px] text-primary uppercase tracking-widest block mb-0.5">Type</span>
         </div>
         <select
           value={type}
           onChange={(e) => setType(e.target.value)}
-          className={`${selectBase} ${type ? "text-white" : "text-[#3A5060]"}`}
+          className={`${selectBase} ${type ? "text-white" : "text-muted-foreground"}`}
           style={{ background: "transparent" }}
         >
-          <option value="" className="bg-[#12202E] text-[#8A9BAE]">Any Type</option>
+          <option value="" className="bg-card text-muted-foreground">Any Type</option>
           {PROPERTY_TYPES.map((t) => (
-            <option key={t} value={t} className="bg-[#12202E] text-white">{t}</option>
+            <option key={t} value={t} className="bg-card text-white">{t}</option>
           ))}
         </select>
       </div>
 
       {/* Budget */}
-      <div className="flex-1 flex items-center sm:border-r border-white/[0.08]">
+      <div className="flex-1 flex items-center sm:border-r border-border">
         <div className="pl-4 pr-2 flex-shrink-0">
-          <span className="text-[9px] text-[#C9A96E] uppercase tracking-widest block mb-0.5">Budget</span>
+          <span className="text-[9px] text-primary uppercase tracking-widest block mb-0.5">Budget</span>
         </div>
         <select
           value={budget}
           onChange={(e) => setBudget(e.target.value)}
-          className={`${selectBase} ${budget ? "text-white" : "text-[#3A5060]"}`}
+          className={`${selectBase} ${budget ? "text-white" : "text-muted-foreground"}`}
           style={{ background: "transparent" }}
         >
-          <option value="" className="bg-[#12202E] text-[#8A9BAE]">Any Budget</option>
+          <option value="" className="bg-card text-muted-foreground">Any Budget</option>
           {BUDGET_RANGES.map((r) => (
-            <option key={r.value} value={r.value} className="bg-[#12202E] text-white">{r.label}</option>
+            <option key={r.value} value={r.value} className="bg-card text-white">{r.label}</option>
           ))}
         </select>
       </div>
@@ -94,7 +94,7 @@ export function HeroSearch() {
       {/* Search button */}
       <button
         onClick={handleSearch}
-        className="flex items-center justify-center gap-2 px-6 py-4 bg-[#C9A96E] hover:bg-[#E2C99A] text-[#0B1521] font-semibold text-sm transition-colors flex-shrink-0 m-1 rounded-xl"
+        className="flex items-center justify-center gap-2 px-6 py-4 bg-primary hover:bg-primary-light text-foreground font-semibold text-sm transition-colors flex-shrink-0 m-1 rounded-xl"
       >
         <Search className="w-4 h-4" />
         <span className="hidden sm:inline">Search</span>
