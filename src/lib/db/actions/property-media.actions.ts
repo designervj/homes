@@ -176,6 +176,42 @@ export async function setPropertyCoverImage(
   }
 }
 
+export async function updatePropertyMediaCaption(
+  propertyId: string,
+  assetUrl: string,
+  caption: string
+): Promise<ApiResponse<IMediaAsset[]>> {
+  try {
+    const property = await getPropertyForMediaMutation(propertyId);
+    const existingAssets = serialize<IMediaAsset[]>(property.mediaAssets ?? []);
+    const targetAssetIndex = existingAssets.findIndex((asset) => asset.url === assetUrl);
+
+    if (targetAssetIndex === -1) {
+      return { success: false, error: "Media item not found" };
+    }
+
+    const nextAssets = [...existingAssets];
+    nextAssets[targetAssetIndex] = {
+      ...nextAssets[targetAssetIndex],
+      caption: caption.trim() || undefined,
+    };
+
+    property.mediaAssets = normalizeMediaAssets(nextAssets);
+    await property.save();
+
+    revalidatePropertyPaths(property.id, property.slug);
+
+    return {
+      success: true,
+      data: serialize<IMediaAsset[]>(property.mediaAssets),
+      message: "Media caption updated",
+    };
+  } catch (error) {
+    console.error("[updatePropertyMediaCaption]", { propertyId, assetUrl, error });
+    return { success: false, error: "Failed to update caption" };
+  }
+}
+
 export async function reorderPropertyMedia(
   propertyId: string,
   orderedUrls: string[]

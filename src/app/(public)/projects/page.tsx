@@ -10,6 +10,8 @@ export const metadata: Metadata = {
     "Browse all RERA-verified residential plots, apartments, and villas in Lucknow. Filter by type, location, and budget.",
 };
 
+export const dynamic = "force-dynamic";
+
 export default async function ProjectsPage({
   searchParams,
 }: {

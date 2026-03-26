@@ -17,6 +17,7 @@ import {
   reorderPropertyMedia,
   setPropertyCoverImage,
   uploadPropertyMedia,
+  updatePropertyMediaCaption,
 } from "@/lib/db/actions/property-media.actions";
 import { cn } from "@/lib/utils";
 import type { IMediaAsset } from "@/types";
@@ -143,6 +144,22 @@ export function MediaGallery({
     });
   };
 
+  const handleUpdateCaption = (assetUrl: string, newCaption: string) => {
+    if (!propertyId) return;
+
+    startTransition(async () => {
+      const res = await updatePropertyMediaCaption(propertyId, assetUrl, newCaption);
+
+      if (res.success && res.data) {
+        syncAssets(res.data);
+        toast.success("Caption saved");
+        return;
+      }
+
+      toast.error(res.error ?? "Failed to save caption");
+    });
+  };
+
   const handleDrop = (targetUrl: string) => {
     if (!propertyId || !draggedUrl || draggedUrl === targetUrl) {
       setDraggedUrl(null);
@@ -238,83 +255,116 @@ export function MediaGallery({
           </p>
         </div>
       ) : (
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-          {assets.map((asset) => (
-            <div
-              key={asset.url}
-              draggable={!!propertyId}
-              onDragStart={() => setDraggedUrl(asset.url)}
-              onDragOver={(event) => event.preventDefault()}
-              onDrop={() => handleDrop(asset.url)}
-              className={cn(
-                "overflow-hidden rounded-xl border border-border bg-card transition-colors",
-                draggedUrl === asset.url && "opacity-70"
-              )}
-            >
-              <div className="relative h-40 bg-background">
-                {isPreviewableImage(asset) ? (
-                  <Image
-                    src={asset.url}
-                    alt={asset.caption ?? asset.type}
-                    fill
-                    className="object-cover"
-                    sizes="(max-width: 768px) 100vw, 33vw"
-                  />
-                ) : (
-                  <div className="flex h-full items-center justify-center text-muted-foreground">
-                    <FileText className="h-10 w-10" />
-                  </div>
-                )}
-                <div className="absolute left-3 top-3 flex items-center gap-2">
-                  <span className="rounded-full bg-background/90 px-2 py-1 text-[10px] font-medium uppercase tracking-wide text-foreground shadow-sm">
-                    {asset.type.replace(/_/g, " ")}
+        <div className="space-y-8 mt-6">
+          {MEDIA_TYPES.map((typeDef) => {
+            const groupAssets = assets.filter((a) => a.type === typeDef.value);
+            if (groupAssets.length === 0) return null;
+
+            return (
+              <div key={typeDef.value}>
+                <h3 className="mb-4 text-xs font-semibold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                  {typeDef.label}s
+                  <span className="flex items-center justify-center w-5 h-5 rounded-full bg-accent text-[10px]">
+                    {groupAssets.length}
                   </span>
-                  {asset.isCover && (
-                    <span className="rounded-full bg-primary/90 px-2 py-1 text-[10px] font-medium uppercase tracking-wide text-primary-foreground shadow-sm">
-                      Cover
-                    </span>
-                  )}
-                </div>
-              </div>
-
-              <div className="space-y-3 p-4">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-medium text-foreground">
-                      {asset.caption || asset.url.split("/").pop()}
-                    </p>
-                    <p className="mt-1 text-xs text-muted-foreground">
-                      Drag to reorder
-                    </p>
-                  </div>
-                  <ArrowUpDown className="mt-0.5 h-4 w-4 flex-shrink-0 text-muted-foreground" />
-                </div>
-
-                <div className="flex items-center gap-2">
-                  {asset.type === "image" && (
-                    <button
-                      type="button"
-                      onClick={() => handleSetCover(asset.url)}
-                      disabled={isPending || asset.isCover}
-                      className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs text-foreground transition-colors hover:bg-accent disabled:opacity-50"
+                </h3>
+                
+                <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                  {groupAssets.map((asset) => (
+                    <div
+                      key={asset.url}
+                      draggable={!!propertyId}
+                      onDragStart={() => setDraggedUrl(asset.url)}
+                      onDragOver={(event) => event.preventDefault()}
+                      onDrop={() => handleDrop(asset.url)}
+                      className={cn(
+                        "overflow-hidden rounded-xl border border-border bg-card transition-colors",
+                        draggedUrl === asset.url && "opacity-70 scale-95 border-primary/50"
+                      )}
                     >
-                      <Star className={cn("h-3.5 w-3.5", asset.isCover && "fill-primary text-primary")} />
-                      {asset.isCover ? "Cover" : "Set Cover"}
-                    </button>
-                  )}
-                  <button
-                    type="button"
-                    onClick={() => handleDelete(asset.url)}
-                    disabled={isPending}
-                    className="inline-flex items-center gap-1.5 rounded-lg border border-red-500/20 px-3 py-1.5 text-xs text-red-400 transition-colors hover:bg-red-500/10 disabled:opacity-50"
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                    Delete
-                  </button>
+                      <div className="relative h-44 bg-accent/20">
+                        {isPreviewableImage(asset) ? (
+                          <Image
+                            src={asset.url}
+                            alt={asset.caption ?? asset.type}
+                            fill
+                            className="object-cover"
+                            sizes="(max-width: 768px) 100vw, 33vw"
+                          />
+                        ) : (
+                          <div className="flex h-full items-center justify-center text-muted-foreground bg-accent/30">
+                            <FileText className="h-10 w-10 opacity-50" />
+                          </div>
+                        )}
+                        <div className="absolute top-3 left-3 flex flex-col gap-1.5 items-start">
+                          <span className="rounded-md bg-background/95 px-2 py-1 text-[10px] font-medium uppercase tracking-wide text-foreground shadow-sm backdrop-blur-md">
+                            {asset.type.replace(/_/g, " ")}
+                          </span>
+                          {asset.isCover && (
+                            <span className="rounded-md bg-primary px-2 py-1 text-[10px] font-medium uppercase tracking-wide text-primary-foreground shadow-sm">
+                              Cover Image
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="p-4 space-y-4">
+                        <div className="flex items-start gap-3">
+                          <div className="flex-1 min-w-0">
+                            <input
+                              defaultValue={asset.caption || ""}
+                              placeholder="Add a caption..."
+                              onBlur={(e) => {
+                                if (e.target.value.trim() !== (asset.caption || "")) {
+                                  handleUpdateCaption(asset.url, e.target.value);
+                                }
+                              }}
+                              className="w-full truncate text-sm font-medium text-foreground bg-transparent border-none p-0 outline-none focus:ring-0 placeholder:text-muted-foreground/60 transition-colors focus:text-primary"
+                              disabled={isPending}
+                            />
+                            <p className="mt-1 text-[10px] text-muted-foreground/70 uppercase tracking-wide">
+                              {asset.url.split("/").pop()}
+                            </p>
+                          </div>
+                          <div className="cursor-grab active:cursor-grabbing p-1 -mr-1 text-muted-foreground/50 hover:text-foreground hover:bg-accent rounded-md transition-colors" title="Drag to reorder">
+                            <ArrowUpDown className="h-4 w-4" />
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2 pt-1 border-t border-border/50">
+                          {asset.type === "image" && (
+                            <button
+                              type="button"
+                              onClick={() => handleSetCover(asset.url)}
+                              disabled={isPending || asset.isCover}
+                              className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-lg border border-border bg-background px-3 py-2 text-xs font-medium text-foreground transition-all hover:bg-accent hover:text-primary disabled:opacity-50"
+                            >
+                              <Star className={cn("h-3.5 w-3.5", asset.isCover && "fill-primary text-primary")} />
+                              {asset.isCover ? "Cover" : "Set Cover"}
+                            </button>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => handleDelete(asset.url)}
+                            disabled={isPending}
+                            className={cn(
+                              "inline-flex items-center justify-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-medium transition-all disabled:opacity-50",
+                              asset.type === "image" 
+                                ? "border-red-500/20 text-red-500 bg-red-500/5 hover:bg-red-500/10" 
+                                : "w-full border-red-500/20 text-red-500 bg-red-500/5 hover:bg-red-500/10"
+                            )}
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

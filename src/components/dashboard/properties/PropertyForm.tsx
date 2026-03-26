@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { useForm, type UseFormRegister } from "react-hook-form";
+import { useForm, useWatch, type UseFormRegister } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import {
@@ -84,7 +84,7 @@ export function PropertyForm({ property }: PropertyFormProps) {
   const router = useRouter();
   const isEdit = !!property;
   const [isPending, startTransition] = useTransition();
-  const [openSection, setOpenSection] = useState<string>("identity");
+  const [openSection, setOpenSection] = useState<string>("basic");
 
   // Amenities multi-select state
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>(
@@ -99,9 +99,9 @@ export function PropertyForm({ property }: PropertyFormProps) {
     property?.mediaAssets ?? []
   );
 
-  const { register, handleSubmit, formState: { errors }, setValue } =
+  const { register, handleSubmit, formState: { errors }, setValue, control } =
     useForm<PropertyInput>({
-      resolver: zodResolver(PropertyValidator),
+      resolver: zodResolver(PropertyValidator as any),
       defaultValues: isEdit
         ? {
             title: property.title,
@@ -135,6 +135,11 @@ export function PropertyForm({ property }: PropertyFormProps) {
           },
     });
 
+  const propertyType = useWatch({ control, name: "specifications.propertyType" });
+  const isPlot = propertyType === "Plot" || propertyType === "Agricultural Land";
+  const isCommercial = propertyType === "Shop" || propertyType === "Office Space" || propertyType === "Warehouse";
+  const isHouse = propertyType === "Villa" || propertyType === "Independent House" || propertyType === "Penthouse";
+
   const toggleAmenity = (amenity: string) => {
     setSelectedAmenities((prev) =>
       prev.includes(amenity) ? prev.filter((a) => a !== amenity) : [...prev, amenity]
@@ -157,7 +162,7 @@ export function PropertyForm({ property }: PropertyFormProps) {
       const payload = {
         ...data,
         features: { ...data.features, amenities: selectedAmenities },
-        mediaAssets,
+        mediaAssets: mediaAssets as never,
         nearbyPlaces: nearbyPlaces.filter((p) => p.name.trim()),
       };
 
@@ -215,8 +220,35 @@ export function PropertyForm({ property }: PropertyFormProps) {
         </button>
       </div>
 
-      {/* ── SECTION 1: Identity ──────────────────────────────────────────────── */}
-      <FormSection title="Property Identity" number="1" open={openSection === "identity"} onToggle={() => toggle("identity")}>
+      {/* ── SECTION 1: Basic Information ─────────────────────────────────────── */}
+      <FormSection title="Basic Information (Type & Category)" number="1" open={openSection === "basic"} onToggle={() => toggle("basic")}>
+        <div className="space-y-4 mt-4">
+          <div className={grid3cls}>
+            <div>
+              <label className={labelCls}>Property Type *</label>
+              <select {...register("specifications.propertyType")} className={inputCls}>
+                <option value="">Select…</option>
+                {PROPERTY_TYPES.map((o) => (<option key={o} value={o}>{o}</option>))}
+              </select>
+            </div>
+            <div>
+              <label className={labelCls}>Category *</label>
+              <select {...register("specifications.category")} className={inputCls}>
+                {PROPERTY_CATEGORIES.map((o) => (<option key={o} value={o}>{o}</option>))}
+              </select>
+            </div>
+            <div>
+              <label className={labelCls}>Transaction Type *</label>
+              <select {...register("specifications.transactionType")} className={inputCls}>
+                {TRANSACTION_TYPES.map((o) => (<option key={o} value={o}>{o}</option>))}
+              </select>
+            </div>
+          </div>
+        </div>
+      </FormSection>
+
+      {/* ── SECTION 2: Identity ──────────────────────────────────────────────── */}
+      <FormSection title="Property Identity" number="2" open={openSection === "identity"} onToggle={() => toggle("identity")}>
         <div className="space-y-4 mt-4">
           <div className={gridCls}>
             <div className="sm:col-span-2">
@@ -263,8 +295,8 @@ export function PropertyForm({ property }: PropertyFormProps) {
         </div>
       </FormSection>
 
-      {/* ── SECTION 2: Location ─────────────────────────────────────────────── */}
-      <FormSection title="Location & Address" number="2" open={openSection === "location"} onToggle={() => toggle("location")}>
+      {/* ── SECTION 3: Location ─────────────────────────────────────────────── */}
+      <FormSection title="Location & Address" number="3" open={openSection === "location"} onToggle={() => toggle("location")}>
         <div className="space-y-4 mt-4">
           <div className={gridCls}>
             <div className="sm:col-span-2">
@@ -315,38 +347,60 @@ export function PropertyForm({ property }: PropertyFormProps) {
         </div>
       </FormSection>
 
-      {/* ── SECTION 3: Specifications ────────────────────────────────────────── */}
-      <FormSection title="Property Specifications" number="3" open={openSection === "specs"} onToggle={() => toggle("specs")}>
+      {/* ── SECTION 4: Specifications ────────────────────────────────────────── */}
+      <FormSection title="Property Specifications" number="4" open={openSection === "specs"} onToggle={() => toggle("specs")}>
         <div className="space-y-4 mt-4">
           <div className={grid3cls}>
-            {[
-              { label: "Category *", field: "specifications.category", options: PROPERTY_CATEGORIES },
-              { label: "Property Type *", field: "specifications.propertyType", options: PROPERTY_TYPES },
-              { label: "Transaction Type *", field: "specifications.transactionType", options: TRANSACTION_TYPES },
-              { label: "BHK Config", field: "specifications.bhkConfig", options: BHK_CONFIGS },
-              { label: "Furnishing", field: "specifications.furnishingStatus", options: FURNISHING_STATUS },
-              { label: "Property Age", field: "specifications.propertyAge", options: PROPERTY_AGE },
-              { label: "Possession Status *", field: "specifications.possessionStatus", options: POSSESSION_STATUS },
-              { label: "Facing Direction", field: "specifications.facingDirection", options: FACING_DIRECTIONS },
-            ].map(({ label, field, options }) => (
-              <div key={field}>
-                <label className={labelCls}>{label}</label>
-                <select {...register(field as never)} className={inputCls}>
-                  <option value="">Select…</option>
-                  {options.map((o) => (
-                    <option key={o} value={o}>{o}</option>
-                  ))}
-                </select>
+            {!isPlot && (
+              <>
+                <div>
+                  <label className={labelCls}>BHK Config</label>
+                  <select {...register("specifications.bhkConfig")} className={inputCls}>
+                    <option value="">Select…</option>
+                    {BHK_CONFIGS.map((o) => (<option key={o} value={o}>{o}</option>))}
+                  </select>
+                </div>
+                <div>
+                  <label className={labelCls}>Furnishing</label>
+                  <select {...register("specifications.furnishingStatus")} className={inputCls}>
+                    <option value="">Select…</option>
+                    {FURNISHING_STATUS.map((o) => (<option key={o} value={o}>{o}</option>))}
+                  </select>
+                </div>
+                <div>
+                  <label className={labelCls}>Property Age</label>
+                  <select {...register("specifications.propertyAge")} className={inputCls}>
+                    <option value="">Select…</option>
+                    {PROPERTY_AGE.map((o) => (<option key={o} value={o}>{o}</option>))}
+                  </select>
+                </div>
+              </>
+            )}
+            <div>
+              <label className={labelCls}>Possession Status *</label>
+              <select {...register("specifications.possessionStatus")} className={inputCls}>
+                {POSSESSION_STATUS.map((o) => (<option key={o} value={o}>{o}</option>))}
+              </select>
+            </div>
+            <div>
+              <label className={labelCls}>Facing Direction</label>
+              <select {...register("specifications.facingDirection")} className={inputCls}>
+                <option value="">Select…</option>
+                {FACING_DIRECTIONS.map((o) => (<option key={o} value={o}>{o}</option>))}
+              </select>
+            </div>
+            {!isPlot && !isHouse && (
+              <div>
+                <label className={labelCls}>Floor Number</label>
+                <input {...register("specifications.floorNumber")} placeholder="e.g. Ground / 5th" className={inputCls} />
               </div>
-            ))}
-            <div>
-              <label className={labelCls}>Floor Number</label>
-              <input {...register("specifications.floorNumber")} placeholder="e.g. Ground / 5th" className={inputCls} />
-            </div>
-            <div>
-              <label className={labelCls}>Total Floors</label>
-              <input {...register("specifications.totalFloors")} placeholder="e.g. 10-20" className={inputCls} />
-            </div>
+            )}
+            {!isPlot && (
+              <div>
+                <label className={labelCls}>Total Floors</label>
+                <input {...register("specifications.totalFloors")} placeholder="e.g. 10" className={inputCls} />
+              </div>
+            )}
             <div className="flex items-center gap-2 pt-5">
               <input type="checkbox" {...register("specifications.isCornerUnit")} className="w-4 h-4 accent-primary" />
               <label className="text-sm text-muted-foreground">Corner Unit / Plot</label>
@@ -355,51 +409,65 @@ export function PropertyForm({ property }: PropertyFormProps) {
         </div>
       </FormSection>
 
-      {/* ── SECTION 4: Size & Layout ─────────────────────────────────────────── */}
-      <FormSection title="Size & Layout" number="4" open={openSection === "size"} onToggle={() => toggle("size")}>
+      {/* ── SECTION 5: Size & Layout ─────────────────────────────────────────── */}
+      <FormSection title="Size & Layout" number="5" open={openSection === "size"} onToggle={() => toggle("size")}>
         <div className="space-y-4 mt-4">
           <div className={grid3cls}>
             <div>
               <label className={labelCls}>Area Unit</label>
               <select {...register("sizeLayout.areaUnit")} className={inputCls}>
-                {AREA_UNITS.map((u) => (
-                  <option key={u} value={u}>{u}</option>
-                ))}
+                {AREA_UNITS.map((u) => (<option key={u} value={u}>{u}</option>))}
               </select>
             </div>
-            <div>
-              <label className={labelCls}>Built-up Area</label>
-              <input {...registerNumberField(register, "sizeLayout.builtUpArea")} type="number" placeholder="1200" className={inputCls} />
-            </div>
-            <div>
-              <label className={labelCls}>Carpet Area</label>
-              <input {...registerNumberField(register, "sizeLayout.carpetArea")} type="number" placeholder="980" className={inputCls} />
-            </div>
-            <div>
-              <label className={labelCls}>Super Built-up Area</label>
-              <input {...registerNumberField(register, "sizeLayout.superBuiltUpArea")} type="number" placeholder="1450" className={inputCls} />
-            </div>
-            <div>
-              <label className={labelCls}>Plot Area</label>
-              <input {...registerNumberField(register, "sizeLayout.plotArea")} type="number" placeholder="200" className={inputCls} />
-            </div>
-            <div>
-              <label className={labelCls}>Plot Dimensions</label>
-              <input {...register("sizeLayout.plotDimensions")} placeholder="30×40 ft" className={inputCls} />
-            </div>
-            <div>
-              <label className={labelCls}>Bedrooms</label>
-              <input {...registerNumberField(register, "sizeLayout.bedrooms")} type="number" placeholder="3" className={inputCls} />
-            </div>
-            <div>
-              <label className={labelCls}>Bathrooms</label>
-              <input {...registerNumberField(register, "sizeLayout.bathrooms")} type="number" placeholder="3" className={inputCls} />
-            </div>
-            <div>
-              <label className={labelCls}>Balconies</label>
-              <input {...registerNumberField(register, "sizeLayout.balconies")} type="number" placeholder="2" className={inputCls} />
-            </div>
+            
+            {!isPlot && (
+              <>
+                <div>
+                  <label className={labelCls}>Built-up Area</label>
+                  <input {...registerNumberField(register, "sizeLayout.builtUpArea")} type="number" placeholder="1200" className={inputCls} />
+                </div>
+                <div>
+                  <label className={labelCls}>Carpet Area</label>
+                  <input {...registerNumberField(register, "sizeLayout.carpetArea")} type="number" placeholder="980" className={inputCls} />
+                </div>
+                <div>
+                  <label className={labelCls}>Super Built-up Area</label>
+                  <input {...registerNumberField(register, "sizeLayout.superBuiltUpArea")} type="number" placeholder="1450" className={inputCls} />
+                </div>
+              </>
+            )}
+
+            {(isPlot || isHouse || isCommercial) && (
+              <>
+                <div>
+                  <label className={labelCls}>Plot Area</label>
+                  <input {...registerNumberField(register, "sizeLayout.plotArea")} type="number" placeholder="200" className={inputCls} />
+                </div>
+                <div>
+                  <label className={labelCls}>Plot Dimensions</label>
+                  <input {...register("sizeLayout.plotDimensions")} placeholder="30×40 ft" className={inputCls} />
+                </div>
+              </>
+            )}
+
+            {!isPlot && !isCommercial && (
+              <>
+                <div>
+                  <label className={labelCls}>Bedrooms</label>
+                  <input {...registerNumberField(register, "sizeLayout.bedrooms")} type="number" placeholder="3" className={inputCls} />
+                </div>
+                <div>
+                  <label className={labelCls}>Bathrooms</label>
+                  <input {...registerNumberField(register, "sizeLayout.bathrooms")} type="number" placeholder="3" className={inputCls} />
+                </div>
+                <div>
+                  <label className={labelCls}>Balconies</label>
+                  <input {...registerNumberField(register, "sizeLayout.balconies")} type="number" placeholder="2" className={inputCls} />
+                </div>
+              </>
+            )}
           </div>
+          
           <div className={gridCls}>
             <div className="flex items-center gap-3 pt-1">
               <input type="checkbox" {...register("sizeLayout.parkingAvailable")} className="w-4 h-4 accent-primary" />
@@ -422,8 +490,8 @@ export function PropertyForm({ property }: PropertyFormProps) {
         </div>
       </FormSection>
 
-      {/* ── SECTION 5: Pricing ───────────────────────────────────────────────── */}
-      <FormSection title="Pricing & Financials" number="5" open={openSection === "pricing"} onToggle={() => toggle("pricing")}>
+      {/* ── SECTION 6: Pricing ───────────────────────────────────────────────── */}
+      <FormSection title="Pricing & Financials" number="6" open={openSection === "pricing"} onToggle={() => toggle("pricing")}>
         <div className="space-y-4 mt-4">
           <div className={grid3cls}>
             <div>
@@ -483,8 +551,8 @@ export function PropertyForm({ property }: PropertyFormProps) {
         </div>
       </FormSection>
 
-      {/* ── SECTION 6: Media Gallery ─────────────────────────────────────────── */}
-      <FormSection title="Media Gallery" number="6" open={openSection === "media"} onToggle={() => toggle("media")}>
+      {/* ── SECTION 7: Media Gallery ─────────────────────────────────────────── */}
+      <FormSection title="Media Gallery" number="7" open={openSection === "media"} onToggle={() => toggle("media")}>
         <div className="mt-4">
           <MediaGallery
             propertyId={property?._id}
@@ -494,8 +562,8 @@ export function PropertyForm({ property }: PropertyFormProps) {
         </div>
       </FormSection>
 
-      {/* ── SECTION 7: Amenities ─────────────────────────────────────────────── */}
-      <FormSection title="Features & Amenities" number="7" open={openSection === "amenities"} onToggle={() => toggle("amenities")}>
+      {/* ── SECTION 8: Amenities ─────────────────────────────────────────────── */}
+      <FormSection title="Features & Amenities" number="8" open={openSection === "amenities"} onToggle={() => toggle("amenities")}>
         <div className="space-y-5 mt-4">
           <div className={gridCls}>
             <div>
@@ -550,8 +618,8 @@ export function PropertyForm({ property }: PropertyFormProps) {
         </div>
       </FormSection>
 
-      {/* ── SECTION 8: Legal ─────────────────────────────────────────────────── */}
-      <FormSection title="Legal & Compliance" number="8" open={openSection === "legal"} onToggle={() => toggle("legal")}>
+      {/* ── SECTION 9: Legal ─────────────────────────────────────────────────── */}
+      <FormSection title="Legal & Compliance" number="9" open={openSection === "legal"} onToggle={() => toggle("legal")}>
         <div className="space-y-4 mt-4">
           <div className={grid3cls}>
             <div>
@@ -600,8 +668,8 @@ export function PropertyForm({ property }: PropertyFormProps) {
         </div>
       </FormSection>
 
-      {/* ── SECTION 9: Nearby Places ─────────────────────────────────────────── */}
-      <FormSection title="Nearby Places" number="9" open={openSection === "nearby"} onToggle={() => toggle("nearby")}>
+      {/* ── SECTION 10: Nearby Places ─────────────────────────────────────────── */}
+      <FormSection title="Nearby Places" number="10" open={openSection === "nearby"} onToggle={() => toggle("nearby")}>
         <div className="space-y-3 mt-4">
           {nearbyPlaces.map((place, index) => (
             <div key={index} className="grid grid-cols-12 gap-3 items-start">

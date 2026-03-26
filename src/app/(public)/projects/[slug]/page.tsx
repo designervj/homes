@@ -181,9 +181,11 @@ export default async function PropertyDetailPage({
                   {
                     icon: Car,
                     label: "Parking",
-                    value: p.sizeLayout?.parkingAvailable
-                      ? `${p.sizeLayout.parkingSlots ?? 1} ${p.sizeLayout.parkingType ?? "Parking"}`
-                      : "No Parking",
+                    value: (p.specifications?.propertyType === "Plot" || p.specifications?.propertyType === "Agricultural Land")
+                      ? null
+                      : p.sizeLayout?.parkingAvailable
+                        ? `${p.sizeLayout.parkingSlots ?? 1} ${p.sizeLayout.parkingType ?? "Parking"}`
+                        : "No Parking",
                   },
                 ]
                   .filter((s) => s.value)
