@@ -6,6 +6,11 @@ import Lead from "@/lib/db/models/Lead";
 import User from "@/lib/db/models/User";
 import { requireAuth } from "@/lib/auth/utils";
 import {
+  requireObjectId,
+  serialize,
+  toObjectId,
+} from "@/lib/db/actions/helpers";
+import {
   LeadValidator,
   LeadStageUpdateValidator,
   LeadAssignValidator,
@@ -16,10 +21,39 @@ import {
 import type { ApiResponse, ILead, LeadStage } from "@/types";
 import { LEAD_STAGE_LABELS } from "@/lib/utils/constants";
 
-// ─── HELPERS ──────────────────────────────────────────────────────────────────
+type LeadListQuery = {
+  stage?: LeadStage;
+  assignedTo?: import("mongoose").Types.ObjectId;
+  propertyId?: import("mongoose").Types.ObjectId;
+  source?: string;
+  $or?: Array<{ name?: RegExp; phone?: RegExp; email?: RegExp }>;
+};
 
-function serialize<T>(doc: any): T {
-  return JSON.parse(JSON.stringify(doc)) as T;
+function getActorId(userId: string, actionName: string) {
+  return requireObjectId(userId, `${actionName}: session user id`);
+}
+
+function sanitizeLeadProperty(
+  propertyId: string | undefined,
+  propertyName: string | undefined,
+  propertySlug: string | undefined,
+  actionName: string
+) {
+  const objectId = toObjectId(propertyId);
+
+  if (propertyId && !objectId) {
+    console.error(`[${actionName}] Invalid propertyId received for lead write`, {
+      propertyId,
+      propertyName,
+      propertySlug,
+    });
+  }
+
+  return {
+    propertyId: objectId,
+    propertyName,
+    propertySlug,
+  };
 }
 
 // ─── GET LEADS (admin) ────────────────────────────────────────────────────────
@@ -38,13 +72,31 @@ export async function getLeads(filters: {
     await connectDB();
 
     const { stage, assignedTo, propertyId, source, search, page = 1, limit = 50 } = filters;
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const query: Record<string, any> = {};
+    const query: LeadListQuery = {};
 
     if (stage && stage !== "all") query.stage = stage;
-    if (assignedTo) query.assignedTo = assignedTo;
-    if (propertyId) query.propertyId = propertyId;
+    if (assignedTo) {
+      const assignedObjectId = toObjectId(assignedTo);
+      if (!assignedObjectId) {
+        return {
+          success: true,
+          data: [],
+          pagination: { page, limit, total: 0, totalPages: 0 },
+        };
+      }
+      query.assignedTo = assignedObjectId;
+    }
+    if (propertyId) {
+      const propertyObjectId = toObjectId(propertyId);
+      if (!propertyObjectId) {
+        return {
+          success: true,
+          data: [],
+          pagination: { page, limit, total: 0, totalPages: 0 },
+        };
+      }
+      query.propertyId = propertyObjectId;
+    }
     if (source) query.source = source;
 
     if (search?.trim()) {
@@ -90,7 +142,25 @@ export async function getLeadsKanban(filters: {
     const { assignedTo } = filters;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const baseQuery: Record<string, any> = {};
-    if (assignedTo) baseQuery.assignedTo = assignedTo;
+    if (assignedTo) {
+      const assignedObjectId = toObjectId(assignedTo);
+      if (!assignedObjectId) {
+        return {
+          success: true,
+          data: {
+            new: [],
+            contacted: [],
+            qualified: [],
+            site_visit_scheduled: [],
+            negotiation: [],
+            converted: [],
+            lost: [],
+          },
+        };
+      }
+
+      baseQuery.assignedTo = assignedObjectId;
+    }
 
     const leads = await Lead.find(baseQuery)
       .sort({ createdAt: -1 })
@@ -150,14 +220,22 @@ export async function createLead(rawData: LeadInput): Promise<ApiResponse<ILead>
     await connectDB();
 
     const data = LeadValidator.parse(rawData);
+    const actorId = getActorId(user.id, "createLead");
+    const propertyRef = sanitizeLeadProperty(
+      data.propertyId,
+      data.propertyName,
+      data.propertySlug,
+      "createLead"
+    );
 
     const lead = await Lead.create({
       ...data,
+      ...propertyRef,
       activityLog: [
         {
           action: "Lead created manually",
           note: `Created by ${user.name}`,
-          performedBy: user.id,
+          performedBy: actorId,
           performedAt: new Date(),
           stage: "new",
         },
@@ -185,6 +263,7 @@ export async function updateLeadStage(
   try {
     const user = await requireAuth();
     await connectDB();
+    const actorId = getActorId(user.id, "updateLeadStage");
 
     const { leadId, stage, note } = LeadStageUpdateValidator.parse(rawData);
 
@@ -197,7 +276,7 @@ export async function updateLeadStage(
     lead.activityLog.push({
       action: `Stage changed: ${LEAD_STAGE_LABELS[previousStage]} → ${LEAD_STAGE_LABELS[stage]}`,
       note: note || undefined,
-      performedBy: user.id as unknown as string,
+      performedBy: actorId,
       performedAt: new Date(),
       stage,
     });
@@ -229,11 +308,13 @@ export async function assignLead(rawData: {
   try {
     const user = await requireAuth();
     await connectDB();
+    const actorId = getActorId(user.id, "assignLead");
 
     const { leadId, agentId, agentName } = LeadAssignValidator.parse(rawData);
+    const agentObjectId = requireObjectId(agentId, "assignLead: agent id");
 
     // Verify agent exists and is active
-    const agent = await User.findOne({ _id: agentId, isActive: true });
+    const agent = await User.findOne({ _id: agentObjectId, isActive: true });
     if (!agent) return { success: false, error: "Agent not found or inactive" };
 
     const lead = await Lead.findById(leadId);
@@ -241,12 +322,12 @@ export async function assignLead(rawData: {
 
     const previousAgent = lead.assignedAgentName || "Unassigned";
 
-    lead.assignedTo = agentId as unknown as string;
+    lead.assignedTo = agentObjectId;
     lead.assignedAgentName = agentName;
     lead.activityLog.push({
       action: `Lead assigned to ${agentName}`,
       note: `Previously: ${previousAgent}. Assigned by ${user.name}`,
-      performedBy: user.id as unknown as string,
+      performedBy: actorId,
       performedAt: new Date(),
       stage: lead.stage,
     });
@@ -277,6 +358,7 @@ export async function addLeadActivity(rawData: {
   try {
     const user = await requireAuth();
     await connectDB();
+    const actorId = getActorId(user.id, "addLeadActivity");
 
     const { leadId, action, note } = ActivityLogValidator.parse(rawData);
 
@@ -286,7 +368,7 @@ export async function addLeadActivity(rawData: {
     lead.activityLog.push({
       action,
       note: note || undefined,
-      performedBy: user.id as unknown as string,
+      performedBy: actorId,
       performedAt: new Date(),
       stage: lead.stage,
     });
@@ -315,6 +397,7 @@ export async function updateLeadScore(
   try {
     const user = await requireAuth();
     await connectDB();
+    const actorId = getActorId(user.id, "updateLeadScore");
 
     if (score < 0 || score > 100) {
       return { success: false, error: "Score must be between 0 and 100" };
@@ -327,7 +410,7 @@ export async function updateLeadScore(
     lead.score = score;
     lead.activityLog.push({
       action: `Lead score updated: ${previousScore} → ${score}`,
-      performedBy: user.id as unknown as string,
+      performedBy: actorId,
       performedAt: new Date(),
       stage: lead.stage,
     });
@@ -357,6 +440,7 @@ export async function markLeadLost(
   try {
     const user = await requireAuth();
     await connectDB();
+    const actorId = getActorId(user.id, "markLeadLost");
 
     const lead = await Lead.findById(leadId);
     if (!lead) return { success: false, error: "Lead not found" };
@@ -366,7 +450,7 @@ export async function markLeadLost(
     lead.activityLog.push({
       action: "Lead marked as lost",
       note: `Reason: ${reason}`,
-      performedBy: user.id as unknown as string,
+      performedBy: actorId,
       performedAt: new Date(),
       stage: "lost",
     });

@@ -35,11 +35,11 @@ export function HeroSearch() {
     if (e.key === "Enter") handleSearch();
   };
 
-  const fieldBase = "flex-1 min-w-0 px-4 py-3 bg-transparent outline-none text-sm text-white placeholder:text-muted-foreground";
-  const selectBase = "flex-1 min-w-0 px-4 py-3 bg-transparent outline-none text-sm cursor-pointer appearance-none";
+  const fieldBase = "flex-1 min-w-0 px-4 py-3 bg-transparent outline-none text-sm text-foreground placeholder:text-muted-foreground";
+  const selectBase = "flex-1 min-w-0 px-4 py-3 bg-transparent outline-none text-sm text-foreground cursor-pointer appearance-none";
 
   return (
-    <div className="flex flex-col sm:flex-row bg-accent border border-white/[0.10] rounded-2xl overflow-hidden backdrop-blur-sm max-w-2xl">
+    <div className="flex max-w-2xl flex-col overflow-hidden rounded-2xl border border-border bg-accent backdrop-blur-sm sm:flex-row">
 
       {/* Location */}
       <div className="flex-1 flex items-center border-b sm:border-b-0 sm:border-r border-border">
@@ -63,12 +63,12 @@ export function HeroSearch() {
         <select
           value={type}
           onChange={(e) => setType(e.target.value)}
-          className={`${selectBase} ${type ? "text-white" : "text-muted-foreground"}`}
+          className={`${selectBase} ${type ? "text-foreground" : "text-muted-foreground"}`}
           style={{ background: "transparent" }}
         >
           <option value="" className="bg-card text-muted-foreground">Any Type</option>
           {PROPERTY_TYPES.map((t) => (
-            <option key={t} value={t} className="bg-card text-white">{t}</option>
+            <option key={t} value={t} className="bg-card text-foreground">{t}</option>
           ))}
         </select>
       </div>
@@ -81,12 +81,12 @@ export function HeroSearch() {
         <select
           value={budget}
           onChange={(e) => setBudget(e.target.value)}
-          className={`${selectBase} ${budget ? "text-white" : "text-muted-foreground"}`}
+          className={`${selectBase} ${budget ? "text-foreground" : "text-muted-foreground"}`}
           style={{ background: "transparent" }}
         >
           <option value="" className="bg-card text-muted-foreground">Any Budget</option>
           {BUDGET_RANGES.map((r) => (
-            <option key={r.value} value={r.value} className="bg-card text-white">{r.label}</option>
+            <option key={r.value} value={r.value} className="bg-card text-foreground">{r.label}</option>
           ))}
         </select>
       </div>

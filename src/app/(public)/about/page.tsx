@@ -40,7 +40,7 @@ export default function AboutPage() {
             <div className="w-7 h-px bg-primary" />
             <span className="text-xs text-primary uppercase tracking-widest font-medium">Our Story</span>
           </div>
-            <h1 className="font-serif text-4xl sm:text-5xl lg:text-5xl font-semibold text-white leading-tight mb-6">
+            <h1 className="mb-6 font-serif text-4xl font-semibold leading-tight text-foreground sm:text-5xl lg:text-5xl">
               Guiding You <br className="hidden sm:block" />
               <span className="text-gradient-primary italic">Every Step</span> of the Way.
             </h1>
@@ -59,8 +59,8 @@ export default function AboutPage() {
           ].map(({ icon: Icon, num, label }) => (
             <div key={label} className="bg-card border border-border rounded-xl p-6 text-center">
               <Icon className="w-5 h-5 text-primary mx-auto mb-3" />
-              <p className="font-serif text-3xl font-semibold text-white mb-1">{num}</p>
-              <p className="text-xs text-[#5A7080]">{label}</p>
+              <p className="mb-1 font-serif text-3xl font-semibold text-foreground">{num}</p>
+              <p className="text-xs text-muted-foreground">{label}</p>
             </div>
           ))}
         </div>
@@ -72,7 +72,7 @@ export default function AboutPage() {
               <div className="w-7 h-px bg-primary" />
               <span className="text-xs text-primary uppercase tracking-widest font-medium">Who We Are</span>
             </div>
-            <h2 className="font-serif text-3xl font-medium text-white mb-6">
+            <h2 className="mb-6 font-serif text-3xl font-medium text-foreground">
               A Consultancy Built on Relationships, Not Commissions
             </h2>
             <div className="space-y-4 text-muted-foreground leading-relaxed text-[15px]">
@@ -86,7 +86,7 @@ export default function AboutPage() {
                 Our office is in Sushant Golf City, Lucknow — the heart of the city&apos;s most active residential corridors. Every property we list, we know personally.
               </p>
             </div>
-            <div className="flex items-start gap-2 mt-6 text-sm text-[#5A7080]">
+            <div className="mt-6 flex items-start gap-2 text-sm text-muted-foreground">
               <MapPin className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
               Royal Plaza, Sushant Golf City, Sultanpur Road, Lucknow – 226030
             </div>
@@ -94,8 +94,8 @@ export default function AboutPage() {
           <div className="space-y-3">
             {VALUES.map((value) => (
               <div key={value.title} className="bg-card border border-border rounded-xl p-5">
-                <p className="text-sm font-medium text-white mb-2">{value.title}</p>
-                <p className="text-sm text-[#5A7080] leading-relaxed">{value.desc}</p>
+                <p className="mb-2 text-sm font-medium text-foreground">{value.title}</p>
+                <p className="text-sm leading-relaxed text-muted-foreground">{value.desc}</p>
               </div>
             ))}
           </div>
@@ -115,11 +115,11 @@ export default function AboutPage() {
                     <span className="font-serif text-lg font-semibold text-primary">{member.initials}</span>
                   </div>
                   <div>
-                    <p className="text-base font-medium text-white">{member.name}</p>
+                    <p className="text-base font-medium text-foreground">{member.name}</p>
                     <p className="text-sm text-primary mt-0.5">{member.role}</p>
                   </div>
                 </div>
-                <p className="text-sm text-[#5A7080] leading-relaxed">{member.bio}</p>
+                <p className="text-sm leading-relaxed text-muted-foreground">{member.bio}</p>
               </div>
             ))}
           </div>
@@ -128,13 +128,13 @@ export default function AboutPage() {
         {/* Compliance */}
         <div className="bg-card border border-primary/15 rounded-2xl p-8">
           <div className="flex items-center gap-3 mb-6">
-            <BadgeCheck className="w-5 h-5 text-emerald-400" />
-            <h2 className="font-serif text-xl font-medium text-white">Our Compliance Commitment</h2>
+            <BadgeCheck className="h-5 w-5 text-secondary" />
+            <h2 className="font-serif text-xl font-medium text-foreground">Our Compliance Commitment</h2>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             {["UP-RERA Registered", "GST Compliant", "LDA Approved Projects", "SBI / HDFC Approved"].map((c) => (
-              <div key={c} className="flex items-center gap-2 text-sm text-[#5A7080]">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 flex-shrink-0" />
+              <div key={c} className="flex items-center gap-2 text-sm text-muted-foreground">
+                <span className="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-secondary" />
                 {c}
               </div>
             ))}

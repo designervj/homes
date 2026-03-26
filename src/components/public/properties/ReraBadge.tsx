@@ -28,7 +28,7 @@ export function ReraBadge({
     <span
       className={cn(
         "inline-flex items-center rounded-full font-medium",
-        "bg-emerald-500/10 text-emerald-400 border border-emerald-500/25",
+        "border border-secondary/20 bg-secondary/10 text-secondary",
         sizeClasses[size],
         className
       )}
@@ -41,7 +41,7 @@ export function ReraBadge({
 
 export function LdaBadge({ className }: { className?: string }) {
   return (
-    <span className={cn("inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full font-medium bg-blue-500/10 text-blue-400 border border-blue-500/25", className)}>
+    <span className={cn("inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary", className)}>
       <ShieldCheck className="w-3 h-3" /> LDA Approved
     </span>
   );

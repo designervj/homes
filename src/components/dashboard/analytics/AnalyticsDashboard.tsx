@@ -2,7 +2,7 @@
 
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
-  PieChart, Pie, Cell, Legend, FunnelChart, Funnel, LabelList,
+  PieChart, Pie, Cell, FunnelChart, Funnel, LabelList,
 } from "recharts";
 import { TrendingUp, Building2, MessageSquare, CalendarCheck, Users2 } from "lucide-react";
 import { LEAD_STAGE_LABELS, LEAD_SOURCE_LABELS } from "@/lib/utils/constants";
@@ -27,26 +27,24 @@ interface AnalyticsDashboardProps {
 
 // ─── COLORS ───────────────────────────────────────────────────────────────────
 
-const GOLD    = "#C9A96E";
-const GOLD2   = "#E2C99A";
-const EMERALD = "#34D399";
-const BLUE    = "#60A5FA";
-const PURPLE  = "#A78BFA";
-const RED     = "#F87171";
-const ORANGE  = "#FB923C";
-const PINK    = "#F472B6";
+const PRIMARY = "hsl(var(--primary))";
+const PRIMARY_LIGHT = "hsl(var(--primary-light))";
+const SECONDARY = "hsl(var(--secondary))";
+const FOREGROUND = "hsl(var(--foreground))";
+const MUTED_FOREGROUND = "hsl(var(--muted-foreground))";
+const RED = "hsl(var(--destructive))";
 
 const STAGE_COLORS: Record<string, string> = {
-  new:                  BLUE,
-  contacted:            "#FBBF24",
-  qualified:            PURPLE,
-  site_visit_scheduled: ORANGE,
-  negotiation:          PINK,
-  converted:            EMERALD,
+  new:                  PRIMARY,
+  contacted:            FOREGROUND,
+  qualified:            SECONDARY,
+  site_visit_scheduled: PRIMARY_LIGHT,
+  negotiation:          MUTED_FOREGROUND,
+  converted:            SECONDARY,
   lost:                 RED,
 };
 
-const PIE_COLORS = [GOLD, EMERALD, BLUE, PURPLE, ORANGE, PINK, RED];
+const PIE_COLORS = [PRIMARY, FOREGROUND, SECONDARY, PRIMARY_LIGHT, MUTED_FOREGROUND, RED];
 
 // ─── TOOLTIP ─────────────────────────────────────────────────────────────────
 
@@ -55,10 +53,10 @@ const CustomTooltip = ({ active, payload, label }: {
 }) => {
   if (!active || !payload?.length) return null;
   return (
-    <div className="bg-card border border-white/[0.1] rounded-xl px-4 py-3 shadow-xl">
-      {label && <p className="text-xs text-[#5A7080] mb-1">{label}</p>}
+    <div className="bg-card border border-border rounded-xl px-4 py-3 shadow-xl">
+      {label && <p className="mb-1 text-xs text-muted-foreground">{label}</p>}
       {payload.map((p, i) => (
-        <p key={i} className="text-sm font-medium text-white">
+        <p key={i} className="text-sm font-medium text-foreground">
           {p.name && <span className="text-muted-foreground mr-1">{p.name}:</span>}
           {p.value}
         </p>
@@ -76,12 +74,12 @@ function KpiCard({ label, value, sub, icon: Icon, color, bg }: {
   return (
     <div className="bg-card border border-border rounded-xl p-5">
       <div className="flex items-center justify-between mb-3">
-        <p className="text-xs text-[#5A7080] uppercase tracking-wide">{label}</p>
+        <p className="text-xs uppercase tracking-wide text-muted-foreground">{label}</p>
         <div className={`w-8 h-8 ${bg} rounded-lg flex items-center justify-center`}>
           <Icon className={`w-4 h-4 ${color}`} />
         </div>
       </div>
-      <p className="font-serif text-3xl font-medium text-white">{value}</p>
+      <p className="font-serif text-3xl font-medium text-foreground">{value}</p>
       {sub && <p className="text-xs text-muted-foreground mt-1">{sub}</p>}
     </div>
   );
@@ -92,7 +90,7 @@ function KpiCard({ label, value, sub, icon: Icon, color, bg }: {
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="bg-card border border-border rounded-xl p-5">
-      <p className="text-sm font-medium text-white mb-5 flex items-center gap-2">
+      <p className="mb-5 flex items-center gap-2 text-sm font-medium text-foreground">
         <TrendingUp className="w-4 h-4 text-primary" />
         {title}
       </p>
@@ -124,7 +122,7 @@ export function AnalyticsDashboard({
         .map(([stage, count]) => ({
           name: LEAD_STAGE_LABELS[stage] ?? stage,
           value: count as number,
-          fill: STAGE_COLORS[stage] ?? GOLD,
+          fill: STAGE_COLORS[stage] ?? PRIMARY,
         }))
         .sort((a, b) => b.value - a.value)
     : [];
@@ -149,9 +147,9 @@ export function AnalyticsDashboard({
   // Enquiry status pie
   const enquiryData = enquiryStats
     ? [
-        { name: "New",       value: enquiryStats.new,       fill: BLUE },
-        { name: "Reviewed",  value: enquiryStats.reviewed,  fill: "#FBBF24" },
-        { name: "Converted", value: enquiryStats.converted, fill: EMERALD },
+        { name: "New",       value: enquiryStats.new,       fill: PRIMARY },
+        { name: "Reviewed",  value: enquiryStats.reviewed,  fill: FOREGROUND },
+        { name: "Converted", value: enquiryStats.converted, fill: SECONDARY },
       ].filter((d) => d.value > 0)
     : [];
 
@@ -159,8 +157,8 @@ export function AnalyticsDashboard({
     <div className="space-y-8 max-w-7xl">
       {/* Header */}
       <div>
-        <h1 className="font-serif text-2xl font-medium text-white">Analytics</h1>
-        <p className="text-sm text-[#5A7080] mt-1">
+        <h1 className="font-serif text-2xl font-medium text-foreground">Analytics</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
           Business performance overview across all modules.
         </p>
       </div>
@@ -180,24 +178,24 @@ export function AnalyticsDashboard({
           value={enquiryStats?.total ?? "—"}
           sub={`${enquiryStats?.converted ?? 0} converted to leads`}
           icon={MessageSquare}
-          color="text-blue-400"
-          bg="bg-blue-500/10"
+          color="text-foreground"
+          bg="bg-accent"
         />
         <KpiCard
           label="Site Visits"
           value={visitStats?.total ?? "—"}
           sub={`${visitStats?.conversionRate ?? 0}% visit-to-convert rate`}
           icon={CalendarCheck}
-          color="text-emerald-400"
-          bg="bg-emerald-500/10"
+          color="text-secondary"
+          bg="bg-secondary/10"
         />
         <KpiCard
           label="Active Properties"
           value={propertyStats?.active ?? "—"}
           sub={`${propertyStats?.sold ?? 0} sold`}
           icon={Building2}
-          color="text-purple-400"
-          bg="bg-purple-500/10"
+          color="text-foreground"
+          bg="bg-accent"
         />
       </div>
 
@@ -215,7 +213,7 @@ export function AnalyticsDashboard({
                   <Funnel data={funnelData} dataKey="value" isAnimationActive>
                     <LabelList
                       position="right"
-                      fill="#8A9BAE"
+                      fill={MUTED_FOREGROUND}
                       stroke="none"
                       dataKey="name"
                       style={{ fontSize: 11 }}
@@ -236,10 +234,10 @@ export function AnalyticsDashboard({
             : (
               <ResponsiveContainer width="100%" height={240}>
                 <BarChart data={sourceData} layout="vertical" margin={{ left: 8, right: 24 }}>
-                  <XAxis type="number" tick={{ fill: "#3A5060", fontSize: 11 }} axisLine={false} tickLine={false} />
-                  <YAxis dataKey="source" type="category" tick={{ fill: "#8A9BAE", fontSize: 11 }} axisLine={false} tickLine={false} width={80} />
-                  <Tooltip content={<CustomTooltip />} cursor={{ fill: "rgba(255,255,255,0.03)" }} />
-                  <Bar dataKey="count" fill={GOLD} radius={[0, 4, 4, 0]} maxBarSize={20} />
+                  <XAxis type="number" tick={{ fill: MUTED_FOREGROUND, fontSize: 11 }} axisLine={false} tickLine={false} />
+                  <YAxis dataKey="source" type="category" tick={{ fill: MUTED_FOREGROUND, fontSize: 11 }} axisLine={false} tickLine={false} width={80} />
+                  <Tooltip content={<CustomTooltip />} cursor={{ fill: "hsl(var(--accent))" }} />
+                  <Bar dataKey="count" fill={PRIMARY} radius={[0, 4, 4, 0]} maxBarSize={20} />
                 </BarChart>
               </ResponsiveContainer>
             )}
@@ -280,7 +278,7 @@ export function AnalyticsDashboard({
                         <span className="w-2 h-2 rounded-full" style={{ background: PIE_COLORS[i % PIE_COLORS.length] }} />
                         <span className="text-muted-foreground">{item.name}</span>
                       </div>
-                      <span className="text-white font-medium">{item.value}</span>
+                      <span className="font-medium text-foreground">{item.value}</span>
                     </div>
                   ))}
                 </div>
@@ -319,7 +317,7 @@ export function AnalyticsDashboard({
                         <span className="w-2 h-2 rounded-full" style={{ background: item.fill }} />
                         <span className="text-muted-foreground">{item.name}</span>
                       </div>
-                      <span className="text-white font-medium">{item.value}</span>
+                      <span className="font-medium text-foreground">{item.value}</span>
                     </div>
                   ))}
                 </div>
@@ -334,15 +332,15 @@ export function AnalyticsDashboard({
             : (
               <div className="space-y-4 py-2">
                 {[
-                  { label: "Scheduled",  value: visitStats.scheduled,  color: BLUE,    max: visitStats.total },
-                  { label: "Completed",  value: visitStats.completed,  color: EMERALD, max: visitStats.total },
+                  { label: "Scheduled",  value: visitStats.scheduled,  color: PRIMARY, max: visitStats.total },
+                  { label: "Completed",  value: visitStats.completed,  color: SECONDARY, max: visitStats.total },
                   { label: "No Show",    value: visitStats.noShow,     color: RED,     max: visitStats.total },
-                  { label: "This Week",  value: visitStats.thisWeek,   color: GOLD,    max: Math.max(visitStats.thisWeek, visitStats.total) },
+                  { label: "This Week",  value: visitStats.thisWeek,   color: FOREGROUND, max: Math.max(visitStats.thisWeek, visitStats.total) },
                 ].map((item) => (
                   <div key={item.label}>
                     <div className="flex justify-between text-xs mb-1.5">
-                      <span className="text-[#5A7080]">{item.label}</span>
-                      <span className="text-white font-medium">{item.value}</span>
+                      <span className="text-muted-foreground">{item.label}</span>
+                      <span className="font-medium text-foreground">{item.value}</span>
                     </div>
                     <div className="w-full bg-accent rounded-full h-1.5">
                       <div
@@ -357,7 +355,7 @@ export function AnalyticsDashboard({
                 ))}
                 <div className="pt-4 border-t border-border">
                   <div className="flex justify-between text-xs">
-                    <span className="text-[#5A7080]">Visit → Convert Rate</span>
+                    <span className="text-muted-foreground">Visit → Convert Rate</span>
                     <span className="text-primary font-medium">{visitStats.conversionRate}%</span>
                   </div>
                 </div>
@@ -388,30 +386,30 @@ export function AnalyticsDashboard({
                     const isGood = stage === "converted";
                     const isBad  = stage === "lost";
                     return (
-                      <tr key={stage} className="border-b border-white/[0.04] last:border-0">
+                      <tr key={stage} className="border-b border-border last:border-0">
                         <td className="py-3 pr-6">
                           <div className="flex items-center gap-2">
-                            <span className="w-2 h-2 rounded-full" style={{ background: STAGE_COLORS[stage] ?? GOLD }} />
+                            <span className="w-2 h-2 rounded-full" style={{ background: STAGE_COLORS[stage] ?? PRIMARY }} />
                             <span className="text-sm text-muted-foreground">{LEAD_STAGE_LABELS[stage] ?? stage}</span>
                           </div>
                         </td>
-                        <td className="py-3 pr-6 text-sm font-medium text-white">{count as number}</td>
+                        <td className="py-3 pr-6 text-sm font-medium text-foreground">{count as number}</td>
                         <td className="py-3 pr-6">
                           <div className="flex items-center gap-3">
                             <div className="flex-1 max-w-[100px] bg-accent rounded-full h-1.5">
                               <div
                                 className="h-1.5 rounded-full"
-                                style={{ width: `${pct}%`, background: STAGE_COLORS[stage] ?? GOLD }}
+                                style={{ width: `${pct}%`, background: STAGE_COLORS[stage] ?? PRIMARY }}
                               />
                             </div>
-                            <span className="text-xs text-[#5A7080] w-8">{pct}%</span>
+                            <span className="w-8 text-xs text-muted-foreground">{pct}%</span>
                           </div>
                         </td>
                         <td className="py-3">
                           <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
-                            isGood ? "bg-emerald-500/10 text-emerald-400" :
+                            isGood ? "bg-secondary/10 text-secondary" :
                             isBad  ? "bg-red-500/10 text-red-400" :
-                                     "bg-accent text-[#5A7080]"
+                                     "bg-accent text-muted-foreground"
                           }`}>
                             {isGood ? "Closed Won" : isBad ? "Closed Lost" : "Active"}
                           </span>

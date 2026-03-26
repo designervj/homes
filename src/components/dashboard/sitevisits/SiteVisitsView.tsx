@@ -26,16 +26,16 @@ interface SiteVisitsViewProps {
 // ─── STATUS CONFIG ────────────────────────────────────────────────────────────
 
 const STATUS_STYLES: Record<string, string> = {
-  scheduled: "bg-blue-500/10 text-blue-400 border-blue-500/20",
-  completed: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
+  scheduled: "bg-primary/10 text-primary border-primary/20",
+  completed: "bg-secondary/10 text-secondary border-secondary/20",
   no_show: "bg-red-500/10 text-red-400 border-red-500/20",
-  rescheduled: "bg-yellow-500/10 text-yellow-400 border-yellow-500/20",
-  cancelled: "bg-white/5 text-[#5A7080] border-border",
+  rescheduled: "bg-accent text-foreground border-border",
+  cancelled: "bg-accent text-muted-foreground border-border",
 };
 
 const OUTCOME_STYLES: Record<string, string> = {
-  positive: "text-emerald-400",
-  converted: "text-primary",
+  positive: "text-secondary",
+  converted: "text-foreground",
   neutral: "text-muted-foreground",
   negative: "text-red-400",
   pending: "text-muted-foreground",
@@ -62,7 +62,7 @@ function VisitCard({ visit, onAction }: { visit: ISiteVisit; onAction: () => voi
   const statusStyle = STATUS_STYLES[visit.status] ?? STATUS_STYLES.cancelled;
 
   return (
-    <div className={`bg-card border rounded-xl p-5 transition-all ${visit.status === "scheduled" ? "border-blue-500/15" : "border-border"}`}>
+    <div className={`bg-card border rounded-xl p-5 transition-all ${visit.status === "scheduled" ? "border-primary/15" : "border-border"}`}>
       <div className="flex items-start justify-between gap-4 mb-4">
         <div className="flex items-start gap-3">
           {/* Date block */}
@@ -75,8 +75,8 @@ function VisitCard({ visit, onAction }: { visit: ISiteVisit; onAction: () => voi
             </span>
           </div>
           <div>
-            <p className="text-sm font-medium text-white">{visit.clientName}</p>
-            <a href={`tel:${visit.clientPhone}`} className="flex items-center gap-1 text-xs text-[#5A7080] hover:text-primary transition-colors mt-0.5">
+            <p className="text-sm font-medium text-foreground">{visit.clientName}</p>
+            <a href={`tel:${visit.clientPhone}`} className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-primary">
               <Phone className="w-3 h-3" /> {visit.clientPhone}
             </a>
             <p className="flex items-center gap-1 text-xs text-muted-foreground mt-0.5">
@@ -95,13 +95,13 @@ function VisitCard({ visit, onAction }: { visit: ISiteVisit; onAction: () => voi
       {/* Property + Agent */}
       <div className="grid grid-cols-2 gap-3 mb-4">
         {visit.propertyName && (
-          <div className="flex items-center gap-1.5 text-xs text-[#5A7080]">
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
             <Building2 className="w-3 h-3 flex-shrink-0 text-primary" />
             <span className="truncate">{visit.propertyName}</span>
           </div>
         )}
         {visit.assignedAgentName && (
-          <div className="flex items-center gap-1.5 text-xs text-[#5A7080]">
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
             <User className="w-3 h-3 flex-shrink-0" />
             <span className="truncate">{visit.assignedAgentName}</span>
           </div>
@@ -117,18 +117,18 @@ function VisitCard({ visit, onAction }: { visit: ISiteVisit; onAction: () => voi
 
       {/* Agent notes */}
       {visit.agentNotes && (
-        <p className="text-xs text-[#5A7080] bg-accent/40 px-3 py-2 rounded-lg border border-white/[0.04] mb-3 line-clamp-2">
+        <p className="mb-3 rounded-lg border border-border bg-accent/40 px-3 py-2 text-xs text-muted-foreground line-clamp-2">
           {visit.agentNotes}
         </p>
       )}
 
       {/* Actions for scheduled visits */}
       {visit.status === "scheduled" && (
-        <div className="flex items-center gap-2 pt-3 border-t border-white/[0.04]">
+        <div className="flex items-center gap-2 border-t border-border pt-3">
           <button
             onClick={() => handle("completed", "positive")}
             disabled={isPending}
-            className="flex items-center gap-1.5 text-xs font-medium bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 px-3 py-1.5 rounded-lg transition-colors"
+            className="flex items-center gap-1.5 text-xs font-medium bg-secondary/10 hover:bg-secondary/15 text-secondary border border-secondary/20 px-3 py-1.5 rounded-lg transition-colors"
           >
             {updating === "completed" && isPending ? <Loader2 className="w-3 h-3 animate-spin" /> : <CheckCircle className="w-3 h-3" />}
             Completed
@@ -144,7 +144,7 @@ function VisitCard({ visit, onAction }: { visit: ISiteVisit; onAction: () => voi
           <button
             onClick={() => handle("cancelled")}
             disabled={isPending}
-            className="text-xs text-muted-foreground hover:text-[#5A7080] px-2 py-1.5 transition-colors ml-auto"
+            className="ml-auto px-2 py-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground"
           >
             Cancel
           </button>
@@ -174,8 +174,8 @@ export function SiteVisitsView({ visits, upcoming, stats, pagination, currentSta
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="font-serif text-2xl font-medium text-white">Site Visits</h1>
-          <p className="text-sm text-[#5A7080] mt-1">Track and manage scheduled property walkthroughs.</p>
+          <h1 className="font-serif text-2xl font-medium text-foreground">Site Visits</h1>
+          <p className="mt-1 text-sm text-muted-foreground">Track and manage scheduled property walkthroughs.</p>
         </div>
       </div>
 
@@ -183,12 +183,12 @@ export function SiteVisitsView({ visits, upcoming, stats, pagination, currentSta
       {stats && (
         <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
           {[
-            { label: "Scheduled", value: stats.scheduled, color: "text-blue-400" },
-            { label: "Completed", value: stats.completed, color: "text-emerald-400" },
+            { label: "Scheduled", value: stats.scheduled, color: "text-primary" },
+            { label: "Completed", value: stats.completed, color: "text-secondary" },
             { label: "No Show", value: stats.noShow, color: "text-red-400" },
-            { label: "This Week", value: stats.thisWeek, color: "text-primary" },
-            { label: "Total", value: stats.total, color: "text-white" },
-            { label: "Conv. Rate", value: `${stats.conversionRate}%`, color: "text-purple-400" },
+            { label: "This Week", value: stats.thisWeek, color: "text-foreground" },
+            { label: "Total", value: stats.total, color: "text-foreground" },
+            { label: "Conv. Rate", value: `${stats.conversionRate}%`, color: "text-primary" },
           ].map((s) => (
             <div key={s.label} className="bg-card border border-border rounded-xl p-3">
               <p className="text-[10px] text-muted-foreground uppercase tracking-wide mb-1">{s.label}</p>
@@ -207,8 +207,8 @@ export function SiteVisitsView({ visits, upcoming, stats, pagination, currentSta
           <div className="flex gap-3 flex-wrap">
             {upcoming.map((v) => (
               <div key={v._id} className="bg-background border border-border rounded-lg px-3 py-2">
-                <p className="text-xs font-medium text-white">{v.clientName}</p>
-                <p className="text-[10px] text-[#5A7080]">
+                <p className="text-xs font-medium text-foreground">{v.clientName}</p>
+                <p className="text-[10px] text-muted-foreground">
                   {new Date(v.scheduledAt).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}
                   {" at "}
                   {new Date(v.scheduledAt).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}
@@ -225,7 +225,7 @@ export function SiteVisitsView({ visits, upcoming, stats, pagination, currentSta
           <button
             key={tab.key}
             onClick={() => setStatus(tab.key)}
-            className={`px-4 py-2.5 text-sm border-b-2 transition-all -mb-px ${currentStatus === tab.key ? "text-primary border-primary font-medium" : "text-muted-foreground border-transparent hover:text-muted-foreground"}`}
+            className={`px-4 py-2.5 text-sm border-b-2 transition-all -mb-px ${currentStatus === tab.key ? "text-primary border-primary font-medium" : "text-muted-foreground border-transparent hover:text-foreground"}`}
           >
             {tab.label}
           </button>
@@ -235,8 +235,8 @@ export function SiteVisitsView({ visits, upcoming, stats, pagination, currentSta
       {/* Visits list */}
       {visits.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20">
-          <CalendarCheck className="w-10 h-10 text-[#2A3E52] mb-4" />
-          <p className="text-[#5A7080] font-medium">No site visits here</p>
+          <CalendarCheck className="mb-4 h-10 w-10 text-muted-foreground" />
+          <p className="font-medium text-muted-foreground">No site visits here</p>
           <p className="text-sm text-muted-foreground mt-1">
             {currentStatus === "scheduled" ? "No upcoming visits scheduled." : "No visits match this filter."}
           </p>
@@ -254,8 +254,8 @@ export function SiteVisitsView({ visits, upcoming, stats, pagination, currentSta
         <div className="flex justify-between items-center pt-4 border-t border-border">
           <p className="text-xs text-muted-foreground">Page {pagination.page} of {pagination.totalPages}</p>
           <div className="flex gap-2">
-            <button disabled={pagination.page <= 1} onClick={() => router.push(`/admin/site-visits?status=${currentStatus}&page=${pagination.page - 1}`)} className="px-3 py-1.5 text-xs text-[#5A7080] border border-border rounded-lg disabled:opacity-40 hover:border-border transition-colors">Previous</button>
-            <button disabled={pagination.page >= pagination.totalPages} onClick={() => router.push(`/admin/site-visits?status=${currentStatus}&page=${pagination.page + 1}`)} className="px-3 py-1.5 text-xs text-[#5A7080] border border-border rounded-lg disabled:opacity-40 hover:border-border transition-colors">Next</button>
+            <button disabled={pagination.page <= 1} onClick={() => router.push(`/admin/site-visits?status=${currentStatus}&page=${pagination.page - 1}`)} className="rounded-lg border border-border px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-accent disabled:opacity-40">Previous</button>
+            <button disabled={pagination.page >= pagination.totalPages} onClick={() => router.push(`/admin/site-visits?status=${currentStatus}&page=${pagination.page + 1}`)} className="rounded-lg border border-border px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-accent disabled:opacity-40">Next</button>
           </div>
         </div>
       )}

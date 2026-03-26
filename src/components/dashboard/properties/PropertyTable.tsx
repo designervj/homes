@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -24,10 +25,10 @@ interface PropertyTableProps {
 // ─── STATUS BADGE ─────────────────────────────────────────────────────────────
 
 const STATUS_STYLES: Record<string, string> = {
-  active: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
-  blocked: "bg-yellow-500/10 text-yellow-400 border-yellow-500/20",
-  sold: "bg-blue-500/10 text-blue-400 border-blue-500/20",
-  archived: "bg-white/5 text-[#5A7080] border-border",
+  active: "bg-primary/10 text-primary border-primary/20",
+  blocked: "bg-secondary/10 text-secondary border-secondary/20",
+  sold: "bg-accent text-foreground border-border",
+  archived: "bg-accent text-muted-foreground border-border",
 };
 
 // ─── ROW ACTIONS MENU ─────────────────────────────────────────────────────────
@@ -58,7 +59,7 @@ function RowActions({ property, onAction }: { property: IProperty; onAction: () 
     <div className="relative">
       <button
         onClick={() => setOpen((v) => !v)}
-        className="p-1.5 text-muted-foreground hover:text-white hover:bg-white/[0.06] rounded-lg transition-colors"
+        className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
       >
         {isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <MoreHorizontal className="w-4 h-4" />}
       </button>
@@ -67,28 +68,28 @@ function RowActions({ property, onAction }: { property: IProperty; onAction: () 
         <>
           <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
           <div className="absolute right-0 top-8 bg-card border border-border rounded-xl p-1.5 z-20 w-48 shadow-xl">
-            <a href={`/admin/properties/${property._id}/edit`} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-white hover:bg-accent px-3 py-2 rounded-lg transition-colors">
+            <Link href={`/admin/properties/${property._id}/edit`} className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground">
               <Pencil className="w-3.5 h-3.5" /> Edit Property
-            </a>
-            <a href={`/projects/${property.slug}`} target="_blank" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-white hover:bg-accent px-3 py-2 rounded-lg transition-colors">
+            </Link>
+            <Link href={`/projects/${property.slug}`} target="_blank" className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground">
               <Eye className="w-3.5 h-3.5" /> View Listing
-            </a>
-            <button onClick={handleFeatured} className="w-full flex items-center gap-2 text-sm text-muted-foreground hover:text-white hover:bg-accent px-3 py-2 rounded-lg transition-colors">
+            </Link>
+            <button onClick={handleFeatured} className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground">
               <Star className={`w-3.5 h-3.5 ${property.isFeatured ? "fill-primary text-primary" : ""}`} />
               {property.isFeatured ? "Remove Featured" : "Mark Featured"}
             </button>
             <div className="border-t border-border my-1" />
             {property.status !== "active" && (
-              <button onClick={() => handleStatus("active")} className="w-full flex items-center gap-2 text-sm text-emerald-400 hover:bg-emerald-500/10 px-3 py-2 rounded-lg transition-colors">
+              <button onClick={() => handleStatus("active")} className="w-full flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-primary transition-colors hover:bg-primary/10">
                 <CheckCircle className="w-3.5 h-3.5" /> Set Active
               </button>
             )}
             {property.status === "active" && (
-              <button onClick={() => handleStatus("blocked")} className="w-full flex items-center gap-2 text-sm text-yellow-400 hover:bg-yellow-500/10 px-3 py-2 rounded-lg transition-colors">
+              <button onClick={() => handleStatus("blocked")} className="w-full flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-secondary transition-colors hover:bg-secondary/10">
                 <XCircle className="w-3.5 h-3.5" /> Block Listing
               </button>
             )}
-            <button onClick={() => handleStatus("sold")} className="w-full flex items-center gap-2 text-sm text-blue-400 hover:bg-blue-500/10 px-3 py-2 rounded-lg transition-colors">
+            <button onClick={() => handleStatus("sold")} className="w-full flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-foreground transition-colors hover:bg-accent">
               <BadgeCheck className="w-3.5 h-3.5" /> Mark as Sold
             </button>
           </div>
@@ -132,26 +133,26 @@ export function PropertyTable({ properties, stats, pagination, currentFilters }:
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="font-serif text-2xl font-medium text-white">Properties</h1>
-          <p className="text-sm text-[#5A7080] mt-1">{stats?.total ?? 0} total properties across all statuses.</p>
+          <h1 className="font-serif text-2xl font-medium text-foreground">Properties</h1>
+          <p className="mt-1 text-sm text-muted-foreground">{stats?.total ?? 0} total properties across all statuses.</p>
         </div>
-        <a
+        <Link
           href="/admin/properties/new"
           className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-light text-foreground text-sm font-medium rounded-lg transition-colors"
         >
           <Plus className="w-4 h-4" /> Add Property
-        </a>
+        </Link>
       </div>
 
       {/* Quick stats */}
       {stats && (
         <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
           {[
-            { label: "Total", value: stats.total, color: "text-white" },
-            { label: "Active", value: stats.active, color: "text-emerald-400" },
-            { label: "Sold", value: stats.sold, color: "text-blue-400" },
-            { label: "Blocked", value: stats.blocked, color: "text-yellow-400" },
-            { label: "Featured", value: stats.featured, color: "text-primary" },
+            { label: "Total", value: stats.total, color: "text-foreground" },
+            { label: "Active", value: stats.active, color: "text-primary" },
+            { label: "Sold", value: stats.sold, color: "text-secondary" },
+            { label: "Blocked", value: stats.blocked, color: "text-muted-foreground" },
+            { label: "Featured", value: stats.featured, color: "text-foreground" },
           ].map((s) => (
             <div key={s.label} className="bg-card border border-border rounded-xl p-3">
               <p className="text-[10px] text-muted-foreground uppercase tracking-wide mb-1">{s.label}</p>
@@ -169,7 +170,7 @@ export function PropertyTable({ properties, stats, pagination, currentFilters }:
             <button
               key={tab.key}
               onClick={() => applyFilter("status", tab.key)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${currentFilters.status === tab.key ? "bg-primary text-foreground" : "text-[#5A7080] hover:text-white"}`}
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${currentFilters.status === tab.key ? "bg-primary text-foreground" : "text-muted-foreground hover:text-foreground"}`}
             >
               {tab.label}
               {tab.count !== undefined && <span className="ml-1 opacity-70">({tab.count})</span>}
@@ -184,7 +185,7 @@ export function PropertyTable({ properties, stats, pagination, currentFilters }:
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search properties…"
-            className="bg-transparent text-sm text-white placeholder:text-muted-foreground outline-none flex-1"
+            className="bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none flex-1"
           />
         </form>
       </div>
@@ -192,8 +193,8 @@ export function PropertyTable({ properties, stats, pagination, currentFilters }:
       {/* Table */}
       {properties.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 bg-card border border-border rounded-xl">
-          <Building2 className="w-10 h-10 text-[#2A3E52] mb-4" />
-          <p className="text-[#5A7080] font-medium">No properties found</p>
+          <Building2 className="mb-4 h-10 w-10 text-muted-foreground" />
+          <p className="font-medium text-muted-foreground">No properties found</p>
           <p className="text-sm text-muted-foreground mt-1">Try changing your filters or add a new property.</p>
         </div>
       ) : (
@@ -212,7 +213,7 @@ export function PropertyTable({ properties, stats, pagination, currentFilters }:
               {properties.map((property, i) => (
                 <tr
                   key={property._id}
-                  className={`border-b border-white/[0.04] hover:bg-accent/40 transition-colors ${i === properties.length - 1 ? "border-b-0" : ""}`}
+                  className={`border-b border-border transition-colors hover:bg-accent/40 ${i === properties.length - 1 ? "border-b-0" : ""}`}
                 >
                   {/* Property name */}
                   <td className="px-4 py-3.5">
@@ -221,7 +222,7 @@ export function PropertyTable({ properties, stats, pagination, currentFilters }:
                         <Home className="w-4 h-4 text-primary" />
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-white leading-tight line-clamp-1 max-w-[200px]">
+                        <p className="max-w-[200px] truncate text-sm font-medium leading-tight text-foreground">
                           {property.projectName || property.title}
                         </p>
                         <div className="flex items-center gap-1.5 mt-0.5">
@@ -230,7 +231,7 @@ export function PropertyTable({ properties, stats, pagination, currentFilters }:
                             <Star className="w-3 h-3 text-primary fill-primary" />
                           )}
                           {property.legalInfo?.reraRegistered && (
-                            <BadgeCheck className="w-3 h-3 text-emerald-400" />
+                            <BadgeCheck className="w-3 h-3 text-secondary" />
                           )}
                         </div>
                       </div>
@@ -246,7 +247,7 @@ export function PropertyTable({ properties, stats, pagination, currentFilters }:
 
                   {/* Location */}
                   <td className="px-4 py-3.5">
-                    <div className="flex items-center gap-1 text-xs text-[#5A7080]">
+                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
                       <MapPin className="w-3 h-3 flex-shrink-0" />
                       <span className="truncate max-w-[140px]">{property.location?.locality}</span>
                     </div>
@@ -297,14 +298,14 @@ export function PropertyTable({ properties, stats, pagination, currentFilters }:
             <button
               disabled={pagination.page <= 1}
               onClick={() => router.push(`/admin/properties?status=${currentFilters.status}&page=${pagination.page - 1}`)}
-              className="px-3 py-1.5 text-xs text-[#5A7080] border border-border rounded-lg disabled:opacity-40 hover:border-border transition-colors"
+              className="rounded-lg border border-border px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-accent disabled:opacity-40"
             >
               Previous
             </button>
             <button
               disabled={pagination.page >= pagination.totalPages}
               onClick={() => router.push(`/admin/properties?status=${currentFilters.status}&page=${pagination.page + 1}`)}
-              className="px-3 py-1.5 text-xs text-[#5A7080] border border-border rounded-lg disabled:opacity-40 hover:border-border transition-colors"
+              className="rounded-lg border border-border px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-accent disabled:opacity-40"
             >
               Next
             </button>

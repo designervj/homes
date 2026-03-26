@@ -13,10 +13,10 @@ interface PropertyCardProps {
 }
 
 const TYPE_COLORS: Record<string, string> = {
-  Plot:      "bg-amber-500/10 text-amber-400 border-amber-500/20",
-  Apartment: "bg-blue-500/10 text-blue-400 border-blue-500/20",
-  Villa:     "bg-purple-500/10 text-purple-400 border-purple-500/20",
-  default:   "bg-white/5 text-muted-foreground border-border",
+  Plot:      "bg-primary/10 text-primary border-primary/20",
+  Apartment: "bg-secondary/10 text-secondary border-secondary/20",
+  Villa:     "bg-accent text-foreground border-border",
+  default:   "bg-accent text-foreground border-border",
 };
 
 export function PropertyCard({ property, featured = false, className }: PropertyCardProps) {
@@ -57,7 +57,7 @@ export function PropertyCard({ property, featured = false, className }: Property
           <div
             className="absolute inset-0 opacity-[0.08]"
             style={{
-              backgroundImage: "repeating-linear-gradient(45deg, #C9A96E 0, #C9A96E 1px, transparent 0, transparent 50%)",
+              backgroundImage: "repeating-linear-gradient(45deg, hsl(var(--primary-light)) 0, hsl(var(--primary-light)) 1px, transparent 0, transparent 50%)",
               backgroundSize: "20px 20px",
             }}
           />
@@ -84,8 +84,8 @@ export function PropertyCard({ property, featured = false, className }: Property
         {/* Price tag */}
         {price && (
           <div className="absolute bottom-3 right-3 bg-background/90 backdrop-blur-sm border border-border rounded-lg px-2.5 py-1.5 text-right">
-            <p className="text-[9px] text-[#5A7080] leading-none mb-0.5">Starting From</p>
-            <p className="text-sm font-semibold text-primary-light leading-none">{formatINR(price)}</p>
+            <p className="text-[9px] text-muted-foreground leading-none mb-0.5">Starting From</p>
+            <p className="text-sm font-semibold text-primary leading-none">{formatINR(price)}</p>
             {pricePerSqft && (
               <p className="text-[9px] text-muted-foreground mt-0.5">₹{pricePerSqft.toLocaleString("en-IN")}/sqft</p>
             )}
@@ -95,16 +95,16 @@ export function PropertyCard({ property, featured = false, className }: Property
 
       {/* Body */}
       <div className="p-5">
-        <p className="text-xs text-[#5A7080] mb-1">{property.developerName}</p>
+        <p className="text-xs text-muted-foreground mb-1">{property.developerName}</p>
         <h3 className={cn(
-          "font-serif font-medium text-white mb-2 group-hover:text-primary-light transition-colors line-clamp-2",
+          "font-serif font-medium text-foreground mb-2 group-hover:text-primary-light transition-colors line-clamp-2",
           featured ? "text-xl" : "text-lg"
         )}>
           {property.projectName ?? property.title}
         </h3>
 
         {/* Location */}
-        <div className="flex items-center gap-1.5 text-xs text-[#5A7080] mb-4">
+        <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-4">
           <MapPin className="w-3 h-3 text-primary flex-shrink-0" />
           <span className="truncate">{property.location?.locality}, {property.location?.city}</span>
         </div>
@@ -134,7 +134,7 @@ export function PropertyCard({ property, featured = false, className }: Property
           )}
           {property.specifications?.transactionType && (
             <div className="ml-auto">
-              <span className="text-[10px] text-muted-foreground bg-white/[0.03] px-2 py-1 rounded-md">
+              <span className="text-[10px] text-muted-foreground bg-accent px-2 py-1 rounded-md">
                 {property.specifications.transactionType}
               </span>
             </div>

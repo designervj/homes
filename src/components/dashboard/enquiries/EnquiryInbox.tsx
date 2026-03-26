@@ -4,10 +4,8 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import {
   MessageSquare, Phone, Mail, Building2, CheckCircle,
-  AlertTriangle, ArrowUpRight, Loader2, Clock, Filter
+  ArrowUpRight, Loader2, Clock, Filter
 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import {
   markEnquiryReviewed,
@@ -28,9 +26,9 @@ interface EnquiryInboxProps {
 // ─── HELPERS ──────────────────────────────────────────────────────────────────
 
 const STATUS_TABS = [
-  { key: "new", label: "New", color: "text-blue-400" },
-  { key: "reviewed", label: "Reviewed", color: "text-yellow-400" },
-  { key: "converted", label: "Converted", color: "text-emerald-400" },
+  { key: "new", label: "New", color: "text-primary" },
+  { key: "reviewed", label: "Reviewed", color: "text-secondary" },
+  { key: "converted", label: "Converted", color: "text-foreground" },
   { key: "all", label: "All", color: "text-muted-foreground" },
 ];
 
@@ -88,7 +86,7 @@ function EnquiryCard({ enquiry, onAction }: {
   const isConverted = enquiry.status === "converted";
 
   return (
-    <div className={`bg-card border rounded-xl p-5 transition-all ${isNew ? "border-blue-500/20" : "border-border"}`}>
+    <div className={`bg-card border rounded-xl p-5 transition-all ${isNew ? "border-primary/20" : "border-border"}`}>
       <div className="flex items-start justify-between gap-4 mb-4">
         <div className="flex items-start gap-3">
           {/* Avatar */}
@@ -98,13 +96,13 @@ function EnquiryCard({ enquiry, onAction }: {
             </span>
           </div>
           <div>
-            <p className="text-sm font-medium text-white">{enquiry.name}</p>
+            <p className="text-sm font-medium text-foreground">{enquiry.name}</p>
             <div className="flex items-center gap-3 mt-0.5">
-              <a href={`tel:${enquiry.phone}`} className="flex items-center gap-1 text-xs text-[#5A7080] hover:text-primary transition-colors">
+              <a href={`tel:${enquiry.phone}`} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors">
                 <Phone className="w-3 h-3" /> {enquiry.phone}
               </a>
               {enquiry.email && (
-                <a href={`mailto:${enquiry.email}`} className="flex items-center gap-1 text-xs text-[#5A7080] hover:text-primary transition-colors">
+                <a href={`mailto:${enquiry.email}`} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors">
                   <Mail className="w-3 h-3" /> {enquiry.email}
                 </a>
               )}
@@ -113,7 +111,7 @@ function EnquiryCard({ enquiry, onAction }: {
         </div>
 
         <div className="flex items-center gap-2 flex-shrink-0">
-          {isNew && <span className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" />}
+          {isNew && <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />}
           <span className="text-xs text-muted-foreground flex items-center gap-1">
             <Clock className="w-3 h-3" />
             {timeAgo(enquiry.createdAt!)}
@@ -123,7 +121,7 @@ function EnquiryCard({ enquiry, onAction }: {
 
       {/* Property reference */}
       {enquiry.propertyName && (
-        <div className="flex items-center gap-2 mb-3 p-2.5 bg-accent/40 rounded-lg border border-white/[0.04]">
+        <div className="mb-3 flex items-center gap-2 rounded-lg border border-border bg-accent/40 p-2.5">
           <Building2 className="w-3.5 h-3.5 text-primary flex-shrink-0" />
           <span className="text-xs text-muted-foreground">{enquiry.propertyName}</span>
         </div>
@@ -138,7 +136,7 @@ function EnquiryCard({ enquiry, onAction }: {
             </span>
           ))}
           {enquiry.budgetRange && (
-            <span className="text-[11px] px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-400 border border-purple-500/20">
+            <span className="text-[11px] px-2 py-0.5 rounded-full border border-secondary/20 bg-secondary/10 text-secondary">
               {enquiry.budgetRange}
             </span>
           )}
@@ -147,14 +145,14 @@ function EnquiryCard({ enquiry, onAction }: {
 
       {/* Message */}
       {enquiry.message && (
-        <p className="text-xs text-[#5A7080] bg-accent/40 rounded-lg px-3 py-2.5 border border-white/[0.04] mb-3 line-clamp-2">
+        <p className="mb-3 rounded-lg border border-border bg-accent/40 px-3 py-2.5 text-xs text-muted-foreground line-clamp-2">
           &quot;{enquiry.message}&quot;
         </p>
       )}
 
       {/* Source badge */}
       <div className="flex items-center justify-between">
-        <span className="text-[11px] text-muted-foreground capitalize bg-white/[0.03] px-2 py-1 rounded-md">
+        <span className="text-[11px] text-muted-foreground capitalize bg-accent px-2 py-1 rounded-md">
           via {enquiry.source?.replace(/_/g, " ") ?? "website"}
         </span>
 
@@ -174,7 +172,7 @@ function EnquiryCard({ enquiry, onAction }: {
               <button
                 onClick={handleReview}
                 disabled={isPending}
-                className="text-xs text-[#5A7080] hover:text-white border border-border hover:border-border px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5"
+                className="flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs text-muted-foreground transition-all hover:bg-accent hover:text-foreground"
               >
                 {loadingAction === "review" && isPending ? <Loader2 className="w-3 h-3 animate-spin" /> : <CheckCircle className="w-3 h-3" />}
                 Review
@@ -190,7 +188,7 @@ function EnquiryCard({ enquiry, onAction }: {
             </button>
           </div>
         ) : (
-          <span className="flex items-center gap-1.5 text-xs text-emerald-400">
+          <span className="flex items-center gap-1.5 text-xs text-primary">
             <CheckCircle className="w-3.5 h-3.5" /> Converted
           </span>
         )}
@@ -217,12 +215,12 @@ export function EnquiryInbox({ enquiries, stats, currentStatus, pagination }: En
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="font-serif text-2xl font-medium text-white">Enquiry Inbox</h1>
-          <p className="text-sm text-[#5A7080] mt-1">
+          <h1 className="font-serif text-2xl font-medium text-foreground">Enquiry Inbox</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
             Review public form submissions and convert them to leads.
           </p>
         </div>
-        <div className="flex items-center gap-2 text-xs text-[#5A7080] bg-card border border-border px-3 py-2 rounded-lg">
+        <div className="flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 text-xs text-muted-foreground">
           <Filter className="w-3.5 h-3.5" />
           {pagination?.total ?? 0} total
         </div>
@@ -232,13 +230,13 @@ export function EnquiryInbox({ enquiries, stats, currentStatus, pagination }: En
       {stats && (
         <div className="grid grid-cols-4 gap-3">
           {[
-            { label: "New", value: stats.new, color: "text-blue-400", bg: "bg-blue-500/10" },
-            { label: "Reviewed", value: stats.reviewed, color: "text-yellow-400", bg: "bg-yellow-500/10" },
-            { label: "Converted", value: stats.converted, color: "text-emerald-400", bg: "bg-emerald-500/10" },
-            { label: "Total", value: stats.total, color: "text-primary", bg: "bg-primary/10" },
+            { label: "New", value: stats.new, color: "text-primary", bg: "bg-primary/10" },
+            { label: "Reviewed", value: stats.reviewed, color: "text-secondary", bg: "bg-secondary/10" },
+            { label: "Converted", value: stats.converted, color: "text-foreground", bg: "bg-accent" },
+            { label: "Total", value: stats.total, color: "text-foreground", bg: "bg-accent" },
           ].map((s) => (
             <div key={s.label} className="bg-card border border-border rounded-xl p-4">
-              <p className="text-xs text-[#5A7080] mb-1">{s.label}</p>
+              <p className="mb-1 text-xs text-muted-foreground">{s.label}</p>
               <p className={`text-2xl font-serif font-medium ${s.color}`}>{s.value}</p>
             </div>
           ))}
@@ -254,7 +252,7 @@ export function EnquiryInbox({ enquiries, stats, currentStatus, pagination }: En
             <button
               key={tab.key}
               onClick={() => setStatus(tab.key)}
-              className={`px-4 py-2.5 text-sm border-b-2 transition-all -mb-px ${isActive ? `${tab.color} border-current font-medium` : "text-muted-foreground border-transparent hover:text-muted-foreground"}`}
+              className={`px-4 py-2.5 text-sm border-b-2 transition-all -mb-px ${isActive ? `${tab.color} border-current font-medium` : "text-muted-foreground border-transparent hover:text-foreground"}`}
             >
               {tab.label}
               {count !== undefined && (
@@ -268,8 +266,8 @@ export function EnquiryInbox({ enquiries, stats, currentStatus, pagination }: En
       {/* Enquiry list */}
       {enquiries.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-center">
-          <MessageSquare className="w-10 h-10 text-[#2A3E52] mb-4" />
-          <p className="text-[#5A7080] font-medium">No enquiries here</p>
+          <MessageSquare className="mb-4 h-10 w-10 text-muted-foreground" />
+          <p className="font-medium text-muted-foreground">No enquiries here</p>
           <p className="text-sm text-muted-foreground mt-1">
             {currentStatus === "new" ? "All caught up! New enquiries will appear here." : "No enquiries match this filter."}
           </p>
@@ -292,14 +290,14 @@ export function EnquiryInbox({ enquiries, stats, currentStatus, pagination }: En
             <button
               disabled={pagination.page <= 1}
               onClick={() => router.push(`/admin/enquiries?status=${currentStatus}&page=${pagination.page - 1}`)}
-              className="px-3 py-1.5 text-xs text-[#5A7080] border border-border rounded-lg disabled:opacity-40 hover:border-border transition-colors"
+              className="rounded-lg border border-border px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-accent disabled:opacity-40"
             >
               Previous
             </button>
             <button
               disabled={pagination.page >= pagination.totalPages}
               onClick={() => router.push(`/admin/enquiries?status=${currentStatus}&page=${pagination.page + 1}`)}
-              className="px-3 py-1.5 text-xs text-[#5A7080] border border-border rounded-lg disabled:opacity-40 hover:border-border transition-colors"
+              className="rounded-lg border border-border px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-accent disabled:opacity-40"
             >
               Next
             </button>

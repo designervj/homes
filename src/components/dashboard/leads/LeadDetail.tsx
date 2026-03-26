@@ -1,10 +1,11 @@
 "use client";
 
+import Link from "next/link";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import {
-  ArrowLeft, Phone, Mail, Building2, Users2,
-  Star, Clock, ChevronDown, Loader2, PlusCircle,
+  ArrowLeft, Phone, Mail, Building2,
+  Clock, ChevronDown, Loader2, PlusCircle,
 } from "lucide-react";
 import { toast } from "sonner";
 import { updateLeadStage, assignLead, addLeadActivity } from "@/lib/db/actions/lead.actions";
@@ -12,12 +13,12 @@ import { LEAD_STAGES, LEAD_STAGE_LABELS } from "@/lib/utils/constants";
 import type { ILead, LeadStage } from "@/types";
 
 const STAGE_COLORS: Record<string, string> = {
-  new: "bg-blue-500/10 text-blue-400 border-blue-500/20",
-  contacted: "bg-yellow-500/10 text-yellow-400 border-yellow-500/20",
-  qualified: "bg-purple-500/10 text-purple-400 border-purple-500/20",
-  site_visit_scheduled: "bg-orange-500/10 text-orange-400 border-orange-500/20",
-  negotiation: "bg-pink-500/10 text-pink-400 border-pink-500/20",
-  converted: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
+  new: "bg-primary/10 text-primary border-primary/20",
+  contacted: "bg-accent text-foreground border-border",
+  qualified: "bg-secondary/10 text-secondary border-secondary/20",
+  site_visit_scheduled: "bg-primary-pale text-primary border-primary/25",
+  negotiation: "bg-accent text-foreground border-border",
+  converted: "bg-secondary/10 text-secondary border-secondary/20",
   lost: "bg-red-500/10 text-red-400 border-red-500/20",
 };
 
@@ -41,8 +42,6 @@ export function LeadDetail({
   const [noteText, setNoteText] = useState("");
   const [showStageMenu, setShowStageMenu] = useState(false);
   const [showAssignMenu, setShowAssignMenu] = useState(false);
-
-  const refresh = () => router.refresh();
 
   const handleStageChange = (stage: LeadStage) => {
     setShowStageMenu(false);
@@ -71,24 +70,24 @@ export function LeadDetail({
     });
   };
 
-  const stageColor = STAGE_COLORS[lead.stage] ?? "bg-white/10 text-white border-border";
+  const stageColor = STAGE_COLORS[lead.stage] ?? "bg-accent text-foreground border-border";
 
   return (
     <div className="max-w-5xl space-y-6">
       {/* Back + header */}
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-start gap-3">
-          <button onClick={() => router.back()} className="mt-1 text-muted-foreground hover:text-white transition-colors">
+          <button onClick={() => router.back()} className="mt-1 text-muted-foreground hover:text-foreground transition-colors">
             <ArrowLeft className="w-4 h-4" />
           </button>
           <div>
-            <h1 className="font-serif text-2xl font-medium text-white">{lead.name}</h1>
+            <h1 className="font-serif text-2xl font-medium text-foreground">{lead.name}</h1>
             <div className="flex items-center gap-3 mt-1">
-              <a href={`tel:${lead.phone}`} className="flex items-center gap-1 text-sm text-[#5A7080] hover:text-primary transition-colors">
+              <a href={`tel:${lead.phone}`} className="flex items-center gap-1 text-sm text-muted-foreground hover:text-primary transition-colors">
                 <Phone className="w-3.5 h-3.5" /> {lead.phone}
               </a>
               {lead.email && (
-                <a href={`mailto:${lead.email}`} className="flex items-center gap-1 text-sm text-[#5A7080] hover:text-primary transition-colors">
+                <a href={`mailto:${lead.email}`} className="flex items-center gap-1 text-sm text-muted-foreground hover:text-primary transition-colors">
                   <Mail className="w-3.5 h-3.5" /> {lead.email}
                 </a>
               )}
@@ -112,7 +111,7 @@ export function LeadDetail({
                   key={s}
                   onClick={() => handleStageChange(s)}
                   disabled={s === lead.stage}
-                  className={`w-full text-left text-sm px-3 py-2 rounded-lg transition-colors flex items-center gap-2 ${s === lead.stage ? "text-muted-foreground cursor-default" : "text-muted-foreground hover:text-white hover:bg-accent"}`}
+                  className={`w-full text-left text-sm px-3 py-2 rounded-lg transition-colors flex items-center gap-2 ${s === lead.stage ? "text-muted-foreground cursor-default" : "text-muted-foreground hover:text-foreground hover:bg-accent"}`}
                 >
                   {LEAD_STAGE_LABELS[s]}
                   {s === lead.stage && <span className="ml-auto text-[10px] text-muted-foreground">current</span>}
@@ -135,11 +134,11 @@ export function LeadDetail({
               <div className="flex items-start gap-2">
                 <Building2 className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
                 <div>
-                  <p className="text-sm font-medium text-white">{lead.propertyName}</p>
+                  <p className="text-sm font-medium text-foreground">{lead.propertyName}</p>
                   {lead.propertySlug && (
-                    <a href={`/projects/${lead.propertySlug}`} target="_blank" className="text-xs text-primary hover:underline">
+                    <Link href={`/projects/${lead.propertySlug}`} target="_blank" className="text-xs text-primary hover:underline">
                       View listing
-                    </a>
+                    </Link>
                   )}
                 </div>
               </div>
@@ -173,7 +172,7 @@ export function LeadDetail({
                     {lead.assignedAgentName?.charAt(0) ?? "?"}
                   </span>
                 </div>
-                <span className="text-sm text-white">{lead.assignedAgentName ?? "Unassigned"}</span>
+                <span className="text-sm text-foreground">{lead.assignedAgentName ?? "Unassigned"}</span>
               </div>
               <div className="relative">
                 <button
@@ -188,7 +187,7 @@ export function LeadDetail({
                       <button
                         key={a.id}
                         onClick={() => handleAssign(a.id, a.name)}
-                        className="w-full text-left text-sm text-muted-foreground hover:text-white hover:bg-accent px-3 py-2 rounded-lg transition-colors"
+                        className="w-full text-left text-sm text-muted-foreground hover:text-foreground hover:bg-accent px-3 py-2 rounded-lg transition-colors"
                       >
                         {a.name}
                         <span className="block text-[10px] text-muted-foreground capitalize">{a.role}</span>
@@ -203,7 +202,7 @@ export function LeadDetail({
 
         {/* Right — activity log */}
         <div className="lg:col-span-2 bg-card border border-border rounded-xl p-5">
-          <p className="text-sm font-medium text-white mb-5 flex items-center gap-2">
+          <p className="text-sm font-medium text-foreground mb-5 flex items-center gap-2">
             <Clock className="w-4 h-4 text-primary" />
             Activity Log
             <span className="ml-auto text-xs text-muted-foreground">{lead.activityLog?.length ?? 0} entries</span>
@@ -216,7 +215,7 @@ export function LeadDetail({
               onChange={(e) => setNoteText(e.target.value)}
               placeholder="Add a note or update…"
               rows={2}
-              className="flex-1 bg-accent border border-border focus:border-primary/40 rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-muted-foreground outline-none resize-none transition-colors"
+              className="flex-1 bg-accent border border-border focus:border-primary/40 rounded-lg px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground outline-none resize-none transition-colors"
             />
             <button
               onClick={handleAddNote}
@@ -239,13 +238,13 @@ export function LeadDetail({
                 {/* Dot */}
                 <div className="w-3.5 h-3.5 rounded-full bg-primary/20 border border-primary/40 flex-shrink-0 mt-0.5 z-10" />
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm text-white">{entry.action}</p>
+                  <p className="text-sm text-foreground">{entry.action}</p>
                   {entry.note && (
-                    <p className="text-xs text-[#5A7080] mt-0.5 bg-accent/40 px-2 py-1 rounded-lg">
+                    <p className="text-xs text-muted-foreground mt-0.5 bg-accent/40 px-2 py-1 rounded-lg">
                       {entry.note}
                     </p>
                   )}
-                  <p className="text-[10px] text-[#2A3E52] mt-1">
+                  <p className="text-[10px] text-muted-foreground mt-1">
                     {entry.performedAt ? formatDate(entry.performedAt) : ""}
                   </p>
                 </div>

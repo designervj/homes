@@ -5,9 +5,9 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
-  Building2, ChevronDown, Menu, X, MapPin,
-  Home, Phone, BookOpen, Info, Mail,
+  ChevronDown, Menu, X, MapPin,
 } from "lucide-react";
+import { ThemeToggle } from "@/components/shared/ThemeToggle";
 import { cn } from "@/lib/utils";
 
 // ─── PROJECTS DATA ────────────────────────────────────────────────────────────
@@ -57,9 +57,6 @@ export function Navbar() {
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  // Close mobile menu on route change
-  useEffect(() => { setMobileOpen(false); }, [pathname]);
-
   return (
     <>
       <header
@@ -86,10 +83,10 @@ export function Navbar() {
 
           {/* Desktop nav */}
           <div className="hidden lg:flex items-center gap-1">
-            <Link href="/" className={cn("px-3 py-2 text-sm rounded-lg transition-colors", pathname === "/" ? "text-white" : "text-muted-foreground hover:text-white hover:bg-accent")}>
+            <Link href="/" className={cn("px-3 py-2 text-sm rounded-lg transition-colors", pathname === "/" ? "text-foreground" : "text-muted-foreground hover:text-foreground hover:bg-accent")}>
               Home
             </Link>
-            <Link href="/about" className={cn("px-3 py-2 text-sm rounded-lg transition-colors", pathname === "/about" ? "text-white" : "text-muted-foreground hover:text-white hover:bg-accent")}>
+            <Link href="/about" className={cn("px-3 py-2 text-sm rounded-lg transition-colors", pathname === "/about" ? "text-foreground" : "text-muted-foreground hover:text-foreground hover:bg-accent")}>
               About
             </Link>
 
@@ -99,7 +96,7 @@ export function Navbar() {
                 onClick={() => setDropdownOpen((v) => !v)}
                 className={cn(
                   "flex items-center gap-1.5 px-3 py-2 text-sm rounded-lg transition-colors",
-                  pathname.startsWith("/projects") ? "text-white" : "text-muted-foreground hover:text-white hover:bg-accent"
+                  pathname.startsWith("/projects") ? "text-foreground" : "text-muted-foreground hover:text-foreground hover:bg-accent"
                 )}
               >
                 Projects
@@ -118,7 +115,7 @@ export function Navbar() {
                       >
                         <div className="w-2 h-2 rounded-full bg-primary flex-shrink-0 opacity-60 group-hover:opacity-100 transition-opacity" />
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-white group-hover:text-primary-light transition-colors truncate">
+                          <p className="text-sm font-medium text-foreground group-hover:text-primary-light transition-colors truncate">
                             {project.name}
                           </p>
                           <div className="flex items-center gap-2 mt-0.5">
@@ -146,19 +143,20 @@ export function Navbar() {
               )}
             </div>
 
-            <Link href="/services" className={cn("px-3 py-2 text-sm rounded-lg transition-colors", pathname === "/services" ? "text-white" : "text-muted-foreground hover:text-white hover:bg-accent")}>
+            <Link href="/services" className={cn("px-3 py-2 text-sm rounded-lg transition-colors", pathname === "/services" ? "text-foreground" : "text-muted-foreground hover:text-foreground hover:bg-accent")}>
               Services
             </Link>
-            <Link href="/blogs" className={cn("px-3 py-2 text-sm rounded-lg transition-colors", pathname === "/blogs" ? "text-white" : "text-muted-foreground hover:text-white hover:bg-accent")}>
+            <Link href="/blogs" className={cn("px-3 py-2 text-sm rounded-lg transition-colors", pathname === "/blogs" ? "text-foreground" : "text-muted-foreground hover:text-foreground hover:bg-accent")}>
               Blogs
             </Link>
-            <Link href="/contact" className={cn("px-3 py-2 text-sm rounded-lg transition-colors", pathname === "/contact" ? "text-white" : "text-muted-foreground hover:text-white hover:bg-accent")}>
+            <Link href="/contact" className={cn("px-3 py-2 text-sm rounded-lg transition-colors", pathname === "/contact" ? "text-foreground" : "text-muted-foreground hover:text-foreground hover:bg-accent")}>
               Contact
             </Link>
           </div>
 
           {/* CTA + mobile toggle */}
           <div className="flex items-center gap-3">
+            <ThemeToggle className="hidden lg:inline-flex" />
             <Link
               href="/#enquire"
               className="hidden sm:flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-light text-foreground text-sm font-semibold rounded-lg transition-colors"
@@ -167,7 +165,7 @@ export function Navbar() {
             </Link>
             <button
               onClick={() => setMobileOpen((v) => !v)}
-              className="lg:hidden p-2 text-muted-foreground hover:text-white transition-colors"
+              className="lg:hidden p-2 text-muted-foreground hover:text-foreground transition-colors"
             >
               {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
@@ -179,11 +177,15 @@ export function Navbar() {
       {mobileOpen && (
         <div className="fixed inset-0 z-40 bg-background/98 backdrop-blur-xl flex flex-col pt-16">
           <div className="flex-1 overflow-y-auto px-4 py-6 space-y-1">
+            <div className="px-4 pb-3">
+              <ThemeToggle />
+            </div>
             {NAV_LINKS.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
-                className="flex items-center gap-3 px-4 py-3 rounded-xl text-base text-muted-foreground hover:text-white hover:bg-accent transition-colors"
+                onClick={() => setMobileOpen(false)}
+                className="flex items-center gap-3 px-4 py-3 rounded-xl text-base text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
               >
                 {link.label}
               </Link>
@@ -194,7 +196,8 @@ export function Navbar() {
                 <Link
                   key={p.slug}
                   href={`/projects/${p.slug}`}
-                  className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm text-muted-foreground hover:text-white hover:bg-accent transition-colors"
+                  onClick={() => setMobileOpen(false)}
+                  className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
                 >
                   <span className="w-1.5 h-1.5 rounded-full bg-primary" />
                   {p.name}

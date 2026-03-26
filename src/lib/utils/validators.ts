@@ -39,6 +39,17 @@ const emailSchema = z
   .optional()
   .or(z.literal(""));
 
+const mediaUrlSchema = z.string().refine((value) => {
+  if (value.startsWith("/")) return true;
+
+  try {
+    new URL(value);
+    return true;
+  } catch {
+    return false;
+  }
+}, "Invalid media URL");
+
 // ─── PROPERTY ────────────────────────────────────────────────────────────────
 
 export const LocationValidator = z.object({
@@ -156,7 +167,7 @@ export const NearbyPlaceValidator = z.object({
 });
 
 export const MediaAssetValidator = z.object({
-  url: z.string().url("Invalid media URL"),
+  url: mediaUrlSchema,
   type: z.enum(["image", "floorplan", "brochure", "video", "virtual_tour"]).default("image"),
   caption: z.string().optional(),
   isCover: z.boolean().default(false),

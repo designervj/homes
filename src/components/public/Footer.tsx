@@ -21,7 +21,7 @@ const SERVICES = [
 
 export function Footer() {
   return (
-    <footer className="bg-[#070F18] border-t border-white/[0.04]">
+    <footer className="border-t border-border bg-card">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-8">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 mb-12">
 
@@ -29,25 +29,25 @@ export function Footer() {
           <div className="lg:col-span-1">
             <Link href="/" className="flex items-center gap-2.5 mb-5">
               <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                <Building2 className="w-4 h-4 text-foreground" />
+                <Building2 className="w-4 h-4 text-primary-foreground" />
               </div>
-              <span className="font-serif text-xl font-semibold text-white">
+              <span className="font-serif text-xl font-semibold text-foreground">
                 Homes<span className="text-primary">.</span>
               </span>
             </Link>
-            <p className="text-sm text-[#5A7080] leading-relaxed mb-6 max-w-xs">
+            <p className="text-sm text-muted-foreground leading-relaxed mb-6 max-w-xs">
               Premium real estate advisory connecting buyers with RERA-verified properties across Lucknow and Uttar Pradesh.
             </p>
 
             {/* Contact */}
             <div className="space-y-3">
-              <a href="tel:+918874625303" className="flex items-center gap-2.5 text-sm text-[#5A7080] hover:text-primary transition-colors">
+              <a href="tel:+918874625303" className="flex items-center gap-2.5 text-sm text-muted-foreground hover:text-primary transition-colors">
                 <Phone className="w-3.5 h-3.5 flex-shrink-0" /> +91 88746 25303
               </a>
-              <a href="mailto:info@homes.in" className="flex items-center gap-2.5 text-sm text-[#5A7080] hover:text-primary transition-colors">
+              <a href="mailto:info@homes.in" className="flex items-center gap-2.5 text-sm text-muted-foreground hover:text-primary transition-colors">
                 <Mail className="w-3.5 h-3.5 flex-shrink-0" /> info@homes.in
               </a>
-              <div className="flex items-start gap-2.5 text-sm text-[#5A7080]">
+              <div className="flex items-start gap-2.5 text-sm text-muted-foreground">
                 <MapPin className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
                 <span>Royal Plaza, Sushant Golf City,<br />Sultanpur Road, Lucknow – 226030</span>
               </div>
@@ -64,7 +64,7 @@ export function Footer() {
                 <li key={p.slug}>
                   <Link
                     href={`/projects/${p.slug}`}
-                    className="text-sm text-[#5A7080] hover:text-white transition-colors"
+                    className="text-sm text-muted-foreground hover:text-foreground transition-colors"
                   >
                     {p.name}
                   </Link>
@@ -81,7 +81,7 @@ export function Footer() {
             <ul className="space-y-3">
               {SERVICES.map((s) => (
                 <li key={s}>
-                  <span className="text-sm text-[#5A7080] hover:text-white transition-colors cursor-pointer">
+                  <span className="text-sm text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
                     {s}
                   </span>
                 </li>
@@ -97,7 +97,7 @@ export function Footer() {
             <ul className="space-y-3 mb-8">
               {["About Us", "Our Team", "Blogs & Insights", "Contact Us"].map((item) => (
                 <li key={item}>
-                  <Link href={item === "About Us" ? "/about" : item === "Contact Us" ? "/contact" : item === "Blogs & Insights" ? "/blogs" : "/"} className="text-sm text-[#5A7080] hover:text-white transition-colors">
+                  <Link href={item === "About Us" ? "/about" : item === "Contact Us" ? "/contact" : item === "Blogs & Insights" ? "/blogs" : "/"} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                     {item}
                   </Link>
                 </li>
@@ -109,7 +109,7 @@ export function Footer() {
             <ul className="space-y-2">
               {["UP-RERA Registered", "GST Compliant", "LDA Approved Projects", "SBI Approved"].map((c) => (
                 <li key={c} className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <span className="w-1 h-1 rounded-full bg-emerald-400/60" />
+                  <span className="w-1 h-1 rounded-full bg-primary/70" />
                   {c}
                 </li>
               ))}
@@ -118,13 +118,13 @@ export function Footer() {
         </div>
 
         {/* Bottom bar */}
-        <div className="pt-8 border-t border-white/[0.04] flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-xs text-[#2A3E52]">
+        <div className="pt-8 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4">
+          <p className="text-xs text-muted-foreground">
             © {new Date().getFullYear()} Homes. All rights reserved. A premium real estate advisory platform.
           </p>
           <div className="flex gap-6">
             {["Privacy Policy", "Terms of Service", "RERA Disclaimer"].map((link) => (
-              <Link key={link} href="#" className="text-xs text-[#2A3E52] hover:text-[#5A7080] transition-colors">
+              <Link key={link} href="#" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
                 {link}
               </Link>
             ))}

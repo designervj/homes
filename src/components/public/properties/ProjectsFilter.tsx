@@ -1,7 +1,6 @@
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { SlidersHorizontal, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -38,7 +37,7 @@ export function ProjectsFilter({ currentFilters }: {
 
   const pillBase = "px-3.5 py-1.5 rounded-xl border text-sm transition-all cursor-pointer";
   const active   = "bg-primary text-foreground border-transparent font-medium";
-  const inactive = "bg-card text-[#5A7080] border-border hover:text-white hover:border-white/[0.12]";
+  const inactive = "bg-card text-muted-foreground border-border hover:text-foreground hover:border-primary/20";
 
   return (
     <div className="space-y-3">
@@ -58,7 +57,7 @@ export function ProjectsFilter({ currentFilters }: {
           </button>
         ))}
 
-        <div className="w-px h-5 bg-white/[0.08]" />
+        <div className="h-5 w-px bg-border" />
 
         {/* Possession filter */}
         {POSSESSION.map((p) => (
@@ -71,7 +70,7 @@ export function ProjectsFilter({ currentFilters }: {
           </button>
         ))}
 
-        <div className="w-px h-5 bg-white/[0.08]" />
+        <div className="h-5 w-px bg-border" />
 
         {/* Budget */}
         {BUDGETS.map((b) => {

@@ -8,16 +8,47 @@ import Lead from "@/lib/db/models/Lead";
 import Property from "@/lib/db/models/Property";
 import { requireAuth, withRole } from "@/lib/auth/utils";
 import {
+  requireObjectId,
+  serialize,
+  toObjectId,
+} from "@/lib/db/actions/helpers";
+import {
   EnquiryValidator,
   EnquiryStatusUpdateValidator,
   type EnquiryInput,
 } from "@/lib/utils/validators";
 import type { ApiResponse, IEnquiry, ILead } from "@/types";
 
-// ─── HELPERS ──────────────────────────────────────────────────────────────────
+type EnquiryListQuery = {
+  status?: string;
+  propertyId?: import("mongoose").Types.ObjectId;
+};
 
-function serialize<T>(doc: any): T {
-  return JSON.parse(JSON.stringify(doc)) as T;
+function getActorId(userId: string, actionName: string) {
+  return requireObjectId(userId, `${actionName}: session user id`);
+}
+
+function sanitizeEnquiryProperty(
+  propertyId: string | undefined,
+  propertyName: string | undefined,
+  propertySlug: string | undefined,
+  actionName: string
+) {
+  const objectId = toObjectId(propertyId);
+
+  if (propertyId && !objectId) {
+    console.error(`[${actionName}] Invalid propertyId received`, {
+      propertyId,
+      propertyName,
+      propertySlug,
+    });
+  }
+
+  return {
+    propertyId: objectId,
+    propertyName,
+    propertySlug,
+  };
 }
 
 // ─── SUBMIT ENQUIRY (public — no auth required) ───────────────────────────────
@@ -34,6 +65,12 @@ export async function submitEnquiry(
     await connectDB();
 
     const data = EnquiryValidator.parse(rawData);
+    const propertyRef = sanitizeEnquiryProperty(
+      data.propertyId,
+      data.propertyName,
+      data.propertySlug,
+      "submitEnquiry"
+    );
 
     // Capture request metadata for spam detection and dedup
     const headersList = await headers();
@@ -44,10 +81,10 @@ export async function submitEnquiry(
     const userAgent = headersList.get("user-agent") || "unknown";
 
     // Basic duplicate guard — same phone + same property in last 24h
-    if (data.propertyId) {
+    if (propertyRef.propertyId) {
       const recentDuplicate = await Enquiry.findOne({
         phone: data.phone,
-        propertyId: data.propertyId,
+        propertyId: propertyRef.propertyId,
         createdAt: { $gte: new Date(Date.now() - 24 * 60 * 60 * 1000) },
       });
 
@@ -64,14 +101,15 @@ export async function submitEnquiry(
 
     const enquiry = await Enquiry.create({
       ...data,
+      ...propertyRef,
       status: "new",
       ipAddress,
       userAgent,
     });
 
     // Increment enquiry count on the property (fire and forget)
-    if (data.propertyId) {
-      Property.findByIdAndUpdate(data.propertyId, {
+    if (propertyRef.propertyId) {
+      Property.findByIdAndUpdate(propertyRef.propertyId, {
         $inc: { enquiryCount: 1 },
       }).catch(console.error);
     }
@@ -106,11 +144,20 @@ export async function getEnquiries(filters: {
     await connectDB();
 
     const { status, propertyId, page = 1, limit = 20 } = filters;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const query: Record<string, any> = {};
+    const query: EnquiryListQuery = {};
 
     if (status && status !== "all") query.status = status;
-    if (propertyId) query.propertyId = propertyId;
+    if (propertyId) {
+      const propertyObjectId = toObjectId(propertyId);
+      if (!propertyObjectId) {
+        return {
+          success: true,
+          data: [],
+          pagination: { page, limit, total: 0, totalPages: 0 },
+        };
+      }
+      query.propertyId = propertyObjectId;
+    }
 
     const skip = (page - 1) * limit;
 
@@ -180,6 +227,7 @@ export async function markEnquiryReviewed(
   try {
     const user = await requireAuth();
     await connectDB();
+    const actorId = getActorId(user.id, "markEnquiryReviewed");
 
     const validated = EnquiryStatusUpdateValidator.parse({
       id,
@@ -190,7 +238,7 @@ export async function markEnquiryReviewed(
       validated.id,
       {
         status: "reviewed",
-        reviewedBy: user.id,
+        reviewedBy: actorId,
         reviewedAt: new Date(),
       },
       { new: true }
@@ -243,6 +291,7 @@ export async function convertEnquiryToLead(
   try {
     const user = await requireAuth();
     await connectDB();
+    const actorId = getActorId(user.id, "convertEnquiryToLead");
 
     const enquiry = await Enquiry.findById(enquiryId);
     if (!enquiry) return { success: false, error: "Enquiry not found" };
@@ -254,6 +303,17 @@ export async function convertEnquiryToLead(
       };
     }
 
+    const propertyRef = sanitizeEnquiryProperty(
+      enquiry.propertyId?.toString(),
+      enquiry.propertyName,
+      enquiry.propertySlug,
+      "convertEnquiryToLead"
+    );
+    const interestedIn =
+      Array.isArray(enquiry.interestedIn) && enquiry.interestedIn.length > 0
+        ? enquiry.interestedIn
+        : ["general"];
+
     // Create the lead
     const lead = await Lead.create({
       name: enquiry.name,
@@ -261,18 +321,17 @@ export async function convertEnquiryToLead(
       email: enquiry.email,
       stage: "new",
       source: enquiry.source || "website",
-      propertyId: enquiry.propertyId,
-      propertyName: enquiry.propertyName,
-      propertySlug: enquiry.propertySlug,
-      requirements: enquiry.budgetRange 
-        ? `${enquiry.interestedIn.join(", ")} (Budget: ${enquiry.budgetRange})`
-        : enquiry.interestedIn.join(", "),
+      ...propertyRef,
+      requirements: enquiry.budgetRange
+        ? `${interestedIn.join(", ")} (Budget: ${enquiry.budgetRange})`
+        : interestedIn.join(", "),
       convertedFromEnquiryId: enquiry._id,
+      interestedIn,
       activityLog: [
         {
           action: "Lead created from enquiry",
           note: `Converted from enquiry by ${user.name}. Original message: ${enquiry.message || "No message"}${enquiry.budgetRange ? `. Budget: ${enquiry.budgetRange}` : ""}`,
-          performedBy: user.id,
+          performedBy: actorId,
           performedAt: new Date(),
           stage: "new",
         },
@@ -283,7 +342,7 @@ export async function convertEnquiryToLead(
     await Enquiry.findByIdAndUpdate(enquiryId, {
       status: "converted",
       convertedLeadId: lead._id,
-      reviewedBy: user.id,
+      reviewedBy: actorId,
       reviewedAt: new Date(),
     });
 
@@ -296,7 +355,10 @@ export async function convertEnquiryToLead(
       message: `Lead created for ${lead.name}`,
     };
   } catch (error) {
-    console.error("[convertEnquiryToLead]", error);
+    console.error("[convertEnquiryToLead]", {
+      enquiryId,
+      error,
+    });
     return { success: false, error: "Failed to convert enquiry to lead" };
   }
 }

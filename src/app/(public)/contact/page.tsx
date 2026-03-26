@@ -18,10 +18,10 @@ export default function ContactPage() {
             <span className="text-xs text-primary uppercase tracking-widest font-medium">Get In Touch</span>
             <div className="w-7 h-px bg-primary" />
           </div>
-          <h1 className="font-serif text-4xl sm:text-5xl font-medium text-white mb-4">
+          <h1 className="mb-4 font-serif text-4xl font-medium text-foreground sm:text-5xl">
             Talk to a Property Expert
           </h1>
-          <p className="text-[#5A7080]">
+          <p className="text-muted-foreground">
             Our advisory team responds within 2–4 hours on business days. No pushy sales — just honest guidance.
           </p>
         </div>
@@ -44,8 +44,8 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <p className="text-xs text-muted-foreground uppercase tracking-wide mb-0.5">{item.label}</p>
-                    <p className="text-sm font-medium text-white">{item.value}</p>
-                    <p className="text-xs text-[#5A7080] mt-0.5">{item.sub}</p>
+                    <p className="text-sm font-medium text-foreground">{item.value}</p>
+                    <p className="mt-0.5 text-xs text-muted-foreground">{item.sub}</p>
                   </div>
                 </div>
               );
@@ -59,7 +59,7 @@ export default function ContactPage() {
 
           {/* Form */}
           <div className="lg:col-span-3 bg-card border border-border rounded-2xl p-8">
-            <h2 className="font-serif text-xl font-medium text-white mb-6">Send an Enquiry</h2>
+            <h2 className="mb-6 font-serif text-xl font-medium text-foreground">Send an Enquiry</h2>
             <EnquiryForm variant="inline" />
           </div>
         </div>

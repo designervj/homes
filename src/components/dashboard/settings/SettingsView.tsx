@@ -22,8 +22,8 @@ const ROLE_LABELS: Record<UserRole, string> = {
 
 const ROLE_BADGE: Record<UserRole, string> = {
   super_admin: "bg-primary/10 text-primary border-primary/20",
-  admin:       "bg-blue-500/10 text-blue-400 border-blue-500/20",
-  agent:       "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
+  admin:       "bg-secondary/10 text-secondary border-secondary/20",
+  agent:       "bg-accent text-foreground border-border",
 };
 
 const TABS = [
@@ -33,8 +33,8 @@ const TABS = [
   { key: "system",   label: "System",   icon: Info },
 ];
 
-const inputCls = "w-full bg-accent border border-white/[0.10] rounded-lg px-3.5 py-2.5 text-sm text-white placeholder:text-muted-foreground outline-none focus:border-primary/50 transition-all";
-const labelCls = "block text-xs text-[#5A7080] mb-1.5 uppercase tracking-wide";
+const inputCls = "w-full rounded-lg border border-border bg-accent px-3.5 py-2.5 text-sm text-foreground placeholder:text-muted-foreground outline-none transition-all focus:border-primary/50";
+const labelCls = "mb-1.5 block text-xs uppercase tracking-wide text-muted-foreground";
 
 export function SettingsView({
   currentUser,
@@ -52,7 +52,7 @@ export function SettingsView({
   const { register, handleSubmit, reset, formState: { errors } } =
     useForm<PasswordFormData>({ resolver: zodResolver(ChangePasswordValidator) });
 
-  const handlePasswordChange = (data: PasswordFormData) => {
+  const handlePasswordChange = () => {
     startTransition(async () => {
       // In a full implementation this would call a Server Action
       // For now we show a toast that it would work
@@ -66,8 +66,8 @@ export function SettingsView({
     <div className="space-y-6 max-w-4xl">
       {/* Header */}
       <div>
-        <h1 className="font-serif text-2xl font-medium text-white">Settings</h1>
-        <p className="text-sm text-[#5A7080] mt-1">Manage your account and system configuration.</p>
+        <h1 className="font-serif text-2xl font-medium text-foreground">Settings</h1>
+        <p className="mt-1 text-sm text-muted-foreground">Manage your account and system configuration.</p>
       </div>
 
       <div className="flex gap-6 flex-col lg:flex-row">
@@ -82,7 +82,7 @@ export function SettingsView({
                 className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm transition-all whitespace-nowrap ${
                   activeTab === tab.key
                     ? "bg-primary/10 text-primary font-medium"
-                    : "text-[#5A7080] hover:text-white hover:bg-accent"
+                    : "text-muted-foreground hover:text-foreground hover:bg-accent"
                 }`}
               >
                 <Icon className="w-4 h-4 flex-shrink-0" />
@@ -98,17 +98,17 @@ export function SettingsView({
           {/* Profile Tab */}
           {activeTab === "profile" && (
             <div className="bg-card border border-border rounded-xl p-6 space-y-6">
-              <h2 className="text-sm font-medium text-white">Account Profile</h2>
+              <h2 className="text-sm font-medium text-foreground">Account Profile</h2>
 
-              <div className="flex items-center gap-4 p-4 bg-accent/40 rounded-xl border border-white/[0.04]">
+              <div className="flex items-center gap-4 rounded-xl border border-border bg-accent/40 p-4">
                 <div className="w-14 h-14 rounded-xl bg-primary/15 border border-primary/25 flex items-center justify-center flex-shrink-0">
                   <span className="font-serif text-xl font-semibold text-primary">
                     {currentUser.name.split(" ").map((n) => n[0]).join("").slice(0, 2)}
                   </span>
                 </div>
                 <div>
-                  <p className="text-base font-medium text-white">{currentUser.name}</p>
-                  <p className="text-sm text-[#5A7080]">{currentUser.email}</p>
+                  <p className="text-base font-medium text-foreground">{currentUser.name}</p>
+                  <p className="text-sm text-muted-foreground">{currentUser.email}</p>
                   <span className={`inline-flex items-center text-xs px-2 py-0.5 rounded-full border mt-1 font-medium ${ROLE_BADGE[currentUser.role]}`}>
                     {ROLE_LABELS[currentUser.role]}
                   </span>
@@ -144,7 +144,7 @@ export function SettingsView({
           {activeTab === "security" && (
             <div className="space-y-5">
               <div className="bg-card border border-border rounded-xl p-6">
-                <h2 className="text-sm font-medium text-white mb-5 flex items-center gap-2">
+                <h2 className="mb-5 flex items-center gap-2 text-sm font-medium text-foreground">
                   <Lock className="w-4 h-4 text-primary" /> Change Password
                 </h2>
                 <form onSubmit={handleSubmit(handlePasswordChange)} className="space-y-4">
@@ -196,8 +196,8 @@ export function SettingsView({
                     {errors.confirmPassword && <p className="text-xs text-red-400 mt-1">{errors.confirmPassword.message}</p>}
                   </div>
 
-                  <div className="p-3 bg-accent/40 rounded-lg border border-white/[0.04]">
-                    <p className="text-xs text-[#5A7080] mb-2">Password requirements:</p>
+                  <div className="rounded-lg border border-border bg-accent/40 p-3">
+                    <p className="mb-2 text-xs text-muted-foreground">Password requirements:</p>
                     {["At least 8 characters", "One uppercase letter", "One number", "One special character"].map((req) => (
                       <p key={req} className="flex items-center gap-1.5 text-xs text-muted-foreground">
                         <CheckCircle className="w-3 h-3" /> {req}
@@ -217,10 +217,10 @@ export function SettingsView({
               </div>
 
               <div className="bg-card border border-border rounded-xl p-6">
-                <h2 className="text-sm font-medium text-white mb-3 flex items-center gap-2">
+                <h2 className="mb-3 flex items-center gap-2 text-sm font-medium text-foreground">
                   <Shield className="w-4 h-4 text-primary" /> Security Info
                 </h2>
-                <div className="space-y-3 text-sm text-[#5A7080]">
+                <div className="space-y-3 text-sm text-muted-foreground">
                   <p>• Passwords are hashed with bcrypt (cost factor 12) and never stored in plaintext.</p>
                   <p>• Sessions use JWT tokens — valid for 30 days. Signing out invalidates the session.</p>
                   <p>• All admin routes require authentication. Unauthorized access attempts are rejected at the edge.</p>
@@ -233,7 +233,7 @@ export function SettingsView({
           {activeTab === "team" && (
             <div className="bg-card border border-border rounded-xl p-6">
               <div className="flex items-center justify-between mb-5">
-                <h2 className="text-sm font-medium text-white flex items-center gap-2">
+                <h2 className="flex items-center gap-2 text-sm font-medium text-foreground">
                   <Users2 className="w-4 h-4 text-primary" /> Team Members
                 </h2>
                 <span className="text-xs text-muted-foreground bg-accent px-2.5 py-1 rounded-full">
@@ -248,7 +248,7 @@ export function SettingsView({
                   {agents.map((agent) => (
                     <div
                       key={agent.id}
-                      className="flex items-center gap-4 p-4 bg-accent/40 border border-white/[0.04] rounded-xl"
+                      className="flex items-center gap-4 rounded-xl border border-border bg-accent/40 p-4"
                     >
                       <div className="w-9 h-9 rounded-full bg-primary/15 flex items-center justify-center flex-shrink-0">
                         <span className="text-sm font-semibold text-primary">
@@ -256,8 +256,8 @@ export function SettingsView({
                         </span>
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-white">{agent.name}</p>
-                        <p className="text-xs text-[#5A7080] truncate">{agent.email}</p>
+                        <p className="text-sm font-medium text-foreground">{agent.name}</p>
+                        <p className="truncate text-xs text-muted-foreground">{agent.email}</p>
                       </div>
                       <span className={`text-xs px-2.5 py-1 rounded-full border font-medium capitalize ${
                         agent.role === "super_admin" ? ROLE_BADGE.super_admin :
@@ -280,7 +280,7 @@ export function SettingsView({
           {activeTab === "system" && (
             <div className="space-y-5">
               <div className="bg-card border border-border rounded-xl p-6">
-                <h2 className="text-sm font-medium text-white mb-5 flex items-center gap-2">
+                <h2 className="mb-5 flex items-center gap-2 text-sm font-medium text-foreground">
                   <Database className="w-4 h-4 text-primary" /> System Information
                 </h2>
                 <div className="space-y-3">
@@ -291,8 +291,8 @@ export function SettingsView({
                     { label: "Auth",        value: "NextAuth v5 — JWT Strategy" },
                     { label: "Styling",     value: "Tailwind CSS v4 + ShadCN UI (Nova)" },
                   ].map(({ label, value }) => (
-                    <div key={label} className="flex items-center justify-between py-2 border-b border-white/[0.04] last:border-0">
-                      <span className="text-xs text-[#5A7080]">{label}</span>
+                    <div key={label} className="flex items-center justify-between border-b border-border py-2 last:border-0">
+                      <span className="text-xs text-muted-foreground">{label}</span>
                       <span className="text-xs text-muted-foreground font-medium">{value}</span>
                     </div>
                   ))}
@@ -300,7 +300,7 @@ export function SettingsView({
               </div>
 
               <div className="bg-card border border-border rounded-xl p-6">
-                <h2 className="text-sm font-medium text-white mb-5 flex items-center gap-2">
+                <h2 className="mb-5 flex items-center gap-2 text-sm font-medium text-foreground">
                   <Building2 className="w-4 h-4 text-primary" /> Business Configuration
                 </h2>
                 <div className="space-y-3">
@@ -311,8 +311,8 @@ export function SettingsView({
                     { label: "Contact Phone",  value: "+91 88746 25303" },
                     { label: "Office",         value: "Sushant Golf City, Lucknow" },
                   ].map(({ label, value }) => (
-                    <div key={label} className="flex items-center justify-between py-2 border-b border-white/[0.04] last:border-0">
-                      <span className="text-xs text-[#5A7080]">{label}</span>
+                    <div key={label} className="flex items-center justify-between border-b border-border py-2 last:border-0">
+                      <span className="text-xs text-muted-foreground">{label}</span>
                       <span className="text-xs text-muted-foreground font-medium">{value}</span>
                     </div>
                   ))}

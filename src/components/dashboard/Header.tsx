@@ -2,6 +2,7 @@
 
 import { signOut } from "next-auth/react";
 import { LogOut, Bell, ChevronDown } from "lucide-react";
+import { ThemeToggle } from "@/components/shared/ThemeToggle";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -24,8 +25,8 @@ const ROLE_LABELS: Record<UserRole, string> = {
 
 const ROLE_COLORS: Record<UserRole, string> = {
   super_admin: "text-primary",
-  admin: "text-blue-400",
-  agent: "text-emerald-400",
+  admin: "text-secondary",
+  agent: "text-muted-foreground",
 };
 
 // ─── COMPONENT ────────────────────────────────────────────────────────────────
@@ -61,12 +62,13 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
 
       {/* Right — actions + user */}
       <div className="flex items-center gap-3">
+        <ThemeToggle />
 
         {/* Notifications (placeholder) */}
         <Button
           variant="ghost"
           size="icon"
-          className="w-8 h-8 text-muted-foreground hover:text-muted-foreground hover:bg-accent"
+          className="w-8 h-8 text-muted-foreground hover:text-foreground hover:bg-accent"
         >
           <Bell className="w-4 h-4" />
         </Button>
@@ -81,7 +83,7 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
                 </AvatarFallback>
               </Avatar>
               <div className="flex flex-col items-start">
-                <span className="text-sm font-medium text-white leading-tight">
+                <span className="text-sm font-medium text-foreground leading-tight">
                   {user.name}
                 </span>
                 <span className={`text-[10px] leading-tight ${ROLE_COLORS[user.role]}`}>
@@ -94,15 +96,15 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
 
           <DropdownMenuContent
             align="end"
-            className="w-52 bg-card border-border text-white"
+            className="w-52 border-border bg-card text-foreground"
           >
             <DropdownMenuLabel className="text-muted-foreground text-xs font-normal">
               Signed in as
-              <span className="block text-white font-medium text-sm mt-0.5 truncate">
+              <span className="mt-0.5 block truncate text-sm font-medium text-foreground">
                 {user.email}
               </span>
             </DropdownMenuLabel>
-            <DropdownMenuSeparator className="bg-white/[0.06]" />
+            <DropdownMenuSeparator className="bg-border" />
             <DropdownMenuItem
               className="text-red-400 hover:text-red-300 hover:bg-red-500/10 cursor-pointer text-sm gap-2"
               onClick={() => signOut({ callbackUrl: "/auth/login" })}

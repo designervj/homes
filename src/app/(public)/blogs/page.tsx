@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { ArrowRight, BookOpen } from "lucide-react";
 import type { Metadata } from "next";
 
@@ -54,12 +53,12 @@ const PLACEHOLDER_POSTS = [
 ];
 
 const CATEGORY_COLORS: Record<string, string> = {
-  "Market Insight": "bg-blue-500/10 text-blue-400 border-blue-500/20",
-  "Buyer's Guide":  "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
-  "Investment":     "bg-primary/10 text-primary border-primary/20",
-  "Home Loans":     "bg-purple-500/10 text-purple-400 border-purple-500/20",
-  "Legal Guide":    "bg-orange-500/10 text-orange-400 border-orange-500/20",
-  "Neighbourhood":  "bg-pink-500/10 text-pink-400 border-pink-500/20",
+  "Market Insight": "bg-primary/10 text-primary border-primary/20",
+  "Buyer's Guide":  "bg-secondary/10 text-secondary border-secondary/20",
+  "Investment":     "bg-accent text-foreground border-border",
+  "Home Loans":     "bg-primary-pale text-primary border-primary/25",
+  "Legal Guide":    "bg-accent text-foreground border-border",
+  "Neighbourhood":  "bg-secondary/10 text-secondary border-secondary/20",
 };
 
 export default function BlogsPage() {
@@ -73,8 +72,8 @@ export default function BlogsPage() {
             <div className="w-7 h-px bg-primary" />
             <span className="text-xs text-primary uppercase tracking-widest font-medium">Insights</span>
           </div>
-          <h1 className="font-serif text-5xl font-medium text-white mb-4">Blogs & Market Insights</h1>
-          <p className="text-[#5A7080] leading-relaxed">
+          <h1 className="mb-4 font-serif text-5xl font-medium text-foreground">Blogs & Market Insights</h1>
+          <p className="leading-relaxed text-muted-foreground">
             Property buying guides, market analysis, and investment insights for Lucknow and Uttar Pradesh real estate — written by our advisory team.
           </p>
         </div>
@@ -89,10 +88,10 @@ export default function BlogsPage() {
                 </span>
                 <span className="text-xs text-muted-foreground">March 2025 · 5 min read</span>
               </div>
-              <h2 className="font-serif text-2xl font-medium text-white mb-3 group-hover:text-primary-light transition-colors">
+              <h2 className="mb-3 font-serif text-2xl font-medium text-foreground transition-colors group-hover:text-primary-light">
                 {PLACEHOLDER_POSTS[0].title}
               </h2>
-              <p className="text-[#5A7080] leading-relaxed">{PLACEHOLDER_POSTS[0].excerpt}</p>
+              <p className="leading-relaxed text-muted-foreground">{PLACEHOLDER_POSTS[0].excerpt}</p>
             </div>
             <div className="flex items-center gap-2 text-sm text-primary group-hover:text-primary-light transition-colors flex-shrink-0 mt-4">
               Read Article <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -108,16 +107,16 @@ export default function BlogsPage() {
               className="group bg-card border border-border hover:border-primary/20 rounded-2xl p-6 transition-all cursor-pointer flex flex-col"
             >
               <div className="flex items-center justify-between mb-4">
-                <span className={`text-xs px-2.5 py-1 rounded-full border font-medium ${CATEGORY_COLORS[post.category] ?? "bg-white/5 text-muted-foreground border-border"}`}>
+                <span className={`text-xs px-2.5 py-1 rounded-full border font-medium ${CATEGORY_COLORS[post.category] ?? "bg-accent text-muted-foreground border-border"}`}>
                   {post.category}
                 </span>
                 <span className="text-xs text-muted-foreground">{post.readTime}</span>
               </div>
-              <h3 className="font-serif text-lg font-medium text-white mb-3 group-hover:text-primary-light transition-colors line-clamp-2 flex-1">
+              <h3 className="mb-3 flex-1 line-clamp-2 font-serif text-lg font-medium text-foreground transition-colors group-hover:text-primary-light">
                 {post.title}
               </h3>
-              <p className="text-sm text-[#5A7080] leading-relaxed line-clamp-3 mb-5">{post.excerpt}</p>
-              <div className="flex items-center justify-between pt-4 border-t border-white/[0.04]">
+              <p className="mb-5 line-clamp-3 text-sm leading-relaxed text-muted-foreground">{post.excerpt}</p>
+              <div className="flex items-center justify-between border-t border-border pt-4">
                 <span className="text-xs text-muted-foreground">{post.date}</span>
                 <span className="flex items-center gap-1.5 text-xs text-primary group-hover:text-primary-light transition-colors">
                   Read <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
@@ -131,8 +130,8 @@ export default function BlogsPage() {
         <div className="mt-14 bg-primary/5 border border-primary/15 rounded-2xl p-6 flex items-start gap-4">
           <BookOpen className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
           <div>
-            <p className="text-sm font-medium text-white mb-1">Blog content is static for now</p>
-            <p className="text-sm text-[#5A7080]">
+            <p className="mb-1 text-sm font-medium text-foreground">Blog content is static for now</p>
+            <p className="text-sm text-muted-foreground">
               A full CMS integration (Contentlayer, Sanity, or a <code className="text-primary bg-accent px-1.5 py-0.5 rounded">posts</code> MongoDB collection) can be added in a future phase to enable dynamic publishing directly from the admin dashboard.
             </p>
           </div>

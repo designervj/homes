@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "seed": "npx tsx scripts/seed.ts",
+    "seed": "node --import tsx scripts/seed.ts",
+    "seed:leads": "node --import tsx scripts/seed-leads.ts",
     "lint": "eslint"
   },
   "dependencies": {

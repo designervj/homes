@@ -1,9 +1,11 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import { getPropertyBySlug, getAllPropertySlugs } from "@/lib/db/actions/property.actions";
-import { ReraBadge, LdaBadge } from "@/components/public/properties/ReraBadge";
+import { ReraBadge } from "@/components/public/properties/ReraBadge";
 import { EnquiryForm } from "@/components/public/forms/EnquiryForm";
 import { PropertyGallery } from "@/components/public/properties/PropertyGallery";
+import { AmenityIcon } from "@/components/shared/AmenityIcon";
 import {
   MapPin, Maximize2, BedDouble, Bath, Car,
   CheckCircle, ChevronRight, BadgeCheck, Phone,
@@ -103,9 +105,9 @@ export default async function PropertyDetailPage({
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between flex-wrap gap-3">
             <div>
               <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
-                <a href="/" className="hover:text-primary transition-colors">Home</a>
+                <Link href="/" className="transition-colors hover:text-primary">Home</Link>
                 <ChevronRight className="w-3 h-3" />
-                <a href="/projects" className="hover:text-primary transition-colors">Projects</a>
+                <Link href="/projects" className="transition-colors hover:text-primary">Projects</Link>
                 <ChevronRight className="w-3 h-3" />
                 <span className="text-muted-foreground">{p.projectName ?? p.title}</span>
               </div>
@@ -113,10 +115,10 @@ export default async function PropertyDetailPage({
                 {p.legalInfo?.reraRegistered && (
                   <ReraBadge reraId={p.legalInfo.reraId} size="sm" showId />
                 )}
-                <span className="text-xs text-[#5A7080] bg-accent px-2 py-0.5 rounded-md">
+                <span className="rounded-md bg-accent px-2 py-0.5 text-xs text-muted-foreground">
                   {p.specifications?.propertyType}
                 </span>
-                <span className="text-xs text-[#5A7080] bg-accent px-2 py-0.5 rounded-md capitalize">
+                <span className="rounded-md bg-accent px-2 py-0.5 text-xs capitalize text-muted-foreground">
                   {p.specifications?.possessionStatus}
                 </span>
               </div>
@@ -126,7 +128,7 @@ export default async function PropertyDetailPage({
                 <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Starting From</p>
                 <p className="font-serif text-2xl font-semibold text-primary">{formatINR(price)}</p>
                 {p.financials?.pricePerSqft && (
-                  <p className="text-xs text-[#5A7080]">₹{p.financials.pricePerSqft.toLocaleString("en-IN")}/sqft</p>
+                  <p className="text-xs text-muted-foreground">₹{p.financials.pricePerSqft.toLocaleString("en-IN")}/sqft</p>
                 )}
               </div>
             )}
@@ -144,10 +146,10 @@ export default async function PropertyDetailPage({
 
               {/* Title + overview */}
               <div>
-                <h1 className="font-serif text-3xl sm:text-4xl font-medium text-white mb-2">
+                <h1 className="mb-2 font-serif text-3xl font-medium text-foreground sm:text-4xl">
                   {p.projectName ?? p.title}
                 </h1>
-                <div className="flex items-center gap-1.5 text-sm text-[#5A7080] mb-6">
+                <div className="mb-6 flex items-center gap-1.5 text-sm text-muted-foreground">
                   <MapPin className="w-4 h-4 text-primary" />
                   {p.location?.address}, {p.location?.city} – {p.location?.pincode}
                 </div>
@@ -191,7 +193,7 @@ export default async function PropertyDetailPage({
                       <div key={spec.label} className="bg-card border border-border rounded-xl p-4">
                         <Icon className="w-4 h-4 text-primary mb-2" />
                         <p className="text-[10px] text-muted-foreground uppercase tracking-wide mb-1">{spec.label}</p>
-                        <p className="text-sm font-medium text-white">{spec.value}</p>
+                        <p className="text-sm font-medium text-foreground">{spec.value}</p>
                       </div>
                     );
                   })}
@@ -199,7 +201,7 @@ export default async function PropertyDetailPage({
 
               {/* Full specifications table */}
               <div>
-                <h2 className="font-serif text-2xl font-medium text-white mb-5">Specifications</h2>
+                <h2 className="mb-5 font-serif text-2xl font-medium text-foreground">Specifications</h2>
                 <div className="bg-card border border-border rounded-xl overflow-hidden">
                   <table className="w-full">
                     <tbody>
@@ -225,18 +227,18 @@ export default async function PropertyDetailPage({
                       ]
                         .filter(([, v]) => v)
                         .map(([label, value], i, arr) => (
-                          <tr key={label} className={i < arr.length - 1 ? "border-b border-white/[0.04]" : ""}>
-                            <td className="px-5 py-3.5 text-sm text-[#5A7080] w-[45%]">{label}</td>
-                            <td className={`px-5 py-3.5 text-sm font-medium ${label === "RERA ID" ? "text-emerald-400" : "text-white"}`}>
+                          <tr key={label} className={i < arr.length - 1 ? "border-b border-border" : ""}>
+                            <td className="w-[45%] px-5 py-3.5 text-sm text-muted-foreground">{label}</td>
+                            <td className={`px-5 py-3.5 text-sm font-medium ${label === "RERA ID" ? "text-secondary" : "text-foreground"}`}>
                               {value}
                             </td>
                           </tr>
                         ))}
                       {p.legalInfo?.reraId && (
                         <tr>
-                          <td className="px-5 py-3.5 text-sm text-[#5A7080]">RERA Registration</td>
+                          <td className="px-5 py-3.5 text-sm text-muted-foreground">RERA Registration</td>
                           <td className="px-5 py-3.5">
-                            <span className="flex items-center gap-1.5 text-sm text-emerald-400 font-medium">
+                            <span className="flex items-center gap-1.5 text-sm text-secondary font-medium">
                               <BadgeCheck className="w-4 h-4" /> {p.legalInfo.reraId}
                             </span>
                           </td>
@@ -250,14 +252,14 @@ export default async function PropertyDetailPage({
               {/* Amenities */}
               {p.features?.amenities && p.features.amenities.length > 0 && (
                 <div>
-                  <h2 className="font-serif text-2xl font-medium text-white mb-5">Amenities</h2>
+                  <h2 className="mb-5 font-serif text-2xl font-medium text-foreground">Amenities</h2>
                   <div className="flex flex-wrap gap-2.5">
                     {p.features.amenities.map((amenity) => (
                       <div
                         key={amenity}
                         className="flex items-center gap-2 text-sm text-primary bg-primary/8 border border-primary/20 px-3.5 py-2 rounded-xl"
                       >
-                        <CheckCircle className="w-3.5 h-3.5 flex-shrink-0" />
+                        <AmenityIcon amenity={amenity} className="h-3.5 w-3.5 flex-shrink-0" />
                         {amenity}
                       </div>
                     ))}
@@ -268,7 +270,7 @@ export default async function PropertyDetailPage({
               {/* Floor plans */}
               {floorplans.length > 0 && (
                 <div>
-                  <h2 className="font-serif text-2xl font-medium text-white mb-5">Floor Plans</h2>
+                  <h2 className="mb-5 font-serif text-2xl font-medium text-foreground">Floor Plans</h2>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {floorplans.map((fp, i) => (
                       <div key={i} className="relative aspect-[4/3] bg-card border border-border rounded-xl overflow-hidden">
@@ -287,7 +289,7 @@ export default async function PropertyDetailPage({
               {/* Nearby places */}
               {Object.keys(nearbyByCategory).length > 0 && (
                 <div>
-                  <h2 className="font-serif text-2xl font-medium text-white mb-5">Nearby Places</h2>
+                  <h2 className="mb-5 font-serif text-2xl font-medium text-foreground">Nearby Places</h2>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {Object.entries(nearbyByCategory).map(([category, places]) => (
                       <div key={category} className="bg-card border border-border rounded-xl p-5">
@@ -311,14 +313,14 @@ export default async function PropertyDetailPage({
               {/* Map placeholder */}
               {p.location?.coordinates && (
                 <div>
-                  <h2 className="font-serif text-2xl font-medium text-white mb-5">Location</h2>
+                  <h2 className="mb-5 font-serif text-2xl font-medium text-foreground">Location</h2>
                   <div className="bg-card border border-border rounded-xl p-6 flex items-center gap-4">
                     <div className="w-12 h-12 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center flex-shrink-0">
                       <MapPin className="w-5 h-5 text-primary" />
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-white">{p.location.address}</p>
-                      <p className="text-xs text-[#5A7080] mt-0.5">{p.location.city}, {p.location.state} – {p.location.pincode}</p>
+                      <p className="text-sm font-medium text-foreground">{p.location.address}</p>
+                      <p className="mt-0.5 text-xs text-muted-foreground">{p.location.city}, {p.location.state} – {p.location.pincode}</p>
                     </div>
                     {p.location.googleMapsUrl && (
                       <a
@@ -340,7 +342,7 @@ export default async function PropertyDetailPage({
 
               {/* Enquiry form card */}
               <div className="bg-card border border-border rounded-2xl p-6 sticky top-36">
-                <h3 className="font-serif text-lg font-medium text-white mb-5">
+                <h3 className="mb-5 font-serif text-lg font-medium text-foreground">
                   Enquire About This Property
                 </h3>
                 <EnquiryForm
@@ -382,25 +384,25 @@ export default async function PropertyDetailPage({
                   </div>
                 )}
                 {p.financials?.approvedBanks && p.financials.approvedBanks.length > 0 && (
-                  <div>
-                    <p className="text-xs text-muted-foreground mb-1.5">Bank Approved</p>
-                    <div className="flex flex-wrap gap-1.5">
-                      {p.financials.approvedBanks.slice(0, 4).map((bank) => (
-                        <span key={bank} className="text-[11px] px-2 py-0.5 rounded-md bg-accent text-[#5A7080]">
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1.5">Bank Approved</p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {p.financials.approvedBanks.slice(0, 4).map((bank) => (
+                        <span key={bank} className="rounded-md bg-accent px-2 py-0.5 text-[11px] text-muted-foreground">
                           {bank}
                         </span>
-                      ))}
+                        ))}
+                      </div>
                     </div>
-                  </div>
                 )}
                 {p.features?.isGatedCommunity && (
-                  <div className="flex items-center gap-2 text-xs text-[#5A7080]">
-                    <CheckCircle className="w-3.5 h-3.5 text-emerald-400" /> Gated Community
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <CheckCircle className="w-3.5 h-3.5 text-secondary" /> Gated Community
                   </div>
                 )}
                 {p.features?.isVastuCompliant && (
-                  <div className="flex items-center gap-2 text-xs text-[#5A7080]">
-                    <CheckCircle className="w-3.5 h-3.5 text-emerald-400" /> Vastu Compliant
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <CheckCircle className="w-3.5 h-3.5 text-secondary" /> Vastu Compliant
                   </div>
                 )}
               </div>

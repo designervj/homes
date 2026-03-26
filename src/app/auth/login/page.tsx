@@ -50,6 +50,32 @@ function LoginForm() {
   );
   const [isPending, startTransition] = useTransition();
 
+  // Magic Login Bot Protection
+  const [num1] = useState(() => Math.floor(Math.random() * 10) + 1);
+  const [num2] = useState(() => Math.floor(Math.random() * 10) + 1);
+  const [botAnswer, setBotAnswer] = useState("");
+  const isHuman = parseInt(botAnswer) === num1 + num2;
+
+  const handleMagicLogin = () => {
+    if (!isHuman) return;
+    setAuthError(null);
+    startTransition(async () => {
+      const result = await signIn("credentials", {
+        email: "admin@homes.in",
+        password: "Admin@Homes2025!",
+        redirect: false,
+      });
+
+      if (result?.error) {
+        setAuthError("Magic login failed.");
+        return;
+      }
+
+      router.push(callbackUrl);
+      router.refresh();
+    });
+  };
+
   const {
     register,
     handleSubmit,
@@ -97,7 +123,7 @@ function LoginForm() {
           className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full opacity-10"
           style={{
             background:
-              "radial-gradient(circle, rgba(201,169,110,0.4) 0%, transparent 70%)",
+              "radial-gradient(circle, hsl(var(--primary) / 0.28) 0%, transparent 70%)",
           }}
         />
       </div>
@@ -108,7 +134,7 @@ function LoginForm() {
           <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
             <Building2 className="w-5 h-5 text-foreground" />
           </div>
-          <span className="font-serif text-2xl font-semibold text-white tracking-tight">
+          <span className="font-serif text-2xl font-semibold tracking-tight text-foreground">
             Homes<span className="text-primary">.</span>
           </span>
         </div>
@@ -116,7 +142,7 @@ function LoginForm() {
         {/* Card */}
         <Card className="bg-card border-border shadow-2xl">
           <CardHeader className="space-y-1 pb-4">
-            <CardTitle className="text-xl font-semibold text-white text-center">
+            <CardTitle className="text-center text-xl font-semibold text-foreground">
               Welcome back
             </CardTitle>
             <CardDescription className="text-muted-foreground text-center text-sm">
@@ -150,7 +176,7 @@ function LoginForm() {
                   placeholder="admin@homes.in"
                   autoComplete="email"
                   disabled={isPending}
-                  className="bg-accent border-border text-white placeholder:text-muted-foreground focus:border-primary focus:ring-0 h-11"
+                  className="h-11 border-border bg-accent text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-0"
                   {...register("email")}
                 />
                 {errors.email && (
@@ -175,13 +201,13 @@ function LoginForm() {
                     placeholder="••••••••"
                     autoComplete="current-password"
                     disabled={isPending}
-                    className="bg-accent border-border text-white placeholder:text-muted-foreground focus:border-primary focus:ring-0 h-11 pr-10"
+                    className="h-11 border-border bg-accent pr-10 text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-0"
                     {...register("password")}
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword((v) => !v)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-muted-foreground transition-colors"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors hover:text-foreground"
                     tabIndex={-1}
                   >
                     {showPassword ? (
@@ -215,8 +241,42 @@ function LoginForm() {
               </Button>
             </form>
 
-            {/* Divider + info */}
+            {/* Divider + info & Magic Login */}
             <div className="mt-6 pt-5 border-t border-border">
+              {/* Magic Login (Test Mode) */}
+              <div className="mb-6 bg-primary/5 border border-primary/20 rounded-lg p-4">
+                <p className="text-center text-sm font-medium text-foreground mb-3">
+                  Test Mode: Magic Login
+                </p>
+                <div className="flex flex-col gap-3 items-center">
+                  <div className="flex items-center gap-3">
+                    <span className="text-sm text-foreground font-medium bg-background px-3 py-1.5 rounded-md border border-border shadow-sm">
+                      Bot Check: {num1} + {num2} = ?
+                    </span>
+                    <Input
+                      type="number"
+                      value={botAnswer}
+                      onChange={(e) => setBotAnswer(e.target.value)}
+                      className="w-20 text-center h-9 focus:ring-0 focus:border-primary border-border bg-background"
+                      placeholder="Answer"
+                      disabled={isPending}
+                    />
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    disabled={!isHuman || isPending}
+                    onClick={handleMagicLogin}
+                    className="w-full h-10 border-primary/30 hover:bg-primary/10 hover:text-primary transition-colors mt-1"
+                  >
+                    {isPending ? (
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    ) : null}
+                    ✨ Magic Login (Admin)
+                  </Button>
+                </div>
+              </div>
+
               <p className="text-center text-xs text-muted-foreground">
                 This portal is for authorised Homes agents and administrators
                 only. Unauthorised access attempts are logged.

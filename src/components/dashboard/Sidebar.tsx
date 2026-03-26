@@ -104,7 +104,7 @@ export function DashboardSidebar({ role }: DashboardSidebarProps) {
 
       {/* Section label */}
       <div className="px-5 pt-6 pb-2">
-        <p className="text-[10px] text-[#2A3E52] uppercase tracking-widest font-medium">
+        <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-medium">
           Main Menu
         </p>
       </div>
@@ -127,13 +127,13 @@ export function DashboardSidebar({ role }: DashboardSidebarProps) {
                 "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all duration-150 group",
                 isActive
                   ? "bg-primary/10 text-primary font-medium"
-                  : "text-[#5A7080] hover:text-[#B4C4D3] hover:bg-accent"
+                  : "text-muted-foreground hover:text-foreground hover:bg-accent"
               )}
             >
               <Icon
                 className={cn(
                   "w-4 h-4 flex-shrink-0 transition-colors",
-                  isActive ? "text-primary" : "text-muted-foreground group-hover:text-[#7A9BAE]"
+                  isActive ? "text-primary" : "text-muted-foreground group-hover:text-foreground"
                 )}
               />
               <span className="flex-1">{item.label}</span>
@@ -155,7 +155,7 @@ export function DashboardSidebar({ role }: DashboardSidebarProps) {
         <Link
           href="/"
           target="_blank"
-          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-muted-foreground hover:text-[#7A9BAE] hover:bg-accent transition-all"
+          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-accent transition-all"
         >
           <Building2 className="w-4 h-4" />
           <span>View Public Site</span>

@@ -165,6 +165,75 @@ export const AMENITIES_LIST = [
   "EV Charging",
 ] as const;
 
+export const REAL_ESTATE_ICON_KEYS = [
+  "Accessibility",
+  "ArrowUpDown",
+  "Building2",
+  "Camera",
+  "CircleParking",
+  "CloudRain",
+  "Cpu",
+  "Dog",
+  "Droplets",
+  "Dumbbell",
+  "Flower2",
+  "Footprints",
+  "House",
+  "Leaf",
+  "LibraryBig",
+  "Phone",
+  "PlugZap",
+  "ShieldCheck",
+  "ShoppingCart",
+  "Store",
+  "ToyBrick",
+  "Trees",
+  "Trophy",
+  "Waves",
+  "Wifi",
+  "Zap",
+] as const;
+
+export type RealEstateIconKey = (typeof REAL_ESTATE_ICON_KEYS)[number];
+
+export const AMENITY_ICON_MAP: Record<
+  (typeof AMENITIES_LIST)[number],
+  RealEstateIconKey
+> = {
+  Lift: "ArrowUpDown",
+  "Power Backup": "Zap",
+  "24x7 Security": "ShieldCheck",
+  CCTV: "Camera",
+  Intercom: "Phone",
+  "Swimming Pool": "Waves",
+  Gym: "Dumbbell",
+  Clubhouse: "House",
+  Garden: "Trees",
+  "Jogging Track": "Footprints",
+  "Children Play Area": "ToyBrick",
+  "Yoga Park": "Flower2",
+  "Badminton Court": "Trophy",
+  "Tennis Court": "Trophy",
+  "Indoor Games": "Trophy",
+  "Rainwater Harvesting": "CloudRain",
+  "Solar Power": "Zap",
+  "Sewage Treatment Plant": "Droplets",
+  "Gated Community": "Building2",
+  "Visitor Parking": "CircleParking",
+  "Shopping Complex": "ShoppingCart",
+  "Wide Internal Roads": "Building2",
+  "Street Lights": "PlugZap",
+  Footpaths: "Footprints",
+  "Green Area": "Leaf",
+  "Landscape Garden": "Trees",
+  "Community Hall": "House",
+  Library: "LibraryBig",
+  "Co-working Space": "Cpu",
+  "Pet Zone": "Dog",
+  "Fire Safety": "ShieldCheck",
+  "EV Charging": "PlugZap",
+};
+
 // ─── NEARBY PLACE CATEGORIES ──────────────────────────────────────────────────
 
 export const NEARBY_CATEGORIES = [

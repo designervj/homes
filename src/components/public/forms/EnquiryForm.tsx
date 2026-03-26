@@ -82,8 +82,8 @@ export function EnquiryForm({
 
   // Input base styles
   const inputCls = cn(
-    "w-full bg-accent border border-white/[0.10] rounded-lg px-3.5 py-2.5",
-    "text-sm text-white placeholder:text-muted-foreground",
+    "w-full rounded-lg border border-border bg-background px-3.5 py-2.5",
+    "text-sm text-foreground placeholder:text-muted-foreground",
     "outline-none focus:border-primary/50 focus:bg-primary/[0.03]",
     "transition-all duration-150"
   );
@@ -91,12 +91,12 @@ export function EnquiryForm({
   if (submitted) {
     return (
       <div className={cn("flex flex-col items-center justify-center py-8 text-center gap-4", className)}>
-        <div className="w-14 h-14 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
-          <CheckCircle className="w-7 h-7 text-emerald-400" />
+        <div className="w-14 h-14 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center">
+          <CheckCircle className="w-7 h-7 text-primary" />
         </div>
         <div>
-          <p className="text-base font-medium text-white mb-1">Enquiry Received!</p>
-          <p className="text-sm text-[#5A7080]">We&apos;ll reach out within 2–4 hours on business days.</p>
+          <p className="text-base font-medium text-foreground mb-1">Enquiry Received!</p>
+          <p className="text-sm text-muted-foreground">We&apos;ll reach out within 2–4 hours on business days.</p>
         </div>
         <button
           onClick={() => setSubmitted(false)}
@@ -167,9 +167,9 @@ export function EnquiryForm({
           <input
             {...register("siteVisit")}
             type="checkbox"
-            className="w-4 h-4 rounded border-border bg-accent accent-[#C9A96E] cursor-pointer"
+            className="w-4 h-4 rounded border-border bg-accent accent-primary cursor-pointer"
           />
-          <span className="text-sm text-muted-foreground group-hover:text-white transition-colors">
+          <span className="text-sm text-muted-foreground group-hover:text-foreground transition-colors">
             I&apos;d like to schedule a site visit
           </span>
         </label>
@@ -177,9 +177,9 @@ export function EnquiryForm({
           <input
             {...register("homeLoan")}
             type="checkbox"
-            className="w-4 h-4 rounded border-border bg-accent accent-[#C9A96E] cursor-pointer"
+            className="w-4 h-4 rounded border-border bg-accent accent-primary cursor-pointer"
           />
-          <span className="text-sm text-muted-foreground group-hover:text-white transition-colors">
+          <span className="text-sm text-muted-foreground group-hover:text-foreground transition-colors">
             I need home loan assistance
           </span>
         </label>

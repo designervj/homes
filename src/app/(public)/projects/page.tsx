@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { getProperties } from "@/lib/db/actions/property.actions";
 import { PropertyCard } from "@/components/public/properties/PropertyCard";
 import { ProjectsFilter } from "@/components/public/properties/ProjectsFilter";
@@ -46,10 +47,10 @@ export default async function ProjectsPage({
             <div className="w-7 h-px bg-primary" />
             <span className="text-xs text-primary uppercase tracking-widest font-medium">All Projects</span>
           </div>
-          <h1 className="font-serif text-4xl sm:text-5xl font-medium text-white mb-3">
+          <h1 className="mb-3 font-serif text-4xl font-medium text-foreground sm:text-5xl">
             Find Your Property
           </h1>
-          <p className="text-[#5A7080]">
+          <p className="text-muted-foreground">
             {pagination?.total ?? properties.length} properties across Lucknow&apos;s prime corridors.
           </p>
         </div>
@@ -63,9 +64,9 @@ export default async function ProjectsPage({
             <div className="w-16 h-16 rounded-full bg-card border border-border flex items-center justify-center mb-5">
               <span className="text-2xl">🏠</span>
             </div>
-            <p className="text-white font-medium text-lg mb-2">No properties found</p>
-            <p className="text-[#5A7080] text-sm">Try adjusting your filters or&nbsp;
-              <a href="/projects" className="text-primary hover:underline">clear all filters</a>.
+            <p className="mb-2 text-lg font-medium text-foreground">No properties found</p>
+            <p className="text-sm text-muted-foreground">Try adjusting your filters or&nbsp;
+              <Link href="/projects" className="text-primary hover:underline">clear all filters</Link>.
             </p>
           </div>
         ) : (
@@ -86,7 +87,7 @@ export default async function ProjectsPage({
                     className={`w-9 h-9 flex items-center justify-center rounded-xl text-sm font-medium transition-colors ${
                       p === pagination.page
                         ? "bg-primary text-foreground"
-                        : "bg-card text-[#5A7080] hover:text-white border border-border"
+                        : "border border-border bg-card text-muted-foreground hover:text-foreground"
                     }`}
                   >
                     {p}

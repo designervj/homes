@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
+import { useForm, type UseFormRegister } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import {
@@ -10,6 +10,8 @@ import {
 } from "lucide-react";
 import { createProperty, updateProperty } from "@/lib/db/actions/property.actions";
 import { PropertyValidator, type PropertyInput } from "@/lib/utils/validators";
+import { MediaGallery } from "@/components/dashboard/properties/MediaGallery";
+import { AmenityIcon } from "@/components/shared/AmenityIcon";
 import {
   PROPERTY_CATEGORIES, PROPERTY_TYPES, TRANSACTION_TYPES, BHK_CONFIGS,
   FURNISHING_STATUS, PROPERTY_AGE, POSSESSION_STATUS, FACING_DIRECTIONS,
@@ -44,21 +46,37 @@ function FormSection({
           <span className="w-6 h-6 rounded-full bg-primary/15 border border-primary/30 flex items-center justify-center text-[11px] font-medium text-primary">
             {number}
           </span>
-          <span className="text-sm font-medium text-white">{title}</span>
+          <span className="text-sm font-medium text-foreground">{title}</span>
         </div>
         {open ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
       </button>
-      {open && <div className="px-6 pb-6 pt-2 border-t border-white/[0.04]">{children}</div>}
+      {open && <div className="border-t border-border px-6 pb-6 pt-2">{children}</div>}
     </div>
   );
 }
 
 // ─── FIELD HELPERS ────────────────────────────────────────────────────────────
 
-const inputCls = "w-full bg-accent border border-white/[0.10] rounded-lg px-3.5 py-2.5 text-sm text-white placeholder:text-muted-foreground outline-none focus:border-primary/50 transition-all";
-const labelCls = "block text-xs text-[#5A7080] mb-1.5 uppercase tracking-wide";
+const inputCls = "w-full rounded-lg border border-border bg-background px-3.5 py-2.5 text-sm text-foreground placeholder:text-muted-foreground outline-none transition-all focus:border-primary/50";
+const labelCls = "mb-1.5 block text-xs uppercase tracking-wide text-muted-foreground";
 const gridCls  = "grid grid-cols-1 sm:grid-cols-2 gap-4";
 const grid3cls  = "grid grid-cols-1 sm:grid-cols-3 gap-4";
+
+const optionalNumberField = {
+  setValueAs: (value: string) => (value === "" ? undefined : Number(value)),
+};
+
+const requiredNumberField = {
+  setValueAs: (value: string) => (value === "" ? undefined : Number(value)),
+};
+
+function registerNumberField(
+  register: UseFormRegister<PropertyInput>,
+  name: Parameters<UseFormRegister<PropertyInput>>[0],
+  required = false
+) {
+  return register(name, required ? requiredNumberField : optionalNumberField);
+}
 
 // ─── MAIN COMPONENT ───────────────────────────────────────────────────────────
 
@@ -77,10 +95,13 @@ export function PropertyForm({ property }: PropertyFormProps) {
   const [nearbyPlaces, setNearbyPlaces] = useState(
     property?.nearbyPlaces ?? []
   );
+  const [mediaAssets, setMediaAssets] = useState(
+    property?.mediaAssets ?? []
+  );
 
-  const { register, handleSubmit, formState: { errors }, watch, setValue } =
+  const { register, handleSubmit, formState: { errors }, setValue } =
     useForm<PropertyInput>({
-      resolver: zodResolver(PropertyValidator) as any,
+      resolver: zodResolver(PropertyValidator),
       defaultValues: isEdit
         ? {
             title: property.title,
@@ -97,6 +118,8 @@ export function PropertyForm({ property }: PropertyFormProps) {
             features: { ...property.features, amenities: property.features?.amenities ?? [] } as never,
             legalInfo: property.legalInfo as never,
             brokeragePolicy: property.brokeragePolicy as never,
+            mediaAssets: property.mediaAssets ?? [],
+            nearbyPlaces: property.nearbyPlaces ?? [],
           }
         : {
             status: "active",
@@ -107,6 +130,8 @@ export function PropertyForm({ property }: PropertyFormProps) {
             legalInfo: { ownershipType: "Freehold", zoningType: "Residential", reraRegistered: false },
             brokeragePolicy: { listedBy: "Agent", isNegotiable: true, documentationSupport: true, shortlistingSupport: true },
             sizeLayout: { parkingAvailable: false, areaUnit: "sqft" },
+            mediaAssets: [],
+            nearbyPlaces: [],
           },
     });
 
@@ -132,6 +157,7 @@ export function PropertyForm({ property }: PropertyFormProps) {
       const payload = {
         ...data,
         features: { ...data.features, amenities: selectedAmenities },
+        mediaAssets,
         nearbyPlaces: nearbyPlaces.filter((p) => p.name.trim()),
       };
 
@@ -141,7 +167,13 @@ export function PropertyForm({ property }: PropertyFormProps) {
 
       if (res.success) {
         toast.success(res.message ?? (isEdit ? "Property updated" : "Property created"));
-        router.push("/admin/properties");
+        if (isEdit) {
+          router.push("/admin/properties");
+        } else if (res.data?._id) {
+          router.push(`/admin/properties/${res.data._id}/edit`);
+        } else {
+          router.push("/admin/properties");
+        }
         router.refresh();
       } else {
         toast.error(res.error ?? "Something went wrong");
@@ -160,16 +192,16 @@ export function PropertyForm({ property }: PropertyFormProps) {
           <button
             type="button"
             onClick={() => router.back()}
-            className="text-muted-foreground hover:text-white transition-colors"
+            className="text-muted-foreground transition-colors hover:text-foreground"
           >
             <ArrowLeft className="w-4 h-4" />
           </button>
           <div>
-            <h1 className="font-serif text-2xl font-medium text-white">
+            <h1 className="font-serif text-2xl font-medium text-foreground">
               {isEdit ? "Edit Property" : "Add New Property"}
             </h1>
-            <p className="text-sm text-[#5A7080] mt-0.5">
-              {isEdit ? `Editing: ${property.projectName ?? property.title}` : "Fill in the property details below."}
+            <p className="mt-0.5 text-sm text-muted-foreground">
+              {isEdit ? `Editing: ${property.projectName ?? property.title}` : "Fill in the property details below. You can upload the gallery after the first save."}
             </p>
           </div>
         </div>
@@ -217,14 +249,14 @@ export function PropertyForm({ property }: PropertyFormProps) {
             </div>
             <div>
               <label className={labelCls}>Status</label>
-              <select {...register("status")} className={inputCls} style={{ background: "#1A2640" }}>
+              <select {...register("status")} className={inputCls}>
                 {["active", "blocked", "sold", "archived"].map((s) => (
-                  <option key={s} value={s} style={{ background: "#12202E" }}>{s}</option>
+                  <option key={s} value={s}>{s}</option>
                 ))}
               </select>
             </div>
             <div className="flex items-center gap-3 pt-6">
-              <input type="checkbox" {...register("isFeatured")} id="featured" className="w-4 h-4 accent-[#C9A96E]" />
+              <input type="checkbox" {...register("isFeatured")} id="featured" className="w-4 h-4 accent-primary" />
               <label htmlFor="featured" className="text-sm text-muted-foreground cursor-pointer">Mark as Featured (shows on homepage)</label>
             </div>
           </div>
@@ -258,7 +290,7 @@ export function PropertyForm({ property }: PropertyFormProps) {
             <div>
               <label className={labelCls}>Longitude (decimal)</label>
               <input
-                {...register("location.coordinates.0", { valueAsNumber: true })}
+                {...registerNumberField(register, "location.coordinates.0", true)}
                 type="number"
                 step="any"
                 placeholder="80.9462"
@@ -268,7 +300,7 @@ export function PropertyForm({ property }: PropertyFormProps) {
             <div>
               <label className={labelCls}>Latitude (decimal)</label>
               <input
-                {...register("location.coordinates.1", { valueAsNumber: true })}
+                {...registerNumberField(register, "location.coordinates.1", true)}
                 type="number"
                 step="any"
                 placeholder="26.8467"
@@ -299,10 +331,10 @@ export function PropertyForm({ property }: PropertyFormProps) {
             ].map(({ label, field, options }) => (
               <div key={field}>
                 <label className={labelCls}>{label}</label>
-                <select {...register(field as never)} className={inputCls} style={{ background: "#1A2640" }}>
-                  <option value="" style={{ background: "#12202E" }}>Select…</option>
+                <select {...register(field as never)} className={inputCls}>
+                  <option value="">Select…</option>
                   {options.map((o) => (
-                    <option key={o} value={o} style={{ background: "#12202E" }}>{o}</option>
+                    <option key={o} value={o}>{o}</option>
                   ))}
                 </select>
               </div>
@@ -316,7 +348,7 @@ export function PropertyForm({ property }: PropertyFormProps) {
               <input {...register("specifications.totalFloors")} placeholder="e.g. 10-20" className={inputCls} />
             </div>
             <div className="flex items-center gap-2 pt-5">
-              <input type="checkbox" {...register("specifications.isCornerUnit")} className="w-4 h-4 accent-[#C9A96E]" />
+              <input type="checkbox" {...register("specifications.isCornerUnit")} className="w-4 h-4 accent-primary" />
               <label className="text-sm text-muted-foreground">Corner Unit / Plot</label>
             </div>
           </div>
@@ -329,27 +361,27 @@ export function PropertyForm({ property }: PropertyFormProps) {
           <div className={grid3cls}>
             <div>
               <label className={labelCls}>Area Unit</label>
-              <select {...register("sizeLayout.areaUnit")} className={inputCls} style={{ background: "#1A2640" }}>
+              <select {...register("sizeLayout.areaUnit")} className={inputCls}>
                 {AREA_UNITS.map((u) => (
-                  <option key={u} value={u} style={{ background: "#12202E" }}>{u}</option>
+                  <option key={u} value={u}>{u}</option>
                 ))}
               </select>
             </div>
             <div>
               <label className={labelCls}>Built-up Area</label>
-              <input {...register("sizeLayout.builtUpArea", { valueAsNumber: true })} type="number" placeholder="1200" className={inputCls} />
+              <input {...registerNumberField(register, "sizeLayout.builtUpArea")} type="number" placeholder="1200" className={inputCls} />
             </div>
             <div>
               <label className={labelCls}>Carpet Area</label>
-              <input {...register("sizeLayout.carpetArea", { valueAsNumber: true })} type="number" placeholder="980" className={inputCls} />
+              <input {...registerNumberField(register, "sizeLayout.carpetArea")} type="number" placeholder="980" className={inputCls} />
             </div>
             <div>
               <label className={labelCls}>Super Built-up Area</label>
-              <input {...register("sizeLayout.superBuiltUpArea", { valueAsNumber: true })} type="number" placeholder="1450" className={inputCls} />
+              <input {...registerNumberField(register, "sizeLayout.superBuiltUpArea")} type="number" placeholder="1450" className={inputCls} />
             </div>
             <div>
               <label className={labelCls}>Plot Area</label>
-              <input {...register("sizeLayout.plotArea", { valueAsNumber: true })} type="number" placeholder="200" className={inputCls} />
+              <input {...registerNumberField(register, "sizeLayout.plotArea")} type="number" placeholder="200" className={inputCls} />
             </div>
             <div>
               <label className={labelCls}>Plot Dimensions</label>
@@ -357,34 +389,34 @@ export function PropertyForm({ property }: PropertyFormProps) {
             </div>
             <div>
               <label className={labelCls}>Bedrooms</label>
-              <input {...register("sizeLayout.bedrooms", { valueAsNumber: true })} type="number" placeholder="3" className={inputCls} />
+              <input {...registerNumberField(register, "sizeLayout.bedrooms")} type="number" placeholder="3" className={inputCls} />
             </div>
             <div>
               <label className={labelCls}>Bathrooms</label>
-              <input {...register("sizeLayout.bathrooms", { valueAsNumber: true })} type="number" placeholder="3" className={inputCls} />
+              <input {...registerNumberField(register, "sizeLayout.bathrooms")} type="number" placeholder="3" className={inputCls} />
             </div>
             <div>
               <label className={labelCls}>Balconies</label>
-              <input {...register("sizeLayout.balconies", { valueAsNumber: true })} type="number" placeholder="2" className={inputCls} />
+              <input {...registerNumberField(register, "sizeLayout.balconies")} type="number" placeholder="2" className={inputCls} />
             </div>
           </div>
           <div className={gridCls}>
             <div className="flex items-center gap-3 pt-1">
-              <input type="checkbox" {...register("sizeLayout.parkingAvailable")} className="w-4 h-4 accent-[#C9A96E]" />
+              <input type="checkbox" {...register("sizeLayout.parkingAvailable")} className="w-4 h-4 accent-primary" />
               <label className="text-sm text-muted-foreground">Parking Available</label>
             </div>
             <div>
               <label className={labelCls}>Parking Type</label>
-              <select {...register("sizeLayout.parkingType")} className={inputCls} style={{ background: "#1A2640" }}>
-                <option value="" style={{ background: "#12202E" }}>Select…</option>
+              <select {...register("sizeLayout.parkingType")} className={inputCls}>
+                <option value="">Select…</option>
                 {PARKING_TYPES.map((t) => (
-                  <option key={t} value={t} style={{ background: "#12202E" }}>{t}</option>
+                  <option key={t} value={t}>{t}</option>
                 ))}
               </select>
             </div>
             <div>
               <label className={labelCls}>No. of Parking Slots</label>
-              <input {...register("sizeLayout.parkingSlots", { valueAsNumber: true })} type="number" placeholder="1" className={inputCls} />
+              <input {...registerNumberField(register, "sizeLayout.parkingSlots")} type="number" placeholder="1" className={inputCls} />
             </div>
           </div>
         </div>
@@ -396,32 +428,32 @@ export function PropertyForm({ property }: PropertyFormProps) {
           <div className={grid3cls}>
             <div>
               <label className={labelCls}>Listed Price (INR) *</label>
-              <input {...register("financials.listedPrice", { valueAsNumber: true })} type="number" placeholder="5625000" className={inputCls} />
+              <input {...registerNumberField(register, "financials.listedPrice", true)} type="number" placeholder="5625000" className={inputCls} />
               {errors.financials?.listedPrice && <p className="text-xs text-red-400 mt-1">{errors.financials.listedPrice.message}</p>}
             </div>
             <div>
               <label className={labelCls}>Price Type</label>
-              <select {...register("financials.priceType")} className={inputCls} style={{ background: "#1A2640" }}>
+              <select {...register("financials.priceType")} className={inputCls}>
                 {["total", "per_sqft", "monthly_rent"].map((t) => (
-                  <option key={t} value={t} style={{ background: "#12202E" }}>{t.replace(/_/g, " ")}</option>
+                  <option key={t} value={t}>{t.replace(/_/g, " ")}</option>
                 ))}
               </select>
             </div>
             <div>
               <label className={labelCls}>Price per Sqft</label>
-              <input {...register("financials.pricePerSqft", { valueAsNumber: true })} type="number" placeholder="5000" className={inputCls} />
+              <input {...registerNumberField(register, "financials.pricePerSqft")} type="number" placeholder="5000" className={inputCls} />
             </div>
             <div>
               <label className={labelCls}>Maintenance Charges (₹/mo)</label>
-              <input {...register("financials.maintenanceCharges", { valueAsNumber: true })} type="number" placeholder="2500" className={inputCls} />
+              <input {...registerNumberField(register, "financials.maintenanceCharges")} type="number" placeholder="2500" className={inputCls} />
             </div>
             <div>
               <label className={labelCls}>Stamp Duty %</label>
-              <input {...register("financials.stampDutyPercent", { valueAsNumber: true })} type="number" placeholder="7" className={inputCls} />
+              <input {...registerNumberField(register, "financials.stampDutyPercent")} type="number" placeholder="7" className={inputCls} />
             </div>
             <div>
               <label className={labelCls}>Registration Charges %</label>
-              <input {...register("financials.registrationChargesPercent", { valueAsNumber: true })} type="number" placeholder="1" className={inputCls} />
+              <input {...registerNumberField(register, "financials.registrationChargesPercent")} type="number" placeholder="1" className={inputCls} />
             </div>
           </div>
           <div className={gridCls}>
@@ -439,11 +471,11 @@ export function PropertyForm({ property }: PropertyFormProps) {
             </div>
             <div className="flex flex-col gap-3 pt-1">
               <label className="flex items-center gap-2.5 cursor-pointer">
-                <input type="checkbox" {...register("financials.gstApplicable")} className="w-4 h-4 accent-[#C9A96E]" />
+                <input type="checkbox" {...register("financials.gstApplicable")} className="w-4 h-4 accent-primary" />
                 <span className="text-sm text-muted-foreground">GST Applicable (Under Construction)</span>
               </label>
               <label className="flex items-center gap-2.5 cursor-pointer">
-                <input type="checkbox" {...register("financials.homeLoanAvailable")} className="w-4 h-4 accent-[#C9A96E]" />
+                <input type="checkbox" {...register("financials.homeLoanAvailable")} className="w-4 h-4 accent-primary" />
                 <span className="text-sm text-muted-foreground">Home Loan Available</span>
               </label>
             </div>
@@ -451,33 +483,44 @@ export function PropertyForm({ property }: PropertyFormProps) {
         </div>
       </FormSection>
 
-      {/* ── SECTION 6: Amenities ─────────────────────────────────────────────── */}
-      <FormSection title="Features & Amenities" number="6" open={openSection === "amenities"} onToggle={() => toggle("amenities")}>
+      {/* ── SECTION 6: Media Gallery ─────────────────────────────────────────── */}
+      <FormSection title="Media Gallery" number="6" open={openSection === "media"} onToggle={() => toggle("media")}>
+        <div className="mt-4">
+          <MediaGallery
+            propertyId={property?._id}
+            initialAssets={mediaAssets}
+            onChange={setMediaAssets}
+          />
+        </div>
+      </FormSection>
+
+      {/* ── SECTION 7: Amenities ─────────────────────────────────────────────── */}
+      <FormSection title="Features & Amenities" number="7" open={openSection === "amenities"} onToggle={() => toggle("amenities")}>
         <div className="space-y-5 mt-4">
           <div className={gridCls}>
             <div>
               <label className={labelCls}>Water Supply</label>
-              <select {...register("features.waterSupply")} className={inputCls} style={{ background: "#1A2640" }}>
-                <option value="" style={{ background: "#12202E" }}>Select…</option>
+              <select {...register("features.waterSupply")} className={inputCls}>
+                <option value="">Select…</option>
                 {WATER_SUPPLY_OPTIONS.map((o) => (
-                  <option key={o} value={o} style={{ background: "#12202E" }}>{o}</option>
+                  <option key={o} value={o}>{o}</option>
                 ))}
               </select>
             </div>
             <div>
               <label className={labelCls}>Power Backup</label>
-              <select {...register("features.powerBackup")} className={inputCls} style={{ background: "#1A2640" }}>
-                <option value="" style={{ background: "#12202E" }}>Select…</option>
+              <select {...register("features.powerBackup")} className={inputCls}>
+                <option value="">Select…</option>
                 {POWER_BACKUP_OPTIONS.map((o) => (
-                  <option key={o} value={o} style={{ background: "#12202E" }}>{o}</option>
+                  <option key={o} value={o}>{o}</option>
                 ))}
               </select>
             </div>
           </div>
           <div className="flex flex-wrap gap-3">
             {["isGatedCommunity", "isVastuCompliant", "isPetFriendly", "isGreenBuilding", "hasSmartHome", "isWheelchairAccessible"].map((field) => (
-              <label key={field} className="flex items-center gap-2 cursor-pointer bg-white/[0.03] border border-border px-3 py-2 rounded-xl hover:border-white/[0.12] transition-colors">
-                <input type="checkbox" {...register(`features.${field}` as never)} className="w-3.5 h-3.5 accent-[#C9A96E]" />
+              <label key={field} className="flex items-center gap-2 cursor-pointer rounded-xl border border-border bg-background px-3 py-2 transition-colors hover:bg-accent">
+                <input type="checkbox" {...register(`features.${field}` as never)} className="w-3.5 h-3.5 accent-primary" />
                 <span className="text-xs text-muted-foreground capitalize">{field.replace(/is|has/g, "").replace(/([A-Z])/g, " $1").trim()}</span>
               </label>
             ))}
@@ -491,12 +534,13 @@ export function PropertyForm({ property }: PropertyFormProps) {
                   type="button"
                   onClick={() => toggleAmenity(amenity)}
                   className={cn(
-                    "text-xs px-3 py-1.5 rounded-xl border transition-all",
+                    "inline-flex items-center gap-2 rounded-xl border px-3 py-1.5 text-xs transition-all",
                     selectedAmenities.includes(amenity)
                       ? "bg-primary/15 border-primary/40 text-primary"
-                      : "bg-white/[0.03] border-border text-[#5A7080] hover:border-white/[0.12]"
+                      : "bg-background border-border text-muted-foreground hover:bg-accent hover:text-foreground"
                   )}
                 >
+                  <AmenityIcon amenity={amenity} className="h-3.5 w-3.5" />
                   {amenity}
                 </button>
               ))}
@@ -506,36 +550,36 @@ export function PropertyForm({ property }: PropertyFormProps) {
         </div>
       </FormSection>
 
-      {/* ── SECTION 7: Legal ─────────────────────────────────────────────────── */}
-      <FormSection title="Legal & Compliance" number="7" open={openSection === "legal"} onToggle={() => toggle("legal")}>
+      {/* ── SECTION 8: Legal ─────────────────────────────────────────────────── */}
+      <FormSection title="Legal & Compliance" number="8" open={openSection === "legal"} onToggle={() => toggle("legal")}>
         <div className="space-y-4 mt-4">
           <div className={grid3cls}>
             <div>
               <label className={labelCls}>Ownership Type</label>
-              <select {...register("legalInfo.ownershipType")} className={inputCls} style={{ background: "#1A2640" }}>
+              <select {...register("legalInfo.ownershipType")} className={inputCls}>
                 {OWNERSHIP_TYPES.map((o) => (
-                  <option key={o} value={o} style={{ background: "#12202E" }}>{o}</option>
+                  <option key={o} value={o}>{o}</option>
                 ))}
               </select>
             </div>
             <div>
               <label className={labelCls}>Zoning Type</label>
-              <select {...register("legalInfo.zoningType")} className={inputCls} style={{ background: "#1A2640" }}>
+              <select {...register("legalInfo.zoningType")} className={inputCls}>
                 {ZONING_TYPES.map((o) => (
-                  <option key={o} value={o} style={{ background: "#12202E" }}>{o}</option>
+                  <option key={o} value={o}>{o}</option>
                 ))}
               </select>
             </div>
             <div>
               <label className={labelCls}>Title Clearance</label>
-              <select {...register("legalInfo.titleClearance")} className={inputCls} style={{ background: "#1A2640" }}>
+              <select {...register("legalInfo.titleClearance")} className={inputCls}>
                 {["Clear", "Under Litigation", "NA"].map((o) => (
-                  <option key={o} value={o} style={{ background: "#12202E" }}>{o}</option>
+                  <option key={o} value={o}>{o}</option>
                 ))}
               </select>
             </div>
             <div className="flex items-center gap-2.5 pt-5">
-              <input type="checkbox" {...register("legalInfo.reraRegistered")} className="w-4 h-4 accent-[#C9A96E]" />
+              <input type="checkbox" {...register("legalInfo.reraRegistered")} className="w-4 h-4 accent-primary" />
               <label className="text-sm text-muted-foreground">RERA Registered</label>
             </div>
             <div>
@@ -545,10 +589,10 @@ export function PropertyForm({ property }: PropertyFormProps) {
             </div>
             <div>
               <label className={labelCls}>Occupancy Certificate</label>
-              <select {...register("legalInfo.occupancyCertificate")} className={inputCls} style={{ background: "#1A2640" }}>
-                <option value="" style={{ background: "#12202E" }}>Select…</option>
+              <select {...register("legalInfo.occupancyCertificate")} className={inputCls}>
+                <option value="">Select…</option>
                 {["Available", "Applied", "Not Available"].map((o) => (
-                  <option key={o} value={o} style={{ background: "#12202E" }}>{o}</option>
+                  <option key={o} value={o}>{o}</option>
                 ))}
               </select>
             </div>
@@ -556,8 +600,8 @@ export function PropertyForm({ property }: PropertyFormProps) {
         </div>
       </FormSection>
 
-      {/* ── SECTION 8: Nearby Places ─────────────────────────────────────────── */}
-      <FormSection title="Nearby Places" number="8" open={openSection === "nearby"} onToggle={() => toggle("nearby")}>
+      {/* ── SECTION 9: Nearby Places ─────────────────────────────────────────── */}
+      <FormSection title="Nearby Places" number="9" open={openSection === "nearby"} onToggle={() => toggle("nearby")}>
         <div className="space-y-3 mt-4">
           {nearbyPlaces.map((place, index) => (
             <div key={index} className="grid grid-cols-12 gap-3 items-start">
@@ -575,14 +619,13 @@ export function PropertyForm({ property }: PropertyFormProps) {
                 value={place.category}
                 onChange={(e) => {
                   const updated = [...nearbyPlaces];
-                  updated[index] = { ...updated[index], category: e.target.value as any };
+                  updated[index] = { ...updated[index], category: e.target.value as typeof place.category };
                   setNearbyPlaces(updated);
                 }}
                 className={cn(inputCls, "col-span-4")}
-                style={{ background: "#1A2640" }}
               >
                 {["Schools & Colleges","Hospitals","Malls & Multiplex","Key Landmarks","IT Parks","Metro Stations"].map((c) => (
-                  <option key={c} value={c} style={{ background: "#12202E" }}>{c}</option>
+                  <option key={c} value={c}>{c}</option>
                 ))}
               </select>
               <input
@@ -620,7 +663,7 @@ export function PropertyForm({ property }: PropertyFormProps) {
         <button
           type="button"
           onClick={() => router.back()}
-          className="px-5 py-2.5 text-sm text-[#5A7080] border border-border rounded-lg hover:border-white/[0.12] transition-colors"
+          className="rounded-lg border border-border px-5 py-2.5 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
         >
           Cancel
         </button>

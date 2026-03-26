@@ -30,8 +30,8 @@ export default async function HomePage() {
               <div className="w-7 h-px bg-primary" />
               <span className="text-xs text-primary uppercase tracking-widest font-medium">Our Portfolio</span>
             </div>
-            <h2 className="font-serif text-4xl sm:text-5xl font-medium text-white">Featured Projects</h2>
-            <p className="text-[#5A7080] mt-3 max-w-md">
+            <h2 className="font-serif text-4xl font-medium text-foreground sm:text-5xl">Featured Projects</h2>
+            <p className="mt-3 max-w-md text-muted-foreground">
               Handpicked residential developments across Lucknow&apos;s prime corridors — all RERA registered.
             </p>
           </div>
@@ -65,7 +65,7 @@ export default async function HomePage() {
       </section>
 
       {/* ── SERVICES ──────────────────────────────────────────────────────────── */}
-      <section className="py-24 border-t border-white/[0.04]">
+      <section className="border-t border-border py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <div className="flex items-center justify-center gap-3 mb-3">
@@ -73,10 +73,10 @@ export default async function HomePage() {
               <span className="text-xs text-primary uppercase tracking-widest font-medium">What We Do</span>
               <div className="w-7 h-px bg-primary" />
             </div>
-            <h2 className="font-serif text-4xl sm:text-5xl font-medium text-white mb-4">
+            <h2 className="mb-4 font-serif text-4xl font-medium text-foreground sm:text-5xl">
               End-to-End Advisory
             </h2>
-            <p className="text-[#5A7080] max-w-lg mx-auto">
+            <p className="mx-auto max-w-lg text-muted-foreground">
               From shortlisting to key handover — we manage every step so you can focus on your decision.
             </p>
           </div>
@@ -115,14 +115,14 @@ export default async function HomePage() {
                   className="relative group bg-card border border-border hover:border-primary/25 rounded-2xl p-8 transition-all duration-300 overflow-hidden"
                 >
                   {/* Top accent line */}
-                  <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#C9A96E]/0 to-transparent group-hover:via-[#C9A96E]/40 transition-all duration-500" />
+                  <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary-light/0 to-transparent group-hover:via-primary-light/40 transition-all duration-500" />
 
                   <div className="w-12 h-12 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center mb-6">
                     <Icon className="w-5 h-5 text-primary" />
                   </div>
                   <p className="text-[10px] text-muted-foreground uppercase tracking-widest mb-2">{service.num}</p>
-                  <h3 className="font-serif text-2xl font-medium text-white mb-3">{service.title}</h3>
-                  <p className="text-sm text-[#5A7080] leading-relaxed mb-6">{service.desc}</p>
+                  <h3 className="mb-3 font-serif text-2xl font-medium text-foreground">{service.title}</h3>
+                  <p className="mb-6 text-sm leading-relaxed text-muted-foreground">{service.desc}</p>
                   <Link
                     href={service.href}
                     className="flex items-center gap-2 text-sm text-primary group-hover:text-primary-light transition-colors font-medium"
@@ -163,11 +163,11 @@ export default async function HomePage() {
               <div className="w-7 h-px bg-primary" />
               <span className="text-xs text-primary uppercase tracking-widest font-medium">Why Homes</span>
             </div>
-            <h2 className="font-serif text-[clamp(2rem,4vw,3.5rem)] leading-tight text-white mb-6">
+            <h2 className="mb-6 font-serif text-[clamp(2rem,4vw,3.5rem)] leading-tight text-foreground">
               Built on Trust, <br className="hidden sm:block" />
               <span className="text-gradient-primary italic">and Compliance</span>
             </h2>
-            <p className="text-[#5A7080] mb-8 leading-relaxed">
+            <p className="mb-8 leading-relaxed text-muted-foreground">
               Every property listed on our platform goes through a structured verification process. We believe that buyers deserve full legal clarity before committing to any transaction.
             </p>
 
@@ -179,12 +179,12 @@ export default async function HomePage() {
                 { title: "Transparent Pricing",         desc: "Base price, price per sqft, stamp duty estimates, and GST shown upfront — no hidden costs." },
               ].map((item) => (
                 <div key={item.title} className="flex items-start gap-4 p-4 bg-card border border-border rounded-xl">
-                  <div className="w-6 h-6 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <BadgeCheck className="w-3.5 h-3.5 text-emerald-400" />
+                  <div className="mt-0.5 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full border border-secondary/20 bg-secondary/10">
+                    <BadgeCheck className="h-3.5 w-3.5 text-secondary" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-white mb-0.5">{item.title}</p>
-                    <p className="text-xs text-[#5A7080] leading-relaxed">{item.desc}</p>
+                    <p className="mb-0.5 text-sm font-medium text-foreground">{item.title}</p>
+                    <p className="text-xs leading-relaxed text-muted-foreground">{item.desc}</p>
                   </div>
                 </div>
               ))}
@@ -193,7 +193,7 @@ export default async function HomePage() {
 
           {/* Process steps */}
           <div className="relative pl-6">
-            <div className="absolute left-[11px] top-6 bottom-6 w-px bg-gradient-to-b from-primary/40 via-[#C9A96E]/20 to-transparent" />
+            <div className="absolute bottom-6 left-[11px] top-6 w-px bg-gradient-to-b from-primary/40 via-primary-light/25 to-transparent" />
             <div className="space-y-8">
               {[
                 { n: "1", title: "Share Your Requirements",    desc: "Tell us your location, budget, and property type preference." },
@@ -206,8 +206,8 @@ export default async function HomePage() {
                     <span className="font-serif text-sm font-medium text-primary">{step.n}</span>
                   </div>
                   <div className="pb-2">
-                    <p className="text-sm font-medium text-white mb-1">{step.title}</p>
-                    <p className="text-xs text-[#5A7080] leading-relaxed">{step.desc}</p>
+                    <p className="mb-1 text-sm font-medium text-foreground">{step.title}</p>
+                    <p className="text-xs leading-relaxed text-muted-foreground">{step.desc}</p>
                   </div>
                 </div>
               ))}
@@ -217,7 +217,7 @@ export default async function HomePage() {
       </section>
 
       {/* ── ENQUIRY CTA ───────────────────────────────────────────────────────── */}
-      <section id="enquire" className="py-24 border-t border-white/[0.04] scroll-mt-20">
+      <section id="enquire" className="scroll-mt-20 border-t border-border py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
 
@@ -227,10 +227,10 @@ export default async function HomePage() {
                 <div className="w-7 h-px bg-primary" />
                 <span className="text-xs text-primary uppercase tracking-widest font-medium">Get In Touch</span>
               </div>
-              <h2 className="font-serif text-4xl sm:text-5xl font-medium text-white mb-5">
+              <h2 className="mb-5 font-serif text-4xl font-medium text-foreground sm:text-5xl">
                 Talk to a Property<br />Expert Today
               </h2>
-              <p className="text-[#5A7080] mb-10 leading-relaxed">
+              <p className="mb-10 leading-relaxed text-muted-foreground">
                 Tell us what you&apos;re looking for. Our advisors will match you with verified properties and arrange a site visit within 48 hours.
               </p>
 
@@ -248,7 +248,7 @@ export default async function HomePage() {
                       </div>
                       <div>
                         <p className="text-[10px] text-muted-foreground uppercase tracking-widest">{item.label}</p>
-                        <p className="text-sm text-white mt-0.5">{item.value}</p>
+                        <p className="mt-0.5 text-sm text-foreground">{item.value}</p>
                       </div>
                     </div>
                   );
@@ -263,11 +263,11 @@ export default async function HomePage() {
 
             {/* Form card */}
             <div className="bg-card border border-border rounded-2xl p-8">
-              <h3 className="font-serif text-xl font-medium text-white mb-6">Send an Enquiry</h3>
+              <h3 className="mb-6 font-serif text-xl font-medium text-foreground">Send an Enquiry</h3>
 
               {/* Property selector */}
               <div className="mb-4">
-                <select className="w-full bg-accent border border-white/[0.10] rounded-lg px-3.5 py-2.5 text-sm text-muted-foreground outline-none focus:border-primary/50 transition-all">
+                <select className="w-full rounded-lg border border-border bg-accent px-3.5 py-2.5 text-sm text-muted-foreground outline-none transition-all focus:border-primary/50">
                   <option value="">Interested in a specific project?</option>
                   {["Okas Enclave","Attalika Palms","Stellar Okas Golf View","Kailasha Enclave","Greenberry Signature","Lavanya Enclave","Vikas Vihar"].map((p) => (
                     <option key={p} value={p}>{p}</option>

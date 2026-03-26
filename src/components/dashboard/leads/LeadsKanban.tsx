@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -7,7 +8,7 @@ import {
   Loader2, Star, TrendingUp, ArrowUpRight
 } from "lucide-react";
 import { toast } from "sonner";
-import { updateLeadStage, assignLead } from "@/lib/db/actions/lead.actions";
+import { updateLeadStage } from "@/lib/db/actions/lead.actions";
 import { LEAD_STAGES, LEAD_STAGE_LABELS } from "@/lib/utils/constants";
 import type { ILead, LeadStage } from "@/types";
 
@@ -19,19 +20,18 @@ interface LeadsKanbanProps {
     total: number; active: number; converted: number;
     lost: number; conversionRate: number;
   } | null;
-  agents: { id: string; name: string; email: string; role: string }[];
 }
 
 // ─── STAGE CONFIG ─────────────────────────────────────────────────────────────
 
 const STAGE_CONFIG: Record<LeadStage, { color: string; dot: string; border: string }> = {
-  new:                   { color: "text-blue-400",    dot: "bg-blue-400",    border: "border-blue-500/20" },
-  contacted:             { color: "text-yellow-400",  dot: "bg-yellow-400",  border: "border-yellow-500/20" },
-  qualified:             { color: "text-purple-400",  dot: "bg-purple-400",  border: "border-purple-500/20" },
-  site_visit_scheduled:  { color: "text-orange-400",  dot: "bg-orange-400",  border: "border-orange-500/20" },
-  negotiation:           { color: "text-pink-400",    dot: "bg-pink-400",    border: "border-pink-500/20" },
-  converted:             { color: "text-emerald-400", dot: "bg-emerald-400", border: "border-emerald-500/20" },
-  lost:                  { color: "text-red-400",     dot: "bg-red-400/60",  border: "border-red-500/20" },
+  new:                   { color: "text-primary",         dot: "bg-primary",         border: "border-primary/20" },
+  contacted:             { color: "text-foreground",      dot: "bg-foreground",      border: "border-foreground/10" },
+  qualified:             { color: "text-secondary",       dot: "bg-secondary",       border: "border-secondary/20" },
+  site_visit_scheduled:  { color: "text-primary",         dot: "bg-primary-light",   border: "border-primary/25" },
+  negotiation:           { color: "text-muted-foreground",dot: "bg-muted-foreground",border: "border-border" },
+  converted:             { color: "text-secondary",       dot: "bg-secondary",       border: "border-secondary/20" },
+  lost:                  { color: "text-red-400",         dot: "bg-red-400/60",      border: "border-red-500/20" },
 };
 
 const VISIBLE_STAGES: LeadStage[] = [
@@ -41,13 +41,13 @@ const VISIBLE_STAGES: LeadStage[] = [
 
 // ─── LEAD CARD ────────────────────────────────────────────────────────────────
 
-function LeadCard({ lead, agents, onAction }: {
+function LeadCard({ lead, onAction }: {
   lead: ILead;
-  agents: LeadsKanbanProps["agents"];
   onAction: () => void;
 }) {
   const [isPending, startTransition] = useTransition();
   const [showMove, setShowMove] = useState(false);
+  const [renderedAt] = useState(() => Date.now());
 
   const currentStageIndex = LEAD_STAGES.indexOf(lead.stage);
   const nextStage = LEAD_STAGES[currentStageIndex + 1] as LeadStage | undefined;
@@ -77,7 +77,7 @@ function LeadCard({ lead, agents, onAction }: {
 
   // Days since created
   const days = lead.createdAt
-    ? Math.floor((Date.now() - new Date(lead.createdAt).getTime()) / 86400000)
+    ? Math.floor((renderedAt - new Date(lead.createdAt).getTime()) / 86400000)
     : 0;
 
   return (
@@ -85,8 +85,8 @@ function LeadCard({ lead, agents, onAction }: {
       {/* Lead name + score */}
       <div className="flex items-start justify-between mb-2">
         <div>
-          <p className="text-sm font-medium text-white">{lead.name}</p>
-          <a href={`tel:${lead.phone}`} className="flex items-center gap-1 text-xs text-[#5A7080] hover:text-primary transition-colors mt-0.5">
+          <p className="text-sm font-medium text-foreground">{lead.name}</p>
+          <a href={`tel:${lead.phone}`} className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-primary">
             <Phone className="w-3 h-3" /> {lead.phone}
           </a>
         </div>
@@ -110,7 +110,7 @@ function LeadCard({ lead, agents, onAction }: {
       {lead.interestedIn && lead.interestedIn.length > 0 && (
         <div className="flex flex-wrap gap-1 mb-3">
           {lead.interestedIn.map((i) => (
-            <span key={i} className="text-[10px] px-1.5 py-0.5 rounded-full bg-accent text-[#5A7080] capitalize">
+            <span key={i} className="rounded-full bg-accent px-1.5 py-0.5 text-[10px] capitalize text-muted-foreground">
               {i.replace(/_/g, " ")}
             </span>
           ))}
@@ -118,7 +118,7 @@ function LeadCard({ lead, agents, onAction }: {
       )}
 
       {/* Footer */}
-      <div className="flex items-center justify-between pt-3 border-t border-white/[0.04]">
+      <div className="flex items-center justify-between border-t border-border pt-3">
         <div className="flex items-center gap-2">
           {/* Agent avatar */}
           {lead.assignedAgentName ? (
@@ -140,7 +140,7 @@ function LeadCard({ lead, agents, onAction }: {
           <div className="relative">
             <button
               onClick={() => setShowMove((v) => !v)}
-              className="text-[10px] text-muted-foreground hover:text-muted-foreground px-1.5 py-1 rounded transition-colors"
+              className="rounded px-1.5 py-1 text-[10px] text-muted-foreground transition-colors hover:text-foreground"
             >
               Move
             </button>
@@ -151,7 +151,7 @@ function LeadCard({ lead, agents, onAction }: {
                     key={s}
                     onClick={() => moveTo(s)}
                     disabled={isPending}
-                    className="w-full text-left text-xs text-muted-foreground hover:text-white hover:bg-accent px-2.5 py-1.5 rounded-lg transition-colors flex items-center gap-2"
+                    className="flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-left text-xs text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
                   >
                     <span className={`w-1.5 h-1.5 rounded-full ${STAGE_CONFIG[s].dot}`} />
                     {LEAD_STAGE_LABELS[s]}
@@ -183,12 +183,12 @@ function LeadCard({ lead, agents, onAction }: {
           )}
 
           {/* Detail link */}
-          <a
+          <Link
             href={`/admin/leads/${lead._id}`}
-            className="text-[10px] text-muted-foreground hover:text-primary transition-colors"
+            className="text-[10px] text-muted-foreground transition-colors hover:text-primary"
           >
             <ArrowUpRight className="w-3 h-3" />
-          </a>
+          </Link>
         </div>
       </div>
     </div>
@@ -197,10 +197,9 @@ function LeadCard({ lead, agents, onAction }: {
 
 // ─── KANBAN COLUMN ────────────────────────────────────────────────────────────
 
-function KanbanColumn({ stage, leads, agents, onAction }: {
+function KanbanColumn({ stage, leads, onAction }: {
   stage: LeadStage;
   leads: ILead[];
-  agents: LeadsKanbanProps["agents"];
   onAction: () => void;
 }) {
   const config = STAGE_CONFIG[stage];
@@ -223,11 +222,11 @@ function KanbanColumn({ stage, leads, agents, onAction }: {
       <div className="flex flex-col gap-2.5 flex-1">
         {leads.length === 0 ? (
           <div className="border border-dashed border-border rounded-xl p-4 text-center">
-            <p className="text-xs text-[#2A3E52]">No leads</p>
+            <p className="text-xs text-muted-foreground">No leads</p>
           </div>
         ) : (
           leads.map((lead) => (
-            <LeadCard key={lead._id} lead={lead} agents={agents} onAction={onAction} />
+            <LeadCard key={lead._id} lead={lead} onAction={onAction} />
           ))
         )}
       </div>
@@ -237,7 +236,7 @@ function KanbanColumn({ stage, leads, agents, onAction }: {
 
 // ─── MAIN KANBAN BOARD ────────────────────────────────────────────────────────
 
-export function LeadsKanban({ boardData, stats, agents }: LeadsKanbanProps) {
+export function LeadsKanban({ boardData, stats }: LeadsKanbanProps) {
   const router = useRouter();
   const refresh = () => router.refresh();
 
@@ -246,28 +245,28 @@ export function LeadsKanban({ boardData, stats, agents }: LeadsKanbanProps) {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="font-serif text-2xl font-medium text-white">Leads Pipeline</h1>
-          <p className="text-sm text-[#5A7080] mt-1">
+          <h1 className="font-serif text-2xl font-medium text-foreground">Leads Pipeline</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
             Track leads through your conversion pipeline.
           </p>
         </div>
-        <a
+        <Link
           href="/admin/leads/new"
           className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-light text-foreground text-sm font-medium rounded-lg transition-colors"
         >
           <Users2 className="w-4 h-4" /> Add Lead
-        </a>
+        </Link>
       </div>
 
       {/* Stats */}
       {stats && (
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
           {[
-            { label: "Total", value: stats.total, color: "text-white" },
+            { label: "Total", value: stats.total, color: "text-foreground" },
             { label: "Active", value: stats.active, color: "text-primary" },
-            { label: "Converted", value: stats.converted, color: "text-emerald-400" },
+            { label: "Converted", value: stats.converted, color: "text-secondary" },
             { label: "Lost", value: stats.lost, color: "text-red-400" },
-            { label: "Conv. Rate", value: `${stats.conversionRate}%`, color: "text-purple-400" },
+            { label: "Conv. Rate", value: `${stats.conversionRate}%`, color: "text-foreground" },
           ].map((s) => (
             <div key={s.label} className="bg-card border border-border rounded-xl p-3">
               <p className="text-[10px] text-muted-foreground uppercase tracking-wide mb-1">{s.label}</p>
@@ -285,8 +284,8 @@ export function LeadsKanban({ boardData, stats, agents }: LeadsKanbanProps) {
             {["converted", "lost"].map((s) => (
               <div key={s} className="flex items-center gap-2">
                 <span className={`w-2 h-2 rounded-full ${STAGE_CONFIG[s as LeadStage].dot}`} />
-                <span className="text-xs text-[#5A7080] capitalize">{LEAD_STAGE_LABELS[s]}</span>
-                <span className="text-xs font-medium text-white">{boardData[s as LeadStage]?.length ?? 0}</span>
+                <span className="text-xs capitalize text-muted-foreground">{LEAD_STAGE_LABELS[s]}</span>
+                <span className="text-xs font-medium text-foreground">{boardData[s as LeadStage]?.length ?? 0}</span>
               </div>
             ))}
           </div>
@@ -301,7 +300,6 @@ export function LeadsKanban({ boardData, stats, agents }: LeadsKanbanProps) {
               key={stage}
               stage={stage}
               leads={boardData[stage] ?? []}
-              agents={agents}
               onAction={refresh}
             />
           ))}

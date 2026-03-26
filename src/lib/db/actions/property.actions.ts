@@ -6,6 +6,11 @@ import { connectDB } from "@/lib/db/connection";
 import Property from "@/lib/db/models/Property";
 import { requireAuth, withRole } from "@/lib/auth/utils";
 import {
+  deepMerge,
+  requireObjectId,
+  serialize,
+} from "@/lib/db/actions/helpers";
+import {
   PropertyValidator,
   PropertyFiltersValidator,
   type PropertyInput,
@@ -13,14 +18,12 @@ import {
 } from "@/lib/utils/validators";
 import type { ApiResponse, IProperty } from "@/types";
 
+type PropertyQuery = Record<string, unknown>;
+
 // ─── HELPERS ──────────────────────────────────────────────────────────────────
 
 function generateSlug(title: string): string {
   return slugify(title, { lower: true, strict: true, trim: true });
-}
-
-function serializeProperty(doc: any): IProperty {
-  return JSON.parse(JSON.stringify(doc));
 }
 
 // ─── GET PROPERTIES (public + admin) ─────────────────────────────────────────
@@ -54,8 +57,7 @@ export async function getProperties(
     } = filters;
 
     // Build the MongoDB query
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const query: Record<string, any> = {};
+    const query: PropertyQuery = {};
 
     if (status) query.status = status;
     if (isFeatured !== undefined) query.isFeatured = isFeatured;
@@ -71,9 +73,10 @@ export async function getProperties(
 
     // Price range filter
     if (minPrice !== undefined || maxPrice !== undefined) {
-      query["financials.listedPrice"] = {};
-      if (minPrice !== undefined) query["financials.listedPrice"].$gte = minPrice;
-      if (maxPrice !== undefined) query["financials.listedPrice"].$lte = maxPrice;
+      const priceFilter: Record<string, number> = {};
+      if (minPrice !== undefined) priceFilter.$gte = minPrice;
+      if (maxPrice !== undefined) priceFilter.$lte = maxPrice;
+      query["financials.listedPrice"] = priceFilter;
     }
 
     // Full-text search
@@ -83,8 +86,7 @@ export async function getProperties(
 
     const skip = (page - 1) * limit;
     const sortDirection = sortOrder === "asc" ? 1 : -1;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const sortQuery: Record<string, any> =
+    const sortQuery: Record<string, number | { $meta: "textScore" }> =
       search?.trim()
         ? { score: { $meta: "textScore" } }
         : { [sortBy]: sortDirection };
@@ -100,7 +102,7 @@ export async function getProperties(
 
     return {
       success: true,
-      data: properties.map(serializeProperty),
+      data: properties.map((property) => serialize<IProperty>(property)),
       pagination: {
         page,
         limit,
@@ -133,7 +135,7 @@ export async function getPropertyBySlug(
       $inc: { viewCount: 1 },
     }).catch(console.error);
 
-    return { success: true, data: serializeProperty(property) };
+    return { success: true, data: serialize<IProperty>(property) };
   } catch (error) {
     console.error("[getPropertyBySlug]", error);
     return { success: false, error: "Failed to fetch property" };
@@ -152,7 +154,7 @@ export async function getPropertyById(
     const property = await Property.findById(id).lean();
     if (!property) return { success: false, error: "Property not found" };
 
-    return { success: true, data: serializeProperty(property) };
+    return { success: true, data: serialize<IProperty>(property) };
   } catch (error) {
     console.error("[getPropertyById]", error);
     return { success: false, error: "Failed to fetch property" };
@@ -193,7 +195,7 @@ export async function createProperty(
       ...data,
       slug,
       location: { type: "Point", ...data.location },
-      createdBy: user.id,
+      createdBy: requireObjectId(user.id, "createProperty: session user id"),
     });
 
     revalidatePath("/admin/properties");
@@ -202,7 +204,7 @@ export async function createProperty(
 
     return {
       success: true,
-      data: serializeProperty(property.toObject()),
+      data: serialize<IProperty>(property.toObject()),
       message: `Property "${property.title}" created successfully`,
     };
   } catch (error) {
@@ -227,8 +229,8 @@ export async function updateProperty(
     const property = await Property.findById(id);
     if (!property) return { success: false, error: "Property not found" };
 
-    // Merge and validate only what's provided
-    const merged = { ...property.toObject(), ...rawData };
+    const current = serialize<IProperty>(property.toObject());
+    const merged = deepMerge(current, rawData);
     const data = PropertyValidator.parse(merged);
 
     // If title changed and no custom slug, regenerate
@@ -249,15 +251,22 @@ export async function updateProperty(
       { new: true, runValidators: true }
     ).lean();
 
+    if (!updated) {
+      return { success: false, error: "Property not found after update" };
+    }
+
     revalidatePath(`/admin/properties/${id}`);
     revalidatePath("/admin/properties");
     revalidatePath(`/projects/${property.slug}`);
+    if (updated.slug && updated.slug !== property.slug) {
+      revalidatePath(`/projects/${updated.slug}`);
+    }
     revalidatePath("/projects");
     revalidatePath("/");
 
     return {
       success: true,
-      data: serializeProperty(updated),
+      data: serialize<IProperty>(updated),
       message: "Property updated successfully",
     };
   } catch (error) {
@@ -290,7 +299,7 @@ export async function togglePropertyStatus(
 
     return {
       success: true,
-      data: serializeProperty(property),
+      data: serialize<IProperty>(property),
       message: `Property marked as ${status}`,
     };
   } catch (error) {
@@ -322,7 +331,7 @@ export async function toggleFeatured(
 
     return {
       success: true,
-      data: serializeProperty(property),
+      data: serialize<IProperty>(property),
       message: isFeatured ? "Marked as featured" : "Removed from featured",
     };
   } catch (error) {

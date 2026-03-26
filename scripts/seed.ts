@@ -1,7 +1,6 @@
 /**
  * SEED SCRIPT
- * Run with: npx ts-node --project tsconfig.json scripts/seed.ts
- * Or add to package.json scripts: "seed": "npx tsx scripts/seed.ts"
+ * Run with: node --import tsx scripts/seed.ts
  *
  * This seeds:
  * 1. A default super_admin user

@@ -137,9 +137,9 @@ export default function ServicesPage() {
             <div className="w-7 h-px bg-primary" />
             <span className="text-xs text-primary uppercase tracking-widest font-medium">What We Offer</span>
           </div>
-          <h1 className="font-serif text-5xl sm:text-6xl font-medium text-white mb-6 leading-tight">
+          <h1 className="mb-6 font-serif text-5xl font-medium leading-tight text-foreground sm:text-6xl">
             End-to-End Advisory,<br />
-            <span className="italic" style={{ color: "#C9A96E" }}>Zero Guesswork</span>
+            <span className="text-secondary italic">Zero Guesswork</span>
           </h1>
           <p className="text-lg text-muted-foreground leading-relaxed max-w-2xl">
             From the first property shortlist to the final registration — Homes manages every step of your real estate journey with full transparency and zero commission pressure.
@@ -165,14 +165,14 @@ export default function ServicesPage() {
                   <span className="text-xs text-muted-foreground font-medium">{service.number}</span>
                 </div>
 
-                <h3 className="font-serif text-xl font-medium text-white mb-1">{service.title}</h3>
+                <h3 className="mb-1 font-serif text-xl font-medium text-foreground">{service.title}</h3>
                 <p className="text-xs text-primary mb-3 font-medium">{service.tagline}</p>
-                <p className="text-sm text-[#5A7080] leading-relaxed mb-5 flex-1">{service.description}</p>
+                <p className="mb-5 flex-1 text-sm leading-relaxed text-muted-foreground">{service.description}</p>
 
                 <ul className="space-y-2 mb-6">
                   {service.features.map((feat) => (
-                    <li key={feat} className="flex items-start gap-2 text-xs text-[#5A7080]">
-                      <CheckCircle className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0 mt-0.5" />
+                    <li key={feat} className="flex items-start gap-2 text-xs text-muted-foreground">
+                      <CheckCircle className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-secondary" />
                       {feat}
                     </li>
                   ))}
@@ -198,10 +198,10 @@ export default function ServicesPage() {
               <span className="text-xs text-primary uppercase tracking-widest font-medium">Our Process</span>
               <div className="w-7 h-px bg-primary" />
             </div>
-            <h2 className="font-serif text-4xl font-medium text-white mb-3">
+            <h2 className="mb-3 font-serif text-4xl font-medium text-foreground">
               How We Work Together
             </h2>
-            <p className="text-[#5A7080] max-w-lg mx-auto">
+            <p className="mx-auto max-w-lg text-muted-foreground">
               A clear, structured approach that keeps you informed at every stage.
             </p>
           </div>
@@ -214,11 +214,11 @@ export default function ServicesPage() {
                     {step.num}
                   </span>
                   {i < PROCESS.length - 1 && (
-                    <div className="flex-1 h-px bg-white/[0.06] hidden sm:block" />
+                    <div className="hidden h-px flex-1 bg-border sm:block" />
                   )}
                 </div>
-                <p className="text-sm font-medium text-white mb-2">{step.title}</p>
-                <p className="text-sm text-[#5A7080] leading-relaxed">{step.desc}</p>
+                <p className="mb-2 text-sm font-medium text-foreground">{step.title}</p>
+                <p className="text-sm leading-relaxed text-muted-foreground">{step.desc}</p>
               </div>
             ))}
           </div>
@@ -248,10 +248,10 @@ export default function ServicesPage() {
               <div className="w-7 h-px bg-primary" />
               <span className="text-xs text-primary uppercase tracking-widest font-medium">Get Started</span>
             </div>
-            <h2 className="font-serif text-4xl font-medium text-white mb-5">
+            <h2 className="mb-5 font-serif text-4xl font-medium text-foreground">
               Ready to Begin Your Property Journey?
             </h2>
-            <p className="text-[#5A7080] mb-8 leading-relaxed">
+            <p className="mb-8 leading-relaxed text-muted-foreground">
               Tell us what you need. An advisor will call you within a few hours to discuss your requirements and suggest the best way forward.
             </p>
             <div className="space-y-4">
@@ -266,7 +266,7 @@ export default function ServicesPage() {
                     </div>
                     <div>
                       <p className="text-[10px] text-muted-foreground uppercase tracking-widest">{c.label}</p>
-                      <p className="text-sm font-medium text-white">{c.value}</p>
+                      <p className="text-sm font-medium text-foreground">{c.value}</p>
                     </div>
                   </a>
                 );
@@ -274,7 +274,7 @@ export default function ServicesPage() {
             </div>
           </div>
           <div className="bg-card border border-border rounded-2xl p-8">
-            <h3 className="font-serif text-xl font-medium text-white mb-6">Send an Enquiry</h3>
+            <h3 className="mb-6 font-serif text-xl font-medium text-foreground">Send an Enquiry</h3>
             <EnquiryForm variant="inline" />
           </div>
         </div>

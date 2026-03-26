@@ -75,11 +75,11 @@ All Server Actions use the full `config.ts` via `auth()`.
 
 | Category | Tech | Notes |
 |---|---|---|
-| Framework | Next.js 15 App Router | SSR, SSG, ISR, Server Actions |
+| Framework | Next.js 16 App Router | SSR, SSG, ISR, Server Actions |
 | Language | TypeScript 5+ | End-to-end types |
 | Database | MongoDB Atlas | Flexible schema |
 | ODM | Mongoose 8+ | Schemas + 14 indexes |
-| Styling | Tailwind CSS v4 | `@import "tailwindcss"`, `@theme` block |
+| Styling | Tailwind CSS v4 | Semantic light/dark tokens in `globals.css` |
 | Components | ShadCN UI (Nova/Zinc) | Admin UI |
 | Auth | NextAuth v5 | JWT, edge-split config |
 | Forms | React Hook Form + Zod | Client + server validation |
@@ -111,6 +111,7 @@ homes/
 │   │   │   ├── enquiries/page.tsx       ✅ Enquiry inbox
 │   │   │   ├── leads/
 │   │   │   │   ├── page.tsx             ✅ Kanban pipeline
+│   │   │   │   ├── new/page.tsx         ✅ Manual lead creation
 │   │   │   │   └── [id]/page.tsx        ✅ Lead detail
 │   │   │   ├── properties/
 │   │   │   │   ├── page.tsx             ✅ Property table
@@ -149,15 +150,16 @@ homes/
 │   │   │   │   └── LeadDetail.tsx       ✅
 │   │   │   ├── properties/
 │   │   │   │   ├── PropertyTable.tsx    ✅
-│   │   │   │   └── PropertyForm.tsx     ✅ 8-section multi-step form
+│   │   │   │   ├── MediaGallery.tsx     ✅ Local media manager
+│   │   │   │   └── PropertyForm.tsx     ✅ 9-section multi-step form
 │   │   │   └── sitevisits/SiteVisitsView.tsx ✅
-│   │   └── shared/AuthProvider.tsx      ✅
+│   │   └── shared/                      ✅ AuthProvider, ThemeProvider, ThemeToggle, AmenityIcon
 │   │
 │   ├── lib/
 │   │   ├── db/
 │   │   │   ├── connection.ts            ✅ Singleton
 │   │   │   ├── models/                  ✅ 5 schemas
-│   │   │   └── actions/                 ✅ 33 Server Actions
+│   │   │   └── actions/                 ✅ Property, lead, enquiry, visit, and media actions
 │   │   ├── auth/                        ✅ Edge-split
 │   │   └── utils/
 │   │       ├── constants.ts             ✅
@@ -193,9 +195,11 @@ new → contacted → qualified → site_visit_scheduled → negotiation → con
 
 ## Server Actions Reference
 
-**33 total actions across 4 files:**
+**37 total actions across 5 files:**
 
 **`property.actions.ts`** — getProperties, getPropertyBySlug, getPropertyById, getFeaturedProperties, createProperty, updateProperty, togglePropertyStatus, toggleFeatured, deleteProperty, getAllPropertySlugs, getPropertyStats
+
+**`property-media.actions.ts`** — uploadPropertyMedia, setPropertyCoverImage, reorderPropertyMedia, deletePropertyMedia
 
 **`enquiry.actions.ts`** — submitEnquiry (public, 24h dedup), getEnquiries, getEnquiryStats, markEnquiryReviewed, markEnquirySpam, convertEnquiryToLead
 
@@ -227,10 +231,11 @@ new → contacted → qualified → site_visit_scheduled → negotiation → con
 | Analytics | `/admin/analytics` | Funnel chart, source bars, type pie, visit progress bars, stage table |
 | Enquiry Inbox | `/admin/enquiries` | Status tabs, convert-to-lead, mark reviewed/spam |
 | Leads Kanban | `/admin/leads` | 5-column board, stage move, score display |
+| Add Lead | `/admin/leads/new` | Manual lead entry wired to `createLead` |
 | Lead Detail | `/admin/leads/[id]` | Activity timeline, agent assign, inline notes |
 | Property Table | `/admin/properties` | Status filter, search, status/featured toggles, row actions |
-| Add Property | `/admin/properties/new` | 8-section accordion form covering all attribute groups |
-| Edit Property | `/admin/properties/[id]/edit` | Same form, pre-populated |
+| Add Property | `/admin/properties/new` | Property form with post-save gallery setup |
+| Edit Property | `/admin/properties/[id]/edit` | Deep-merged updates, preserved media, local gallery tools |
 | Site Visits | `/admin/site-visits` | Visit cards, complete/no-show actions, stats |
 
 ---
@@ -245,6 +250,10 @@ These fixes were made during development and are already incorporated:
 | **TypeScript serialization** | Server Action serialize helpers removed explicit type assertions |
 | **Mongoose async pre-save** | `Lead.ts` and `SiteVisit.ts` pre-save hooks converted to async, removing `next()` callback conflicts |
 | **budgetRange field mismatch** | `convertEnquiryToLead` correctly maps enquiry budget to lead requirements |
+| **ObjectId hardening** | Lead/enquiry writes validate actor ids, sanitize optional property refs, and log invalid inputs with field context |
+| **Property edit stability** | Edit flow now deep-merges nested payloads, preserves `mediaAssets`, and tolerates blank optional number inputs |
+| **Local media gallery** | Admin property edit supports upload, cover selection, drag reorder, and safe delete for local `/uploads/properties/*` assets |
+| **Theme parity** | Public navbar and admin header now expose a reusable light/dark toggle and core CRM/property screens use semantic tokens |
 | **Edge runtime error** | Auth config split: `auth.config.ts` (edge-safe) + full `config.ts` (node only). `proxy.ts` uses edge-safe instance |
 | **useSearchParams Suspense** | Login page wrapped in `<Suspense>` boundary for static prerendering |
 
@@ -269,11 +278,12 @@ These fixes were made during development and are already incorporated:
 
 ```bash
 git clone <repo-url> && cd homes
-npm install && npm install -D tsx dotenv
+npm install
 cp .env.example .env.local
-npm run seed   # admin@homes.in / Admin@Homes2025!
+npm run seed
+npm run seed:leads
 npm run dev
-npm run build  # verify zero errors
+npm run build  # run in a networked environment so Google Fonts can be fetched
 ```
 
 ```env
@@ -291,9 +301,16 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
   "dev":   "next dev",
   "build": "next build",
   "start": "next start",
-  "seed":  "npx tsx scripts/seed.ts"
+  "seed":  "node --import tsx scripts/seed.ts",
+  "seed:leads": "node --import tsx scripts/seed-leads.ts"
 }
 ```
+
+### Seed Notes
+
+- `npm run seed` creates the base admin user and the 7 property records.
+- `npm run seed:leads` clears and reseeds the `leads` collection with 18 realistic records spanning all stages and sources.
+- Property gallery uploads are stored locally under `public/uploads/properties/<slug>/` and assume persistent disk storage.
 
 ---
 
@@ -303,11 +320,11 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 
 | Token | Hex | Usage |
 |---|---|---|
-| `--navy` | `#0B1521` | Primary background |
-| `--navy-mid` | `#12202E` | Card surfaces |
-| `--navy-light` | `#1A2E42` | Elevated surfaces |
-| `--gold` | `#C9A96E` | Accent, CTAs, active nav |
-| `--gold-light` | `#E2C99A` | Hover, pricing display |
+| `--background` | `#F4F9E9` / `#1A3F4E` | App canvas in light / dark mode |
+| `--foreground` | `#1A3F4E` / `#F4F9E9` | Primary text in light / dark mode |
+| `--card` | `#FFFFFF` / `#245061` | Elevated surfaces |
+| `--accent` | `#D6E3C9` / `#2A6172` | Pills, chips, soft surfaces |
+| `--primary` | `#2FA3F2` | Accent CTA and highlight color |
 
 ### Typography
 
@@ -317,15 +334,15 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 | Body / UI | DM Sans | 300, 400, 500, 600 |
 
 ### Key Utilities
-- `text-gradient-gold` — Playfair italic headline gold gradient
-- `bg-grid-pattern` — Subtle gold grid overlay for hero backgrounds
+- `text-gradient-primary` — primary-accent text gradient
+- `bg-grid-pattern` — subtle primary grid overlay for hero backgrounds
 - `line-clamp-2 / -3` — Text truncation utilities
 
 ---
 
 ## Current Project Status
 
-### ✅ Phase 6 — Complete
+### ✅ Current State
 
 **Copy map (from `phase6/` folder):**
 
@@ -351,10 +368,11 @@ mkdir -p src/components/dashboard/analytics
 **Verify:**
 ```bash
 npm run build    # should exit 0
-# /admin/analytics → charts render (empty until leads/enquiries added)
-# /admin/properties/new → 8-section accordion form
+# /admin/leads/new → manual lead creation
+# /admin/properties/[id]/edit → upload, reorder, cover, delete gallery media
+# /admin/leads + /admin/enquiries → pipeline and conversion stats populated after `npm run seed:leads`
 # /about → team + values page
-# /sitemap.xml → lists all 7 property slugs
+# /sitemap.xml → lists all active property slugs
 # /robots.txt → blocks /admin /api /auth
 ```
 
@@ -385,5 +403,5 @@ Final QA checklist before going live:
 
 ---
 
-*Built with Next.js 15, MongoDB Atlas, Tailwind CSS v4, ShadCN UI, and NextAuth v5.*
+*Built with Next.js 16, MongoDB Atlas, Tailwind CSS v4, ShadCN UI, and NextAuth v5.*
 *One codebase — any real estate business.*
