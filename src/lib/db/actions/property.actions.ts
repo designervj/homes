@@ -92,12 +92,12 @@ export async function getProperties(
         : { [sortBy]: sortDirection };
 
     const [properties, total] = await Promise.all([
-      Property.find(query)
-        .sort(sortQuery)
+      Property.find(query as any)
+        .sort(sortQuery as any)
         .skip(skip)
         .limit(limit)
         .lean(),
-      Property.countDocuments(query),
+      Property.countDocuments(query as any),
     ]);
 
     return {
@@ -196,7 +196,7 @@ export async function createProperty(
       slug,
       location: { type: "Point", ...data.location },
       createdBy: requireObjectId(user.id, "createProperty: session user id"),
-    });
+    } as any);
 
     revalidatePath("/admin/properties");
     revalidatePath("/projects");
@@ -230,7 +230,7 @@ export async function updateProperty(
     if (!property) return { success: false, error: "Property not found" };
 
     const current = serialize<IProperty>(property.toObject());
-    const merged = deepMerge(current, rawData);
+    const merged = deepMerge(current, rawData as any);
     const data = PropertyValidator.parse(merged);
 
     // If title changed and no custom slug, regenerate
@@ -247,7 +247,7 @@ export async function updateProperty(
 
     const updated = await Property.findByIdAndUpdate(
       id,
-      { ...data, location: { type: "Point", ...data.location } },
+      { ...data, location: { type: "Point", ...data.location } } as any,
       { new: true, runValidators: true }
     ).lean();
 

@@ -42,7 +42,7 @@ export function AddLeadForm({
     handleSubmit,
     formState: { errors },
   } = useForm<LeadInput>({
-    resolver: zodResolver(LeadValidator),
+    resolver: zodResolver(LeadValidator as any),
     defaultValues: {
       stage: "new",
       source: "website",

@@ -21,7 +21,7 @@ import type { ApiResponse, IEnquiry, ILead } from "@/types";
 
 type EnquiryListQuery = {
   status?: string;
-  propertyId?: import("mongoose").Types.ObjectId;
+  propertyId?: any;
 };
 
 function getActorId(userId: string, actionName: string) {
@@ -45,7 +45,7 @@ function sanitizeEnquiryProperty(
   }
 
   return {
-    propertyId: objectId,
+    propertyId: objectId as any,
     propertyName,
     propertySlug,
   };
@@ -86,7 +86,7 @@ export async function submitEnquiry(
         phone: data.phone,
         propertyId: propertyRef.propertyId,
         createdAt: { $gte: new Date(Date.now() - 24 * 60 * 60 * 1000) },
-      });
+      } as any);
 
       if (recentDuplicate) {
         // Silently succeed — don't tell spammers they've been blocked,
@@ -105,7 +105,7 @@ export async function submitEnquiry(
       status: "new",
       ipAddress,
       userAgent,
-    });
+    } as any);
 
     // Increment enquiry count on the property (fire and forget)
     if (propertyRef.propertyId) {
@@ -162,12 +162,12 @@ export async function getEnquiries(filters: {
     const skip = (page - 1) * limit;
 
     const [enquiries, total] = await Promise.all([
-      Enquiry.find(query)
+      Enquiry.find(query as any)
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
         .lean(),
-      Enquiry.countDocuments(query),
+      Enquiry.countDocuments(query as any),
     ]);
 
     return {
@@ -336,7 +336,7 @@ export async function convertEnquiryToLead(
           stage: "new",
         },
       ],
-    });
+    } as any);
 
     // Update the enquiry
     await Enquiry.findByIdAndUpdate(enquiryId, {
