@@ -1,5 +1,5 @@
 import Link from "next/link";
-import Image from "next/image";
+import { SafeImage as Image } from "@/components/shared/SafeImage";
 import { MapPin, Maximize2, Star } from "lucide-react";
 import { ReraBadge } from "./ReraBadge";
 import { formatINR } from "@/lib/utils/constants";

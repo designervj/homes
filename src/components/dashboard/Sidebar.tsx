@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
+import { SafeImage as Image } from "@/components/shared/SafeImage";
 import { usePathname } from "next/navigation";
 import {
   Building2,

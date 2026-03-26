@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
+import { SafeImage as Image } from "@/components/shared/SafeImage";
 import { X, ChevronLeft, ChevronRight, Expand } from "lucide-react";
 
 interface MediaAsset {

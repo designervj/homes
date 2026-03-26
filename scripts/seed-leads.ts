@@ -13,7 +13,7 @@ import path from "node:path";
 
 dotenv.config({ path: path.resolve(process.cwd(), ".env.local") });
 
-const MONGODB_URI = process.env.MONGODB_URI;
+const MONGODB_URI = process.env.MONGODB_URI!;
 
 if (!MONGODB_URI) {
   throw new Error("MONGODB_URI not set in .env.local");
