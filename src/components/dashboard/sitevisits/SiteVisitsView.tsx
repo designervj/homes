@@ -8,7 +8,8 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { updateSiteVisitStatus } from "@/lib/db/actions/sitevisit.actions";
-import type { ISiteVisit } from "@/types";
+import { LEAD_SOURCES, LEAD_SOURCE_LABELS } from "@/lib/utils/constants";
+import type { ICompany, IPropertySite, ISiteVisit } from "@/types";
 
 // ─── TYPES ────────────────────────────────────────────────────────────────────
 
@@ -21,6 +22,11 @@ interface SiteVisitsViewProps {
   } | null;
   pagination?: { page: number; limit: number; total: number; totalPages: number };
   currentStatus: string;
+  currentCompanyId?: string;
+  currentPropertySiteId?: string;
+  currentSource?: string;
+  companies: ICompany[];
+  sites: IPropertySite[];
 }
 
 // ─── STATUS CONFIG ────────────────────────────────────────────────────────────
@@ -108,6 +114,14 @@ function VisitCard({ visit, onAction }: { visit: ISiteVisit; onAction: () => voi
         )}
       </div>
 
+      {visit.source && (
+        <div className="mb-4">
+          <span className="rounded-full bg-accent px-2 py-1 text-[11px] text-muted-foreground">
+            {LEAD_SOURCE_LABELS[visit.source] ?? visit.source}
+          </span>
+        </div>
+      )}
+
       {/* Outcome */}
       {visit.outcome && visit.outcome !== "pending" && (
         <p className={`text-xs font-medium mb-3 capitalize ${OUTCOME_STYLES[visit.outcome]}`}>
@@ -163,11 +177,41 @@ const STATUS_TABS = [
   { key: "all", label: "All" },
 ];
 
-export function SiteVisitsView({ visits, upcoming, stats, pagination, currentStatus }: SiteVisitsViewProps) {
+export function SiteVisitsView({
+  visits,
+  upcoming,
+  stats,
+  pagination,
+  currentStatus,
+  currentCompanyId,
+  currentPropertySiteId,
+  currentSource,
+  companies,
+  sites,
+}: SiteVisitsViewProps) {
   const router = useRouter();
   const refresh = () => router.refresh();
 
-  const setStatus = (s: string) => router.push(`/admin/site-visits?status=${s}`);
+  const navigate = (overrides: Record<string, string | undefined>) => {
+    const params = new URLSearchParams();
+    const next = {
+      status: currentStatus,
+      companyId: currentCompanyId,
+      propertySiteId: currentPropertySiteId,
+      source: currentSource,
+      ...overrides,
+    };
+
+    Object.entries(next).forEach(([key, value]) => {
+      if (!value) return;
+      if (key === "page" && value === "1") return;
+      params.set(key, value);
+    });
+
+    router.push(`/admin/site-visits${params.size ? `?${params.toString()}` : ""}`);
+  };
+
+  const setStatus = (status: string) => navigate({ status, page: undefined });
 
   return (
     <div className="space-y-6 max-w-4xl">
@@ -177,6 +221,68 @@ export function SiteVisitsView({ visits, upcoming, stats, pagination, currentSta
           <h1 className="font-serif text-2xl font-medium text-foreground">Site Visits</h1>
           <p className="mt-1 text-sm text-muted-foreground">Track and manage scheduled property walkthroughs.</p>
         </div>
+      </div>
+
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-[1fr_1fr_1fr_auto]">
+        <select
+          value={currentCompanyId ?? ""}
+          onChange={(event) =>
+            navigate({ companyId: event.target.value || undefined, page: undefined })
+          }
+          className="rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground outline-none transition-colors focus:border-primary/40"
+        >
+          <option value="">All companies</option>
+          {companies.map((company) => (
+            <option key={company._id} value={company._id}>
+              {company.name}
+            </option>
+          ))}
+        </select>
+        <select
+          value={currentPropertySiteId ?? ""}
+          onChange={(event) =>
+            navigate({
+              propertySiteId: event.target.value || undefined,
+              page: undefined,
+            })
+          }
+          className="rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground outline-none transition-colors focus:border-primary/40"
+        >
+          <option value="">All microsites</option>
+          {sites.map((site) => (
+            <option key={site._id} value={site._id}>
+              /sites/{site.siteSlug}
+            </option>
+          ))}
+        </select>
+        <select
+          value={currentSource ?? ""}
+          onChange={(event) =>
+            navigate({ source: event.target.value || undefined, page: undefined })
+          }
+          className="rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground outline-none transition-colors focus:border-primary/40"
+        >
+          <option value="">All sources</option>
+          {LEAD_SOURCES.map((source) => (
+            <option key={source} value={source}>
+              {LEAD_SOURCE_LABELS[source]}
+            </option>
+          ))}
+        </select>
+        <button
+          type="button"
+          onClick={() =>
+            navigate({
+              companyId: undefined,
+              propertySiteId: undefined,
+              source: undefined,
+              page: undefined,
+            })
+          }
+          className="rounded-lg border border-border px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+        >
+          Clear
+        </button>
       </div>
 
       {/* Stats */}
@@ -254,8 +360,8 @@ export function SiteVisitsView({ visits, upcoming, stats, pagination, currentSta
         <div className="flex justify-between items-center pt-4 border-t border-border">
           <p className="text-xs text-muted-foreground">Page {pagination.page} of {pagination.totalPages}</p>
           <div className="flex gap-2">
-            <button disabled={pagination.page <= 1} onClick={() => router.push(`/admin/site-visits?status=${currentStatus}&page=${pagination.page - 1}`)} className="rounded-lg border border-border px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-accent disabled:opacity-40">Previous</button>
-            <button disabled={pagination.page >= pagination.totalPages} onClick={() => router.push(`/admin/site-visits?status=${currentStatus}&page=${pagination.page + 1}`)} className="rounded-lg border border-border px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-accent disabled:opacity-40">Next</button>
+            <button disabled={pagination.page <= 1} onClick={() => navigate({ page: String(pagination.page - 1) })} className="rounded-lg border border-border px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-accent disabled:opacity-40">Previous</button>
+            <button disabled={pagination.page >= pagination.totalPages} onClick={() => navigate({ page: String(pagination.page + 1) })} className="rounded-lg border border-border px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-accent disabled:opacity-40">Next</button>
           </div>
         </div>
       )}

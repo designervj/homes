@@ -61,13 +61,14 @@ All Server Actions use the full `config.ts` via `auth()`.
 
 ### RBAC Matrix
 
-| Route | super_admin | admin | agent |
-|---|---|---|---|
-| `/admin` overview | ✅ | ✅ | ✅ |
-| Properties CRUD | ✅ | ✅ | 👁 View |
-| Enquiries / Leads / Visits | ✅ | ✅ | ✅ |
-| Analytics | ✅ | ✅ | ❌ |
-| Settings | ✅ | ❌ | ❌ |
+| Route | super_admin | admin | company_manager | agent |
+|---|---|---|---|---|
+| `/admin` overview | ✅ | ✅ | ✅ scoped | ✅ |
+| Properties CRUD | ✅ | ✅ | ✅ scoped | 👁 View |
+| Companies / Case Studies / Microsites | ✅ | ✅ | ✅ scoped | ❌ |
+| Enquiries / Leads / Visits | ✅ | ✅ | ✅ scoped | ✅ |
+| Analytics | ✅ | ✅ | ❌ | ❌ |
+| Settings | ✅ | ❌ | ❌ | ❌ |
 
 ---
 
@@ -78,7 +79,7 @@ All Server Actions use the full `config.ts` via `auth()`.
 | Framework | Next.js 16 App Router | SSR, SSG, ISR, Server Actions |
 | Language | TypeScript 5+ | End-to-end types |
 | Database | MongoDB Atlas | Flexible schema |
-| ODM | Mongoose 8+ | Schemas + 14 indexes |
+| ODM | Mongoose 9+ | Property, CRM, company, case-study, and microsite schemas |
 | Styling | Tailwind CSS v4 | Semantic light/dark tokens in `globals.css` |
 | Components | ShadCN UI (Nova/Zinc) | Admin UI |
 | Auth | NextAuth v5 | JWT, edge-split config |
@@ -100,6 +101,14 @@ homes/
 │   │   │   ├── page.tsx                 ✅ Homepage (SSG)
 │   │   │   ├── about/page.tsx           ✅ About + team
 │   │   │   ├── contact/page.tsx         ✅ Contact form
+│   │   │   ├── companies/
+│   │   │   │   ├── page.tsx             ✅ Company profiles index
+│   │   │   │   └── [slug]/page.tsx      ✅ Company profile page
+│   │   │   ├── case-studies/
+│   │   │   │   ├── page.tsx             ✅ Public case studies index
+│   │   │   │   └── [slug]/page.tsx      ✅ Case study detail page
+│   │   │   ├── sites/
+│   │   │   │   └── [siteSlug]/page.tsx  ✅ Property microsite landing page
 │   │   │   └── projects/
 │   │   │       ├── page.tsx             ✅ All projects (SSR)
 │   │   │       └── [slug]/page.tsx      ✅ Detail page (ISR)
@@ -113,6 +122,18 @@ homes/
 │   │   │   │   ├── page.tsx             ✅ Kanban pipeline
 │   │   │   │   ├── new/page.tsx         ✅ Manual lead creation
 │   │   │   │   └── [id]/page.tsx        ✅ Lead detail
+│   │   │   ├── companies/
+│   │   │   │   ├── page.tsx             ✅ Company admin list
+│   │   │   │   ├── new/page.tsx         ✅ Create company
+│   │   │   │   └── [id]/edit/page.tsx   ✅ Edit company
+│   │   │   ├── case-studies/
+│   │   │   │   ├── page.tsx             ✅ Case-study admin list
+│   │   │   │   ├── new/page.tsx         ✅ Create case study
+│   │   │   │   └── [id]/edit/page.tsx   ✅ Edit case study
+│   │   │   ├── property-sites/
+│   │   │   │   ├── page.tsx             ✅ Microsite admin list
+│   │   │   │   ├── new/page.tsx         ✅ Create microsite
+│   │   │   │   └── [id]/edit/page.tsx   ✅ Edit microsite
 │   │   │   ├── properties/
 │   │   │   │   ├── page.tsx             ✅ Property table
 │   │   │   │   ├── new/page.tsx         ✅ Add property form
@@ -142,24 +163,27 @@ homes/
 │   │   ├── dashboard/
 │   │   │   ├── Sidebar.tsx              ✅ Role-aware nav
 │   │   │   ├── Header.tsx               ✅ User menu
+│   │   │   ├── companies/               ✅ Company admin UI
+│   │   │   ├── case-studies/            ✅ Case-study admin UI
 │   │   │   ├── analytics/
 │   │   │   │   └── AnalyticsDashboard.tsx ✅ Charts + KPI cards
 │   │   │   ├── enquiries/EnquiryInbox.tsx ✅
 │   │   │   ├── leads/
 │   │   │   │   ├── LeadsKanban.tsx      ✅
 │   │   │   │   └── LeadDetail.tsx       ✅
+│   │   │   ├── property-sites/          ✅ Microsite admin UI
 │   │   │   ├── properties/
 │   │   │   │   ├── PropertyTable.tsx    ✅
 │   │   │   │   ├── MediaGallery.tsx     ✅ Local media manager
-│   │   │   │   └── PropertyForm.tsx     ✅ 9-section multi-step form
+│   │   │   │   └── PropertyForm.tsx     ✅ Company-linked property + unit-plan form
 │   │   │   └── sitevisits/SiteVisitsView.tsx ✅
 │   │   └── shared/                      ✅ AuthProvider, ThemeProvider, ThemeToggle, AmenityIcon
 │   │
 │   ├── lib/
 │   │   ├── db/
 │   │   │   ├── connection.ts            ✅ Singleton
-│   │   │   ├── models/                  ✅ 5 schemas
-│   │   │   └── actions/                 ✅ Property, lead, enquiry, visit, and media actions
+│   │   │   ├── models/                  ✅ Property, CRM, company, case-study, and microsite schemas
+│   │   │   └── actions/                 ✅ Property, company, case-study, microsite, lead, enquiry, visit, and media actions
 │   │   ├── auth/                        ✅ Edge-split
 │   │   └── utils/
 │   │       ├── constants.ts             ✅
@@ -180,11 +204,14 @@ homes/
 
 | Collection | Key Design | Indexes |
 |---|---|---|
-| `properties` | 6 attribute groups, GeoJSON, virtuals | 2dsphere, compound search, text, featured |
-| `leads` | 7-stage pipeline, activity log, async pre-save | {stage, assignedTo}, {propertyId, stage} |
-| `enquiries` | Raw submissions, 24h dedup | {status, createdAt}, {propertyId} |
+| `properties` | 6 attribute groups, GeoJSON, company linkage, unit plans, media gallery | 2dsphere, compound search, text, featured, company/status |
+| `companies` | Canonical builder/developer entity, manager assignments, theme preset, publish workflow | slug unique, featured/status, assigned managers |
+| `caseStudies` | Company-linked proof content with outcomes and property associations | slug unique, company/status, featured/status |
+| `propertySites` | One primary microsite per property, shared property inheritance, theme/contact/SEO overrides | propertyId unique, siteSlug unique, company/status |
+| `leads` | 7-stage pipeline, activity log, company/site attribution, async pre-save | {stage, assignedTo}, {propertyId, stage}, {companyId, stage} |
+| `enquiries` | Raw submissions, 24h dedup, company/site tagging | {status, createdAt}, {propertyId}, {companyId}, {propertySiteId} |
 | `users` | bcrypt, select:false, initials virtual | {email} unique |
-| `siteVisits` | Scheduling, outcomes, async pre-save | {agentId, scheduledAt}, {propertyId} |
+| `siteVisits` | Scheduling, outcomes, scoped company/site linkage, async pre-save | {agentId, scheduledAt}, {propertyId}, {companyId} |
 
 ### Lead Pipeline
 ```
@@ -195,9 +222,15 @@ new → contacted → qualified → site_visit_scheduled → negotiation → con
 
 ## Server Actions Reference
 
-**37 total actions across 5 files:**
+**Server actions now span property, company, case-study, microsite, enquiry, lead, site-visit, and media flows.**
 
 **`property.actions.ts`** — getProperties, getPropertyBySlug, getPropertyById, getFeaturedProperties, createProperty, updateProperty, togglePropertyStatus, toggleFeatured, deleteProperty, getAllPropertySlugs, getPropertyStats
+
+**`company.actions.ts`** — getFeaturedCompanies, getPublishedCompanies, getCompanyProfileBySlug, getAdminCompanies, getCompanyById, createCompany, updateCompany
+
+**`case-study.actions.ts`** — getFeaturedCaseStudies, getPublishedCaseStudies, getCaseStudyPageData, getAdminCaseStudies, getCaseStudyById, createCaseStudy, updateCaseStudy
+
+**`property-site.actions.ts`** — getAllPublishedPropertySiteSlugs, getPublishedPropertySiteBySlug, getAdminPropertySites, getPropertySiteById, getPropertySiteByPropertyId, createPropertySite, updatePropertySite
 
 **`property-media.actions.ts`** — uploadPropertyMedia, setPropertyCoverImage, reorderPropertyMedia, deletePropertyMedia
 
@@ -213,12 +246,17 @@ new → contacted → qualified → site_visit_scheduled → negotiation → con
 
 | Page | Route | Description |
 |---|---|---|
-| Homepage | `/` | Hero, HeroSearch, featured properties, services, trust, enquiry CTA |
+| Homepage | `/` | Hero, featured properties, services, trust, featured companies, case studies, enquiry CTA |
 | All Projects | `/projects` | SSR grid, pill filters (type/possession/budget), pagination |
 | Property Detail | `/projects/[slug]` | ISR, full specs, gallery lightbox, amenities, nearby, sidebar form |
-| About | `/about` | Team, company story, values, compliance badges |
+| Companies | `/companies` | Public company profiles index |
+| Company Profile | `/companies/[slug]` | Company story, linked properties, linked case studies, enquiry CTA |
+| Case Studies | `/case-studies` | Proof-led public stories index |
+| Case Study Detail | `/case-studies/[slug]` | Outcome-led story tied to company + properties |
+| Property Microsite | `/sites/[siteSlug]` | Single-page property landing page using shared property data + microsite overrides |
+| About | `/about` | Team, company story, values, partner proof, compliance badges |
 | Contact | `/contact` | Contact cards, enquiry form |
-| Sitemap | `/sitemap.xml` | Auto-generated — includes all active property slugs |
+| Sitemap | `/sitemap.xml` | Auto-generated — includes active properties, companies, case studies, and published microsites |
 | Robots | `/robots.txt` | Blocks /admin /api /auth |
 
 ---
@@ -233,9 +271,12 @@ new → contacted → qualified → site_visit_scheduled → negotiation → con
 | Leads Kanban | `/admin/leads` | 5-column board, stage move, score display |
 | Add Lead | `/admin/leads/new` | Manual lead entry wired to `createLead` |
 | Lead Detail | `/admin/leads/[id]` | Activity timeline, agent assign, inline notes |
+| Companies | `/admin/companies` | Builder/developer profiles, featured trust layer, manager scope |
+| Case Studies | `/admin/case-studies` | Proof stories linked to companies and properties |
+| Property Microsites | `/admin/property-sites` | Single-page landing site management tied to listed properties |
 | Property Table | `/admin/properties` | Status filter, search, status/featured toggles, row actions |
-| Add Property | `/admin/properties/new` | Property form with post-save gallery setup |
-| Edit Property | `/admin/properties/[id]/edit` | Deep-merged updates, preserved media, local gallery tools |
+| Add Property | `/admin/properties/new` | Property form with company linkage, unit plans, and post-save gallery setup |
+| Edit Property | `/admin/properties/[id]/edit` | Deep-merged updates, preserved media, unit plans, local gallery tools |
 | Site Visits | `/admin/site-visits` | Visit cards, complete/no-show actions, stats |
 
 ---
@@ -263,14 +304,15 @@ These fixes were made during development and are already incorporated:
 
 | Phase | Focus | Status |
 |---|---|---|
-| **Phase 0** | Bootstrap — Next.js 15, ShadCN (Nova/Zinc), folder structure | ✅ Complete |
-| **Phase 1** | Database — 5 Mongoose schemas, connection singleton, seed | ✅ Complete |
+| **Phase 0** | Bootstrap — Next.js 16, ShadCN, folder structure | ✅ Complete |
+| **Phase 1** | Database — core CRM + property schemas, connection singleton, seed | ✅ Complete |
 | **Phase 2** | Auth + RBAC — NextAuth v5, edge-split, proxy.ts, login UI | ✅ Complete |
 | **Phase 3** | Server Actions — 33 actions, Zod validators | ✅ Complete |
 | **Phase 4** | CRM Dashboard — Kanban, inbox, property table, visits | ✅ Complete |
 | **Phase 5** | Public Portal — homepage, project pages, enquiry forms | ✅ Complete |
 | **Phase 6** | Analytics, property form, about page, sitemap, robots | ✅ Complete |
-| **Phase 7** | QA, data migration, production deploy | 🔄 Next |
+| **Phase 7** | Companies, case studies, property microsites, scoped company-manager RBAC | ✅ Complete |
+| **Phase 8** | QA, long-term custom domains, AI growth features, platform ops split | 🔄 Next |
 
 ---
 
@@ -308,7 +350,7 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 
 ### Seed Notes
 
-- `npm run seed` creates the base admin user and the 7 property records.
+- `npm run seed` creates the base users, companies, 7 company-linked properties, case studies, and published property microsites.
 - `npm run seed:leads` clears and reseeds the `leads` collection with 18 realistic records spanning all stages and sources.
 - Property gallery uploads are stored locally under `public/uploads/properties/<slug>/` and assume persistent disk storage.
 
@@ -320,11 +362,12 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 
 | Token | Hex | Usage |
 |---|---|---|
-| `--background` | `#F4F9E9` / `#1A3F4E` | App canvas in light / dark mode |
-| `--foreground` | `#1A3F4E` / `#F4F9E9` | Primary text in light / dark mode |
-| `--card` | `#FFFFFF` / `#245061` | Elevated surfaces |
-| `--accent` | `#D6E3C9` / `#2A6172` | Pills, chips, soft surfaces |
-| `--primary` | `#2FA3F2` | Accent CTA and highlight color |
+| `--background` | `#F7F9FC` / `#0C1430` | App canvas in light / dark mode |
+| `--foreground` | `#142966` / `#F6FAFF` | Primary text in light / dark mode |
+| `--card` | `#FFFFFF` / `#142966` | Elevated surfaces |
+| `--accent` | `#E8F7FD` / `#1B326F` | Pills, chips, soft surfaces |
+| `--primary` | `#29C2F2` | Accent CTA and highlight color |
+| `--secondary` | `#3F403F` | Trust/compliance/supporting contrast color |
 
 ### Typography
 
@@ -344,37 +387,11 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 
 ### ✅ Current State
 
-**Copy map (from `phase6/` folder):**
-
-| File | Destination |
-|---|---|
-| `analytics-page.tsx` | `src/app/admin/analytics/page.tsx` |
-| `AnalyticsDashboard.tsx` | `src/components/dashboard/analytics/AnalyticsDashboard.tsx` |
-| `PropertyForm.tsx` | `src/components/dashboard/properties/PropertyForm.tsx` |
-| `property-new-page.tsx` | `src/app/admin/properties/new/page.tsx` |
-| `property-edit-page.tsx` | `src/app/admin/properties/[id]/edit/page.tsx` |
-| `about-page.tsx` | `src/app/(public)/about/page.tsx` |
-| `sitemap.ts` | `src/app/sitemap.ts` |
-| `robots.ts` | `src/app/robots.ts` |
-
-**Create missing directories:**
-```bash
-mkdir -p src/app/admin/analytics
-mkdir -p src/app/admin/properties/new
-mkdir -p "src/app/admin/properties/[id]/edit"
-mkdir -p src/components/dashboard/analytics
-```
-
-**Verify:**
-```bash
-npm run build    # should exit 0
-# /admin/leads/new → manual lead creation
-# /admin/properties/[id]/edit → upload, reorder, cover, delete gallery media
-# /admin/leads + /admin/enquiries → pipeline and conversion stats populated after `npm run seed:leads`
-# /about → team + values page
-# /sitemap.xml → lists all active property slugs
-# /robots.txt → blocks /admin /api /auth
-```
+- Public trust/authenticity layer is live on `/` and `/about` using featured companies and case studies.
+- Company profiles, public case-study pages, and property microsites are available under `/companies/*`, `/case-studies/*`, and `/sites/*`.
+- Admin users can manage companies, case studies, and microsites from the dashboard.
+- `company_manager` is a scoped role that can work only inside assigned companies, properties, leads, enquiries, and site visits.
+- Properties now support `companyId`, `unitPlans[]`, preserved media galleries, and microsite inheritance.
 
 ### 🔄 Up Next — Phase 7: Production Deploy
 

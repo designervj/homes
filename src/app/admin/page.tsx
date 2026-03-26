@@ -169,6 +169,12 @@ export default async function AdminPage() {
               { label: "View Enquiries", href: "/admin/enquiries", color: "bg-accent border-border text-foreground hover:bg-accent/80" },
               { label: "Leads Board", href: "/admin/leads", color: "bg-secondary/10 border-secondary/20 text-secondary hover:bg-secondary/15" },
               { label: "Site Visits", href: "/admin/site-visits", color: "bg-accent border-border text-foreground hover:bg-accent/80" },
+              ...(user.role !== "agent"
+                ? [
+                    { label: "Companies", href: "/admin/companies", color: "bg-accent border-border text-foreground hover:bg-accent/80" },
+                    { label: "Microsites", href: "/admin/property-sites", color: "bg-primary/10 border-primary/20 text-primary hover:bg-primary/20" },
+                  ]
+                : []),
             ].map((a) => (
               <Link key={a.label} href={a.href} className={`flex items-center justify-center rounded-xl border px-3 py-4 text-sm font-medium transition-colors ${a.color}`}>{a.label}</Link>
             ))}

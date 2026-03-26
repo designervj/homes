@@ -13,6 +13,9 @@ import {
   BarChart3,
   Settings,
   ChevronRight,
+  BriefcaseBusiness,
+  FileText,
+  Globe2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { UserRole } from "@/types";
@@ -32,31 +35,49 @@ const NAV_ITEMS: NavItem[] = [
     label: "Overview",
     href: "/admin",
     icon: LayoutDashboard,
-    allowedRoles: ["super_admin", "admin", "agent"],
+    allowedRoles: ["super_admin", "admin", "agent", "company_manager"],
   },
   {
     label: "Properties",
     href: "/admin/properties",
     icon: Home,
-    allowedRoles: ["super_admin", "admin", "agent"],
+    allowedRoles: ["super_admin", "admin", "agent", "company_manager"],
   },
   {
     label: "Enquiries",
     href: "/admin/enquiries",
     icon: MessageSquare,
-    allowedRoles: ["super_admin", "admin", "agent"],
+    allowedRoles: ["super_admin", "admin", "agent", "company_manager"],
   },
   {
     label: "Leads",
     href: "/admin/leads",
     icon: Users2,
-    allowedRoles: ["super_admin", "admin", "agent"],
+    allowedRoles: ["super_admin", "admin", "agent", "company_manager"],
   },
   {
     label: "Site Visits",
     href: "/admin/site-visits",
     icon: CalendarCheck,
-    allowedRoles: ["super_admin", "admin", "agent"],
+    allowedRoles: ["super_admin", "admin", "agent", "company_manager"],
+  },
+  {
+    label: "Companies",
+    href: "/admin/companies",
+    icon: BriefcaseBusiness,
+    allowedRoles: ["super_admin", "admin", "company_manager"],
+  },
+  {
+    label: "Case Studies",
+    href: "/admin/case-studies",
+    icon: FileText,
+    allowedRoles: ["super_admin", "admin", "company_manager"],
+  },
+  {
+    label: "Microsites",
+    href: "/admin/property-sites",
+    icon: Globe2,
+    allowedRoles: ["super_admin", "admin", "company_manager"],
   },
   {
     label: "Analytics",

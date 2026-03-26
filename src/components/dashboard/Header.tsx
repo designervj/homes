@@ -21,12 +21,14 @@ const ROLE_LABELS: Record<UserRole, string> = {
   super_admin: "Super Admin",
   admin: "Administrator",
   agent: "Sales Agent",
+  company_manager: "Company Manager",
 };
 
 const ROLE_COLORS: Record<UserRole, string> = {
   super_admin: "text-primary",
   admin: "text-secondary",
   agent: "text-muted-foreground",
+  company_manager: "text-primary-light",
 };
 
 // ─── COMPONENT ────────────────────────────────────────────────────────────────

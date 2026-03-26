@@ -5,11 +5,12 @@ import { useRouter } from "next/navigation";
 import { useForm, useWatch, type UseFormRegister } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
+import { z } from "zod";
 import {
   ArrowLeft, Save, Loader2, Plus, X, ChevronDown, ChevronUp,
 } from "lucide-react";
 import { createProperty, updateProperty } from "@/lib/db/actions/property.actions";
-import { PropertyValidator, type PropertyInput } from "@/lib/utils/validators";
+import { PropertyValidator } from "@/lib/utils/validators";
 import { MediaGallery } from "@/components/dashboard/properties/MediaGallery";
 import { AmenityIcon } from "@/components/shared/AmenityIcon";
 import {
@@ -19,12 +20,54 @@ import {
   OWNERSHIP_TYPES, ZONING_TYPES, AREA_UNITS, AMENITIES_LIST,
 } from "@/lib/utils/constants";
 import { cn } from "@/lib/utils";
-import type { IProperty } from "@/types";
+import type { ICompany, IMediaAsset, INearbyPlace, IProperty, IUnitPlan } from "@/types";
 
 // ─── TYPES ────────────────────────────────────────────────────────────────────
 
 interface PropertyFormProps {
   property?: IProperty; // if provided = edit mode
+  companies: ICompany[];
+}
+
+type PropertyFormValues = z.input<typeof PropertyValidator>;
+type PropertySubmitValues = z.output<typeof PropertyValidator>;
+type PropertyMediaAsset = PropertySubmitValues["mediaAssets"][number];
+type PropertyNearbyPlace = PropertySubmitValues["nearbyPlaces"][number];
+type PropertyUnitPlan = PropertySubmitValues["unitPlans"][number];
+
+function normalizeMediaAsset(asset: IMediaAsset): PropertyMediaAsset {
+  return {
+    url: asset.url,
+    type: asset.type,
+    caption: asset.caption ?? "",
+    isCover: asset.isCover ?? false,
+    order: asset.order ?? 0,
+  };
+}
+
+function normalizeNearbyPlace(place: INearbyPlace): PropertyNearbyPlace {
+  return {
+    name: place.name,
+    category: place.category,
+    distanceMinutes: place.distanceMinutes,
+    distanceKm: place.distanceKm,
+  };
+}
+
+function normalizeUnitPlan(plan: IUnitPlan): PropertyUnitPlan {
+  return {
+    name: plan.name,
+    bhkLabel: plan.bhkLabel,
+    carpetArea: plan.carpetArea,
+    superBuiltUpArea: plan.superBuiltUpArea,
+    priceLabel: plan.priceLabel,
+    availability: plan.availability,
+    floorLabel: plan.floorLabel,
+    facingDirection: plan.facingDirection,
+    floorplanUrl: plan.floorplanUrl,
+    walkthroughUrl: plan.walkthroughUrl,
+    description: plan.description,
+  };
 }
 
 // ─── SECTION WRAPPER ─────────────────────────────────────────────────────────
@@ -71,8 +114,8 @@ const requiredNumberField = {
 };
 
 function registerNumberField(
-  register: UseFormRegister<PropertyInput>,
-  name: Parameters<UseFormRegister<PropertyInput>>[0],
+  register: UseFormRegister<PropertyFormValues>,
+  name: Parameters<UseFormRegister<PropertyFormValues>>[0],
   required = false
 ) {
   return register(name, required ? requiredNumberField : optionalNumberField);
@@ -80,7 +123,7 @@ function registerNumberField(
 
 // ─── MAIN COMPONENT ───────────────────────────────────────────────────────────
 
-export function PropertyForm({ property }: PropertyFormProps) {
+export function PropertyForm({ property, companies }: PropertyFormProps) {
   const router = useRouter();
   const isEdit = !!property;
   const [isPending, startTransition] = useTransition();
@@ -93,20 +136,24 @@ export function PropertyForm({ property }: PropertyFormProps) {
 
   // Nearby places state
   const [nearbyPlaces, setNearbyPlaces] = useState(
-    property?.nearbyPlaces ?? []
+    property?.nearbyPlaces?.map((place) => normalizeNearbyPlace(place)) ?? []
   );
   const [mediaAssets, setMediaAssets] = useState(
-    property?.mediaAssets ?? []
+    property?.mediaAssets?.map((asset) => normalizeMediaAsset(asset)) ?? []
+  );
+  const [unitPlans, setUnitPlans] = useState<PropertyUnitPlan[]>(
+    property?.unitPlans?.map((plan) => normalizeUnitPlan(plan)) ?? []
   );
 
   const { register, handleSubmit, formState: { errors }, setValue, control } =
-    useForm<PropertyInput>({
-      resolver: zodResolver(PropertyValidator as any),
+    useForm<PropertyFormValues, unknown, PropertySubmitValues>({
+      resolver: zodResolver(PropertyValidator),
       defaultValues: isEdit
         ? {
             title: property.title,
             description: property.description,
             developerName: property.developerName,
+            companyId: property.companyId ?? "",
             projectName: property.projectName,
             tagline: property.tagline,
             status: (property.status as "active" | "blocked" | "sold" | "archived") ?? "active",
@@ -118,10 +165,12 @@ export function PropertyForm({ property }: PropertyFormProps) {
             features: { ...property.features, amenities: property.features?.amenities ?? [] } as never,
             legalInfo: property.legalInfo as never,
             brokeragePolicy: property.brokeragePolicy as never,
-            mediaAssets: property.mediaAssets ?? [],
-            nearbyPlaces: property.nearbyPlaces ?? [],
+            mediaAssets: property.mediaAssets?.map((asset) => normalizeMediaAsset(asset)) ?? [],
+            nearbyPlaces: property.nearbyPlaces?.map((place) => normalizeNearbyPlace(place)) ?? [],
+            unitPlans: property.unitPlans?.map((plan) => normalizeUnitPlan(plan)) ?? [],
           }
         : {
+            companyId: "",
             status: "active",
             isFeatured: false,
             specifications: { category: "Residential", transactionType: "Sale", possessionStatus: "Ready to Move" },
@@ -132,6 +181,7 @@ export function PropertyForm({ property }: PropertyFormProps) {
             sizeLayout: { parkingAvailable: false, areaUnit: "sqft" },
             mediaAssets: [],
             nearbyPlaces: [],
+            unitPlans: [],
           },
     });
 
@@ -157,13 +207,46 @@ export function PropertyForm({ property }: PropertyFormProps) {
     setNearbyPlaces((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const onSubmit = (data: PropertyInput) => {
+  const addUnitPlan = () => {
+    setUnitPlans((prev) => [
+      ...prev,
+      {
+        name: "",
+        bhkLabel: "",
+        carpetArea: undefined,
+        superBuiltUpArea: undefined,
+        priceLabel: "",
+        availability: "",
+        floorLabel: "",
+        description: "",
+      },
+    ]);
+  };
+
+  const updateUnitPlan = (
+    index: number,
+    key: keyof PropertyUnitPlan,
+    value: string | number | undefined
+  ) => {
+    setUnitPlans((prev) =>
+      prev.map((plan, planIndex) =>
+        planIndex === index ? { ...plan, [key]: value } : plan
+      )
+    );
+  };
+
+  const removeUnitPlan = (index: number) => {
+    setUnitPlans((prev) => prev.filter((_, planIndex) => planIndex !== index));
+  };
+
+  const onSubmit = (data: PropertySubmitValues) => {
     startTransition(async () => {
       const payload = {
         ...data,
         features: { ...data.features, amenities: selectedAmenities },
-        mediaAssets: mediaAssets as never,
+        mediaAssets: mediaAssets.filter((asset) => asset.url.trim()),
         nearbyPlaces: nearbyPlaces.filter((p) => p.name.trim()),
+        unitPlans: unitPlans.filter((plan) => plan.name.trim()),
       };
 
       const res = isEdit
@@ -260,6 +343,17 @@ export function PropertyForm({ property }: PropertyFormProps) {
               <label className={labelCls}>Developer Name *</label>
               <input {...register("developerName")} placeholder="e.g. Pardos Developers" className={inputCls} />
               {errors.developerName && <p className="text-xs text-red-400 mt-1">{errors.developerName.message}</p>}
+            </div>
+            <div>
+              <label className={labelCls}>Linked Company</label>
+              <select {...register("companyId")} className={inputCls}>
+                <option value="">Unassigned / Developer fallback</option>
+                {companies.map((company) => (
+                  <option key={company._id} value={company._id}>
+                    {company.name}
+                  </option>
+                ))}
+              </select>
             </div>
             <div>
               <label className={labelCls}>Project Name</label>
@@ -551,19 +645,160 @@ export function PropertyForm({ property }: PropertyFormProps) {
         </div>
       </FormSection>
 
-      {/* ── SECTION 7: Media Gallery ─────────────────────────────────────────── */}
-      <FormSection title="Media Gallery" number="7" open={openSection === "media"} onToggle={() => toggle("media")}>
+      {/* ── SECTION 7: Unit Plans ─────────────────────────────────────────────── */}
+      <FormSection title="Room Types & Unit Plans" number="7" open={openSection === "unitPlans"} onToggle={() => toggle("unitPlans")}>
+        <div className="space-y-3 mt-4">
+          {unitPlans.length === 0 && (
+            <div className="rounded-xl border border-dashed border-border bg-background px-4 py-6 text-sm text-muted-foreground">
+              Add room types, layouts, and walk-through links to power property detail pages and microsites.
+            </div>
+          )}
+          {unitPlans.map((plan, index) => (
+            <div key={`${plan.name}-${index}`} className="rounded-xl border border-border bg-background p-4">
+              <div className="mb-3 flex items-center justify-between">
+                <p className="text-sm font-medium text-foreground">Unit Plan {index + 1}</p>
+                <button
+                  type="button"
+                  onClick={() => removeUnitPlan(index)}
+                  className="inline-flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-red-400"
+                >
+                  <X className="h-3.5 w-3.5" /> Remove
+                </button>
+              </div>
+              <div className={grid3cls}>
+                <div>
+                  <label className={labelCls}>Name *</label>
+                  <input
+                    value={plan.name}
+                    onChange={(event) => updateUnitPlan(index, "name", event.target.value)}
+                    className={inputCls}
+                    placeholder="Tower A - 3 BHK"
+                  />
+                </div>
+                <div>
+                  <label className={labelCls}>BHK / Config</label>
+                  <input
+                    value={plan.bhkLabel ?? ""}
+                    onChange={(event) => updateUnitPlan(index, "bhkLabel", event.target.value)}
+                    className={inputCls}
+                    placeholder="3 BHK + Study"
+                  />
+                </div>
+                <div>
+                  <label className={labelCls}>Availability</label>
+                  <input
+                    value={plan.availability ?? ""}
+                    onChange={(event) => updateUnitPlan(index, "availability", event.target.value)}
+                    className={inputCls}
+                    placeholder="Limited inventory"
+                  />
+                </div>
+                <div>
+                  <label className={labelCls}>Carpet Area</label>
+                  <input
+                    type="number"
+                    value={plan.carpetArea ?? ""}
+                    onChange={(event) =>
+                      updateUnitPlan(
+                        index,
+                        "carpetArea",
+                        event.target.value === "" ? undefined : Number(event.target.value)
+                      )
+                    }
+                    className={inputCls}
+                    placeholder="1180"
+                  />
+                </div>
+                <div>
+                  <label className={labelCls}>Super Built-up Area</label>
+                  <input
+                    type="number"
+                    value={plan.superBuiltUpArea ?? ""}
+                    onChange={(event) =>
+                      updateUnitPlan(
+                        index,
+                        "superBuiltUpArea",
+                        event.target.value === "" ? undefined : Number(event.target.value)
+                      )
+                    }
+                    className={inputCls}
+                    placeholder="1450"
+                  />
+                </div>
+                <div>
+                  <label className={labelCls}>Price Label</label>
+                  <input
+                    value={plan.priceLabel ?? ""}
+                    onChange={(event) => updateUnitPlan(index, "priceLabel", event.target.value)}
+                    className={inputCls}
+                    placeholder="Starts at ₹1.35 Cr"
+                  />
+                </div>
+                <div>
+                  <label className={labelCls}>Floor Label</label>
+                  <input
+                    value={plan.floorLabel ?? ""}
+                    onChange={(event) => updateUnitPlan(index, "floorLabel", event.target.value)}
+                    className={inputCls}
+                    placeholder="Mid-rise floors"
+                  />
+                </div>
+                <div>
+                  <label className={labelCls}>Floorplan URL</label>
+                  <input
+                    value={plan.floorplanUrl ?? ""}
+                    onChange={(event) => updateUnitPlan(index, "floorplanUrl", event.target.value)}
+                    className={inputCls}
+                    placeholder="/uploads/properties/slug/floorplan-1.webp"
+                  />
+                </div>
+                <div>
+                  <label className={labelCls}>3D / Walkthrough URL</label>
+                  <input
+                    value={plan.walkthroughUrl ?? ""}
+                    onChange={(event) => updateUnitPlan(index, "walkthroughUrl", event.target.value)}
+                    className={inputCls}
+                    placeholder="https://example.com/virtual-tour"
+                  />
+                </div>
+                <div className="sm:col-span-3">
+                  <label className={labelCls}>Description</label>
+                  <textarea
+                    value={plan.description ?? ""}
+                    onChange={(event) => updateUnitPlan(index, "description", event.target.value)}
+                    rows={2}
+                    className={cn(inputCls, "resize-none")}
+                    placeholder="Who this layout suits best, view highlights, and layout notes."
+                  />
+                </div>
+              </div>
+            </div>
+          ))}
+          <button
+            type="button"
+            onClick={addUnitPlan}
+            className="flex items-center gap-2 text-sm text-primary hover:text-primary-light border border-primary/20 hover:border-primary/40 px-4 py-2 rounded-xl transition-all"
+          >
+            <Plus className="w-3.5 h-3.5" /> Add Unit Plan
+          </button>
+        </div>
+      </FormSection>
+
+      {/* ── SECTION 8: Media Gallery ─────────────────────────────────────────── */}
+      <FormSection title="Media Gallery" number="8" open={openSection === "media"} onToggle={() => toggle("media")}>
         <div className="mt-4">
           <MediaGallery
             propertyId={property?._id}
             initialAssets={mediaAssets}
-            onChange={setMediaAssets}
+            onChange={(assets) =>
+              setMediaAssets(assets.map((asset) => normalizeMediaAsset(asset)))
+            }
           />
         </div>
       </FormSection>
 
-      {/* ── SECTION 8: Amenities ─────────────────────────────────────────────── */}
-      <FormSection title="Features & Amenities" number="8" open={openSection === "amenities"} onToggle={() => toggle("amenities")}>
+      {/* ── SECTION 9: Amenities ─────────────────────────────────────────────── */}
+      <FormSection title="Features & Amenities" number="9" open={openSection === "amenities"} onToggle={() => toggle("amenities")}>
         <div className="space-y-5 mt-4">
           <div className={gridCls}>
             <div>
@@ -618,8 +853,8 @@ export function PropertyForm({ property }: PropertyFormProps) {
         </div>
       </FormSection>
 
-      {/* ── SECTION 9: Legal ─────────────────────────────────────────────────── */}
-      <FormSection title="Legal & Compliance" number="9" open={openSection === "legal"} onToggle={() => toggle("legal")}>
+      {/* ── SECTION 10: Legal ────────────────────────────────────────────────── */}
+      <FormSection title="Legal & Compliance" number="10" open={openSection === "legal"} onToggle={() => toggle("legal")}>
         <div className="space-y-4 mt-4">
           <div className={grid3cls}>
             <div>
@@ -668,8 +903,8 @@ export function PropertyForm({ property }: PropertyFormProps) {
         </div>
       </FormSection>
 
-      {/* ── SECTION 10: Nearby Places ─────────────────────────────────────────── */}
-      <FormSection title="Nearby Places" number="10" open={openSection === "nearby"} onToggle={() => toggle("nearby")}>
+      {/* ── SECTION 11: Nearby Places ────────────────────────────────────────── */}
+      <FormSection title="Nearby Places" number="11" open={openSection === "nearby"} onToggle={() => toggle("nearby")}>
         <div className="space-y-3 mt-4">
           {nearbyPlaces.map((place, index) => (
             <div key={index} className="grid grid-cols-12 gap-3 items-start">

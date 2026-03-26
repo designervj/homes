@@ -1,23 +1,8 @@
 import type { Metadata } from "next";
-import { Playfair_Display, DM_Sans } from "next/font/google";
 import { AuthProvider } from "@/components/shared/AuthProvider";
 import { ThemeProvider } from "@/components/shared/ThemeProvider";
 import { Toaster } from "sonner";
 import "./globals.css";
-
-const playfair = Playfair_Display({
-  subsets: ["latin"],
-  variable: "--font-playfair",
-  display: "swap",
-  weight: ["400", "500", "600", "700"],
-});
-
-const dmSans = DM_Sans({
-  subsets: ["latin"],
-  variable: "--font-dm-sans",
-  display: "swap",
-  weight: ["300", "400", "500", "600"],
-});
 
 export const metadata: Metadata = {
   title: {
@@ -48,9 +33,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body
-        className={`${playfair.variable} ${dmSans.variable} font-sans antialiased`}
-      >
+      <body className="font-sans antialiased">
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"

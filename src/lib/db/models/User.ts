@@ -47,7 +47,6 @@ const UserSchema = new Schema<UserDocument>(
 
 // ─── INDEXES ──────────────────────────────────────────────────────────────────
 
-UserSchema.index({ email: 1 }, { unique: true });
 UserSchema.index({ role: 1, isActive: 1 });
 
 // ─── VIRTUALS ─────────────────────────────────────────────────────────────────

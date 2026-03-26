@@ -4,7 +4,12 @@ import { revalidatePath } from "next/cache";
 import { connectDB } from "@/lib/db/connection";
 import SiteVisit from "@/lib/db/models/SiteVisit";
 import Lead from "@/lib/db/models/Lead";
-import { requireAuth } from "@/lib/auth/utils";
+import { getScopedDashboardAccess, scopedIdsFilter } from "@/lib/db/actions/access";
+import {
+  requireObjectId,
+  serialize,
+  toObjectId,
+} from "@/lib/db/actions/helpers";
 import {
   SiteVisitValidator,
   SiteVisitStatusUpdateValidator,
@@ -12,10 +17,112 @@ import {
 } from "@/lib/utils/validators";
 import type { ApiResponse, ISiteVisit } from "@/types";
 
+type SiteVisitFilters = {
+  status?: string;
+  agentId?: string;
+  propertyId?: string;
+  companyId?: string;
+  propertySiteId?: string;
+  source?: string;
+  from?: string;
+  to?: string;
+  page?: number;
+  limit?: number;
+};
+
 // ─── HELPERS ──────────────────────────────────────────────────────────────────
 
-function serialize<T>(doc: any): T {
-  return JSON.parse(JSON.stringify(doc)) as T;
+function getActorId(userId: string, actionName: string) {
+  return requireObjectId(userId, `${actionName}: session user id`).toString();
+}
+
+function canAccessSiteVisit(
+  access: Awaited<ReturnType<typeof getScopedDashboardAccess>>,
+  visit: {
+    propertyId?: unknown;
+    companyId?: unknown;
+  }
+) {
+  if (!access.isCompanyManager) return true;
+
+  const propertyId = String(visit.propertyId ?? "");
+  if (propertyId) {
+    return access.propertyIds.includes(propertyId);
+  }
+
+  const companyId = String(visit.companyId ?? "");
+  if (companyId) {
+    return access.companyIds.includes(companyId);
+  }
+
+  return false;
+}
+
+function applySiteVisitScope(
+  query: Record<string, unknown>,
+  access: Awaited<ReturnType<typeof getScopedDashboardAccess>>
+) {
+  if (!access.isCompanyManager) return true;
+  if (!access.companyIds.length && !access.propertyIds.length) return false;
+
+  query.$or = [
+    { propertyId: scopedIdsFilter(access.propertyIds) },
+    { companyId: scopedIdsFilter(access.companyIds) },
+  ];
+
+  return true;
+}
+
+function applySiteVisitFilters(
+  query: Record<string, unknown>,
+  filters: SiteVisitFilters
+) {
+  const {
+    status,
+    agentId,
+    propertyId,
+    companyId,
+    propertySiteId,
+    source,
+    from,
+    to,
+  } = filters;
+
+  if (status && status !== "all") query.status = status;
+  if (source && source !== "all") query.source = source;
+
+  if (agentId) {
+    const agentObjectId = toObjectId(agentId);
+    if (!agentObjectId) return false;
+    query.assignedAgentId = agentObjectId;
+  }
+
+  if (propertyId) {
+    const propertyObjectId = toObjectId(propertyId);
+    if (!propertyObjectId) return false;
+    query.propertyId = propertyObjectId;
+  }
+
+  if (companyId) {
+    const companyObjectId = toObjectId(companyId);
+    if (!companyObjectId) return false;
+    query.companyId = companyObjectId;
+  }
+
+  if (propertySiteId) {
+    const siteObjectId = toObjectId(propertySiteId);
+    if (!siteObjectId) return false;
+    query.propertySiteId = siteObjectId;
+  }
+
+  if (from || to) {
+    const scheduledAtFilter: { $gte?: Date; $lte?: Date } = {};
+    if (from) scheduledAtFilter.$gte = new Date(from);
+    if (to) scheduledAtFilter.$lte = new Date(to);
+    query.scheduledAt = scheduledAtFilter;
+  }
+
+  return true;
 }
 
 // ─── SCHEDULE SITE VISIT ─────────────────────────────────────────────────────
@@ -28,8 +135,9 @@ export async function scheduleSiteVisit(
   rawData: SiteVisitInput
 ): Promise<ApiResponse<ISiteVisit>> {
   try {
-    const user = await requireAuth();
     await connectDB();
+    const access = await getScopedDashboardAccess("scheduleSiteVisit");
+    const actorId = getActorId(access.user.id, "scheduleSiteVisit");
 
     const data = SiteVisitValidator.parse(rawData);
 
@@ -41,15 +149,23 @@ export async function scheduleSiteVisit(
       };
     }
 
+    const lead = await Lead.findById(data.leadId);
+    if (!lead) return { success: false, error: "Lead not found" };
+    if (!canAccessSiteVisit(access, lead)) {
+      return { success: false, error: "You do not have access to this lead" };
+    }
+
     // Create the site visit
     const visit = await SiteVisit.create({
       ...data,
+      companyId: data.companyId || lead.companyId,
+      propertySiteId: data.propertySiteId || lead.propertySiteId,
+      source: data.source || lead.source,
       scheduledAt: scheduledDate,
       status: "scheduled",
     });
 
     // Update the lead — stage + siteVisitId + activity log
-    const lead = await Lead.findById(data.leadId);
     if (lead) {
       lead.stage = "site_visit_scheduled";
       lead.siteVisitId = visit._id as unknown as string;
@@ -61,7 +177,7 @@ export async function scheduleSiteVisit(
           month: "long",
           year: "numeric",
         })} with agent ${data.assignedAgentName || "assigned agent"}`,
-        performedBy: user.id as unknown as string,
+        performedBy: actorId,
         performedAt: new Date(),
         stage: "site_visit_scheduled",
       });
@@ -92,29 +208,40 @@ export async function getSiteVisits(filters: {
   status?: string;
   agentId?: string;
   propertyId?: string;
+  companyId?: string;
+  propertySiteId?: string;
+  source?: string;
   from?: string;
   to?: string;
   page?: number;
   limit?: number;
 } = {}): Promise<ApiResponse<ISiteVisit[]>> {
   try {
-    await requireAuth();
     await connectDB();
+    const access = await getScopedDashboardAccess("getSiteVisits");
 
     const { status, agentId, propertyId, from, to, page = 1, limit = 20 } = filters;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const query: Record<string, any> = {};
+    const query: Record<string, unknown> = {};
+    const isValid =
+      applySiteVisitScope(query, access) &&
+      applySiteVisitFilters(query, {
+        status,
+        agentId,
+        propertyId,
+        companyId: filters.companyId,
+        propertySiteId: filters.propertySiteId,
+        source: filters.source,
+        from,
+        to,
+      });
 
-    if (status && status !== "all") query.status = status;
-    if (agentId) query.assignedAgentId = agentId;
-    if (propertyId) query.propertyId = propertyId;
-
-    // Date range filter (for calendar view)
-    if (from || to) {
-      query.scheduledAt = {};
-      if (from) query.scheduledAt.$gte = new Date(from);
-      if (to) query.scheduledAt.$lte = new Date(to);
+    if (!isValid) {
+      return {
+        success: true,
+        data: [],
+        pagination: { page, limit, total: 0, totalPages: 0 },
+      };
     }
 
     const skip = (page - 1) * limit;
@@ -141,15 +268,26 @@ export async function getSiteVisits(filters: {
 
 // ─── GET UPCOMING VISITS (dashboard widget) ───────────────────────────────────
 
-export async function getUpcomingVisits(limit = 5): Promise<ApiResponse<ISiteVisit[]>> {
+export async function getUpcomingVisits(
+  limit = 5,
+  filters: Pick<SiteVisitFilters, "agentId" | "propertyId" | "companyId" | "propertySiteId" | "source"> = {}
+): Promise<ApiResponse<ISiteVisit[]>> {
   try {
-    await requireAuth();
     await connectDB();
+    const access = await getScopedDashboardAccess("getUpcomingVisits");
 
-    const visits = await SiteVisit.find({
+    const query: Record<string, unknown> = {
       scheduledAt: { $gte: new Date() },
       status: "scheduled",
-    })
+    };
+    const isValid =
+      applySiteVisitScope(query, access) && applySiteVisitFilters(query, filters);
+
+    if (!isValid) {
+      return { success: true, data: [] };
+    }
+
+    const visits = await SiteVisit.find(query)
       .sort({ scheduledAt: 1 })
       .limit(limit)
       .lean();
@@ -174,16 +312,19 @@ export async function updateSiteVisitStatus(rawData: {
   rescheduledTo?: string;
 }): Promise<ApiResponse<ISiteVisit>> {
   try {
-    const user = await requireAuth();
     await connectDB();
+    const access = await getScopedDashboardAccess("updateSiteVisitStatus");
 
     const data = SiteVisitStatusUpdateValidator.parse(rawData);
 
     const visit = await SiteVisit.findById(data.visitId);
     if (!visit) return { success: false, error: "Site visit not found" };
+    if (!canAccessSiteVisit(access, visit)) {
+      return { success: false, error: "You do not have access to this site visit" };
+    }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const updateData: Record<string, any> = {
+    const actorId = getActorId(access.user.id, "updateSiteVisitStatus");
+    const updateData: Record<string, unknown> = {
       status: data.status,
     };
 
@@ -210,7 +351,7 @@ export async function updateSiteVisitStatus(rawData: {
         lead.activityLog.push({
           action: actionText,
           note: data.agentNotes || undefined,
-          performedBy: user.id as unknown as string,
+          performedBy: actorId,
           performedAt: new Date(),
           stage: lead.stage,
         });
@@ -234,7 +375,12 @@ export async function updateSiteVisitStatus(rawData: {
 
 // ─── GET SITE VISIT STATS (dashboard) ────────────────────────────────────────
 
-export async function getSiteVisitStats(): Promise<
+export async function getSiteVisitStats(
+  filters: Pick<
+    SiteVisitFilters,
+    "status" | "agentId" | "propertyId" | "companyId" | "propertySiteId" | "source"
+  > = {}
+): Promise<
   ApiResponse<{
     total: number;
     scheduled: number;
@@ -245,19 +391,44 @@ export async function getSiteVisitStats(): Promise<
   }>
 > {
   try {
-    await requireAuth();
     await connectDB();
+    const access = await getScopedDashboardAccess("getSiteVisitStats");
 
     const now = new Date();
     const weekStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - now.getDay());
     const weekEnd = new Date(weekStart.getTime() + 7 * 24 * 60 * 60 * 1000);
 
-    const [statusCounts, thisWeekCount] = await Promise.all([
+    const baseMatch: Record<string, unknown> = {};
+    const isValid =
+      applySiteVisitScope(baseMatch, access) && applySiteVisitFilters(baseMatch, filters);
+
+    if (!isValid) {
+      return {
+        success: true,
+        data: {
+          total: 0,
+          scheduled: 0,
+          completed: 0,
+          noShow: 0,
+          thisWeek: 0,
+          conversionRate: 0,
+        },
+      };
+    }
+
+    const [statusCounts, thisWeekCount, convertedVisits] = await Promise.all([
       SiteVisit.aggregate([
+        { $match: baseMatch },
         { $group: { _id: "$status", count: { $sum: 1 } } },
       ]),
       SiteVisit.countDocuments({
+        ...baseMatch,
         scheduledAt: { $gte: weekStart, $lte: weekEnd },
+      }),
+      SiteVisit.countDocuments({
+        ...baseMatch,
+        status: "completed",
+        outcome: "converted",
       }),
     ]);
 
@@ -270,14 +441,7 @@ export async function getSiteVisitStats(): Promise<
     const total = Object.values(map).reduce((a, b) => a + b, 0);
     const conversionRate =
       completed > 0
-        ? Math.round(
-            ((await SiteVisit.countDocuments({
-              status: "completed",
-              outcome: "converted",
-            })) /
-              completed) *
-              100
-          )
+        ? Math.round((convertedVisits / completed) * 100)
         : 0;
 
     return {

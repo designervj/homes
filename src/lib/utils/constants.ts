@@ -341,7 +341,44 @@ export const SITE_VISIT_OUTCOMES = [
 
 // ─── USERS ────────────────────────────────────────────────────────────────────
 
-export const USER_ROLES = ["super_admin", "admin", "agent"] as const;
+export const USER_ROLES = [
+  "super_admin",
+  "admin",
+  "agent",
+  "company_manager",
+] as const;
+
+// ─── COMPANIES / PUBLISHING ───────────────────────────────────────────────────
+
+export const PUBLISH_STATUSES = [
+  "draft",
+  "in_review",
+  "published",
+  "archived",
+] as const;
+
+export const COMPANY_THEME_PRESETS = [
+  "signature_navy",
+  "cyan_horizon",
+  "graphite_reserve",
+] as const;
+
+export const PROPERTY_SITE_TEMPLATES = ["signature_landing"] as const;
+
+export const PAGE_CONTEXTS = ["main_site", "property_site"] as const;
+
+export const COMPANY_THEME_LABELS: Record<string, string> = {
+  signature_navy: "Signature Navy",
+  cyan_horizon: "Cyan Horizon",
+  graphite_reserve: "Graphite Reserve",
+};
+
+export const PUBLISH_STATUS_LABELS: Record<string, string> = {
+  draft: "Draft",
+  in_review: "In Review",
+  published: "Published",
+  archived: "Archived",
+};
 
 // ─── BUDGET RANGES (for search filters) ──────────────────────────────────────
 

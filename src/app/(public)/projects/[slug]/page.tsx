@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { SafeImage as Image } from "@/components/shared/SafeImage";
 import { getPropertyBySlug, getAllPropertySlugs } from "@/lib/db/actions/property.actions";
+import { getPublishedPropertySiteForProperty } from "@/lib/db/actions/property-site.actions";
 import { ReraBadge } from "@/components/public/properties/ReraBadge";
 import { EnquiryForm } from "@/components/public/forms/EnquiryForm";
 import { PropertyGallery } from "@/components/public/properties/PropertyGallery";
@@ -58,10 +59,15 @@ export default async function PropertyDetailPage({
   if (!res.success || !res.data) notFound();
 
   const p = res.data;
+  const siteRes = p._id
+    ? await getPublishedPropertySiteForProperty(p._id)
+    : { success: false as const };
+  const site = siteRes.success ? siteRes.data : undefined;
   const price = p.financials?.listedPrice;
   const images = p.mediaAssets?.filter((m) => m.type === "image") ?? [];
   const floorplans = p.mediaAssets?.filter((m) => m.type === "floorplan") ?? [];
   const brochure = p.mediaAssets?.find((m) => m.type === "brochure");
+  const unitPlans = p.unitPlans ?? [];
 
   // Group nearby places by category
   const nearbyByCategory: Record<string, typeof p.nearbyPlaces> = {};
@@ -129,6 +135,14 @@ export default async function PropertyDetailPage({
                 <p className="font-serif text-2xl font-semibold text-primary">{formatINR(price)}</p>
                 {p.financials?.pricePerSqft && (
                   <p className="text-xs text-muted-foreground">₹{p.financials.pricePerSqft.toLocaleString("en-IN")}/sqft</p>
+                )}
+                {site && (
+                  <Link
+                    href={`/sites/${site.siteSlug}`}
+                    className="mt-2 inline-flex items-center gap-1 text-xs text-primary hover:text-primary-light"
+                  >
+                    Open Property Microsite <ChevronRight className="w-3 h-3" />
+                  </Link>
                 )}
               </div>
             )}
@@ -282,6 +296,117 @@ export default async function PropertyDetailPage({
                           fill
                           className="object-contain p-4"
                         />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {unitPlans.length > 0 && (
+                <div>
+                  <div className="mb-5 flex items-end justify-between gap-4">
+                    <div>
+                      <h2 className="font-serif text-2xl font-medium text-foreground">
+                        Unit Plans
+                      </h2>
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        Compare available layouts, planning notes, and pricing
+                        cues for this project.
+                      </p>
+                    </div>
+                    {site && (
+                      <Link
+                        href={`/sites/${site.siteSlug}#unit-plans`}
+                        className="text-sm text-primary hover:text-primary-light"
+                      >
+                        Open microsite view
+                      </Link>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    {unitPlans.map((plan) => (
+                      <div
+                        key={`${plan.name}-${plan.priceLabel ?? "plan"}`}
+                        className="rounded-2xl border border-border bg-card p-5"
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div>
+                            <h3 className="font-serif text-xl font-medium text-foreground">
+                              {plan.name}
+                            </h3>
+                            <p className="mt-1 text-sm text-primary">
+                              {plan.bhkLabel || p.specifications?.bhkConfig || "Smart layout"}
+                            </p>
+                          </div>
+                          {plan.priceLabel && (
+                            <span className="rounded-full bg-primary/10 px-3 py-1 text-xs text-primary">
+                              {plan.priceLabel}
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="mt-5 grid grid-cols-2 gap-3 text-sm text-muted-foreground">
+                          {plan.carpetArea && (
+                            <div className="rounded-xl border border-border bg-background px-3 py-2">
+                              <p className="text-[10px] uppercase tracking-wide">Carpet Area</p>
+                              <p className="mt-1 font-medium text-foreground">
+                                {plan.carpetArea} {p.sizeLayout?.areaUnit}
+                              </p>
+                            </div>
+                          )}
+                          {plan.superBuiltUpArea && (
+                            <div className="rounded-xl border border-border bg-background px-3 py-2">
+                              <p className="text-[10px] uppercase tracking-wide">Super Built-up</p>
+                              <p className="mt-1 font-medium text-foreground">
+                                {plan.superBuiltUpArea} {p.sizeLayout?.areaUnit}
+                              </p>
+                            </div>
+                          )}
+                          {plan.availability && (
+                            <div className="rounded-xl border border-border bg-background px-3 py-2">
+                              <p className="text-[10px] uppercase tracking-wide">Availability</p>
+                              <p className="mt-1 font-medium text-foreground">{plan.availability}</p>
+                            </div>
+                          )}
+                          {plan.floorLabel && (
+                            <div className="rounded-xl border border-border bg-background px-3 py-2">
+                              <p className="text-[10px] uppercase tracking-wide">Floor</p>
+                              <p className="mt-1 font-medium text-foreground">{plan.floorLabel}</p>
+                            </div>
+                          )}
+                        </div>
+
+                        {(plan.description || plan.facingDirection) && (
+                          <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
+                            {plan.description}
+                            {plan.description && plan.facingDirection ? " " : ""}
+                            {plan.facingDirection ? `Facing: ${plan.facingDirection}.` : ""}
+                          </p>
+                        )}
+
+                        {(plan.floorplanUrl || plan.walkthroughUrl) && (
+                          <div className="mt-4 flex flex-wrap gap-3">
+                            {plan.floorplanUrl && (
+                              <a
+                                href={plan.floorplanUrl}
+                                target="_blank"
+                                className="inline-flex items-center gap-1 text-sm text-primary hover:text-primary-light"
+                              >
+                                View plan <ChevronRight className="h-4 w-4" />
+                              </a>
+                            )}
+                            {plan.walkthroughUrl && (
+                              <a
+                                href={plan.walkthroughUrl}
+                                target="_blank"
+                                className="inline-flex items-center gap-1 text-sm text-primary hover:text-primary-light"
+                              >
+                                Open walkthrough <ChevronRight className="h-4 w-4" />
+                              </a>
+                            )}
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>

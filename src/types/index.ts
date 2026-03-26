@@ -24,6 +24,10 @@ import type {
   SITE_VISIT_OUTCOMES,
   USER_ROLES,
   NEARBY_CATEGORIES,
+  PUBLISH_STATUSES,
+  COMPANY_THEME_PRESETS,
+  PROPERTY_SITE_TEMPLATES,
+  PAGE_CONTEXTS,
 } from "@/lib/utils/constants";
 
 // ─── UTILITY TYPES ────────────────────────────────────────────────────────────
@@ -53,6 +57,10 @@ export type SiteVisitStatus = (typeof SITE_VISIT_STATUSES)[number];
 export type SiteVisitOutcome = (typeof SITE_VISIT_OUTCOMES)[number];
 export type UserRole = (typeof USER_ROLES)[number];
 export type NearbyCategory = (typeof NEARBY_CATEGORIES)[number];
+export type PublishStatus = (typeof PUBLISH_STATUSES)[number];
+export type CompanyThemePreset = (typeof COMPANY_THEME_PRESETS)[number];
+export type PropertySiteTemplate = (typeof PROPERTY_SITE_TEMPLATES)[number];
+export type PageContext = (typeof PAGE_CONTEXTS)[number];
 
 // ─── PROPERTY ────────────────────────────────────────────────────────────────
 
@@ -178,12 +186,153 @@ export interface IMediaAsset {
   order?: number;
 }
 
+export interface IUnitPlan {
+  name: string;
+  bhkLabel?: string;
+  carpetArea?: number;
+  superBuiltUpArea?: number;
+  priceLabel?: string;
+  availability?: string;
+  floorLabel?: string;
+  facingDirection?: FacingDirection;
+  floorplanUrl?: string;
+  walkthroughUrl?: string;
+  description?: string;
+}
+
+export interface ICompanyContact {
+  phone?: string;
+  email?: string;
+  whatsapp?: string;
+  website?: string;
+  salesLabel?: string;
+}
+
+export interface ICompanyAddress {
+  line1?: string;
+  locality?: string;
+  city?: string;
+  state?: string;
+  pincode?: string;
+  mapLink?: string;
+}
+
+export interface ISocialLink {
+  platform: string;
+  label?: string;
+  url: string;
+}
+
+export interface ICaseStudyOutcome {
+  label: string;
+  value: string;
+}
+
+export interface ICompany {
+  _id?: string;
+  name: string;
+  slug: string;
+  logo?: string;
+  shortIntro?: string;
+  fullProfile?: string;
+  contact?: ICompanyContact;
+  address?: ICompanyAddress;
+  socialLinks?: ISocialLink[];
+  themePreset: CompanyThemePreset;
+  featured: boolean;
+  status: PublishStatus;
+  assignedManagerIds: string[];
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+export interface ICaseStudy {
+  _id?: string;
+  companyId: string;
+  propertyIds?: string[];
+  title: string;
+  slug: string;
+  summary: string;
+  challenge?: string;
+  solution?: string;
+  outcomes: ICaseStudyOutcome[];
+  testimonialQuote?: string;
+  media?: IMediaAsset[];
+  featured: boolean;
+  publishStatus: PublishStatus;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+export interface IPropertySiteNavItem {
+  label: string;
+  href: string;
+  enabled: boolean;
+}
+
+export interface IPropertySiteSection {
+  id: string;
+  label: string;
+  enabled: boolean;
+  order: number;
+}
+
+export interface IPropertySiteContact {
+  phone?: string;
+  email?: string;
+  whatsapp?: string;
+  officeAddress?: string;
+  mapLink?: string;
+}
+
+export interface ISeoOverrides {
+  title?: string;
+  description?: string;
+  keywords?: string[];
+  canonicalUrl?: string;
+  ogImage?: string;
+}
+
+export interface ITrackingConfig {
+  sourceTag?: string;
+  campaignTag?: string;
+  utmSource?: string;
+  utmMedium?: string;
+  utmCampaign?: string;
+  gaMeasurementId?: string;
+  tagManagerId?: string;
+  metaPixelId?: string;
+}
+
+export interface IPropertySite {
+  _id?: string;
+  propertyId: string;
+  companyId?: string;
+  siteSlug: string;
+  template: PropertySiteTemplate;
+  themePreset: CompanyThemePreset;
+  publishStatus: PublishStatus;
+  heroTitle?: string;
+  heroSubtitle?: string;
+  heroCtaLabel?: string;
+  heroSecondaryCtaLabel?: string;
+  contact?: IPropertySiteContact;
+  navigation?: IPropertySiteNavItem[];
+  sections?: IPropertySiteSection[];
+  seo?: ISeoOverrides;
+  tracking?: ITrackingConfig;
+  customDomains?: string[];
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
 export interface IProperty {
   _id?: string;
   title: string;
   slug: string;
   description: string;
   developerName: string;
+  companyId?: string;
   projectName?: string;
   tagline?: string;
   status: PropertyStatus;
@@ -198,6 +347,7 @@ export interface IProperty {
 
   mediaAssets: IMediaAsset[];
   nearbyPlaces: INearbyPlace[];
+  unitPlans?: IUnitPlan[];
 
   isFeatured: boolean;
   viewCount: number;
@@ -249,8 +399,12 @@ export interface ILead {
   score?: number;
 
   propertyId?: string;
+  companyId?: string;
+  propertySiteId?: string;
   propertyName?: string;
   propertySlug?: string;
+  pageContext?: PageContext;
+  tracking?: ITrackingConfig;
 
   assignedTo?: string;
   assignedAgentName?: string;
@@ -284,8 +438,12 @@ export interface IEnquiry {
   message?: string;
 
   propertyId?: string;
+  companyId?: string;
+  propertySiteId?: string;
   propertyName?: string;
   propertySlug?: string;
+  pageContext?: PageContext;
+  tracking?: ITrackingConfig;
 
   interestedIn: EnquiryInterest[];
   budgetRange?: string;
@@ -325,6 +483,9 @@ export interface ISiteVisit {
   _id?: string;
   leadId: string;
   propertyId: string;
+  companyId?: string;
+  propertySiteId?: string;
+  source?: LeadSource;
   propertyName?: string;
   propertySlug?: string;
   assignedAgentId: string;

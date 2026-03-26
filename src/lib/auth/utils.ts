@@ -58,7 +58,7 @@ export async function withRole(allowedRoles: UserRole[]) {
 export async function canManageProperties(): Promise<boolean> {
   const user = await getCurrentUser();
   if (!user) return false;
-  return ["super_admin", "admin"].includes(user.role);
+  return ["super_admin", "admin", "company_manager"].includes(user.role);
 }
 
 /**

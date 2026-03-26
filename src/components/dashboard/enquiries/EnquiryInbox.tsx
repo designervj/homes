@@ -12,7 +12,8 @@ import {
   markEnquirySpam,
   convertEnquiryToLead,
 } from "@/lib/db/actions/enquiry.actions";
-import type { IEnquiry } from "@/types";
+import { LEAD_SOURCES, LEAD_SOURCE_LABELS } from "@/lib/utils/constants";
+import type { ICompany, IEnquiry, IPropertySite } from "@/types";
 
 // ─── TYPES ────────────────────────────────────────────────────────────────────
 
@@ -20,6 +21,11 @@ interface EnquiryInboxProps {
   enquiries: IEnquiry[];
   stats?: { new: number; reviewed: number; converted: number; total: number } | null;
   currentStatus: string;
+  currentCompanyId?: string;
+  currentPropertySiteId?: string;
+  currentSource?: string;
+  companies: ICompany[];
+  sites: IPropertySite[];
   pagination?: { page: number; limit: number; total: number; totalPages: number };
 }
 
@@ -199,16 +205,45 @@ function EnquiryCard({ enquiry, onAction }: {
 
 // ─── MAIN COMPONENT ───────────────────────────────────────────────────────────
 
-export function EnquiryInbox({ enquiries, stats, currentStatus, pagination }: EnquiryInboxProps) {
+export function EnquiryInbox({
+  enquiries,
+  stats,
+  currentStatus,
+  currentCompanyId,
+  currentPropertySiteId,
+  currentSource,
+  companies,
+  sites,
+  pagination,
+}: EnquiryInboxProps) {
   const router = useRouter();
 
   const refresh = () => router.refresh();
 
-  const setStatus = (s: string) => {
+  const navigate = (overrides: Record<string, string | undefined>) => {
     const params = new URLSearchParams();
-    params.set("status", s);
-    router.push(`/admin/enquiries?${params.toString()}`);
+    const next = {
+      status: currentStatus,
+      companyId: currentCompanyId,
+      propertySiteId: currentPropertySiteId,
+      source: currentSource,
+      ...overrides,
+    };
+
+    Object.entries(next).forEach(([key, value]) => {
+      if (!value) return;
+      if (key === "page" && value === "1") return;
+      params.set(key, value);
+    });
+
+    router.push(`/admin/enquiries${params.size ? `?${params.toString()}` : ""}`);
   };
+
+  const setStatus = (status: string) => navigate({ status, page: undefined });
+  const setFilter = (
+    key: "companyId" | "propertySiteId" | "source",
+    value: string
+  ) => navigate({ [key]: value || undefined, page: undefined });
 
   return (
     <div className="space-y-6 max-w-4xl">
@@ -224,6 +259,59 @@ export function EnquiryInbox({ enquiries, stats, currentStatus, pagination }: En
           <Filter className="w-3.5 h-3.5" />
           {pagination?.total ?? 0} total
         </div>
+      </div>
+
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-[1fr_1fr_1fr_auto]">
+        <select
+          value={currentCompanyId ?? ""}
+          onChange={(event) => setFilter("companyId", event.target.value)}
+          className="rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground outline-none transition-colors focus:border-primary/40"
+        >
+          <option value="">All companies</option>
+          {companies.map((company) => (
+            <option key={company._id} value={company._id}>
+              {company.name}
+            </option>
+          ))}
+        </select>
+        <select
+          value={currentPropertySiteId ?? ""}
+          onChange={(event) => setFilter("propertySiteId", event.target.value)}
+          className="rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground outline-none transition-colors focus:border-primary/40"
+        >
+          <option value="">All microsites</option>
+          {sites.map((site) => (
+            <option key={site._id} value={site._id}>
+              /sites/{site.siteSlug}
+            </option>
+          ))}
+        </select>
+        <select
+          value={currentSource ?? ""}
+          onChange={(event) => setFilter("source", event.target.value)}
+          className="rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground outline-none transition-colors focus:border-primary/40"
+        >
+          <option value="">All sources</option>
+          {LEAD_SOURCES.map((source) => (
+            <option key={source} value={source}>
+              {LEAD_SOURCE_LABELS[source]}
+            </option>
+          ))}
+        </select>
+        <button
+          type="button"
+          onClick={() =>
+            navigate({
+              companyId: undefined,
+              propertySiteId: undefined,
+              source: undefined,
+              page: undefined,
+            })
+          }
+          className="rounded-lg border border-border px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+        >
+          Clear
+        </button>
       </div>
 
       {/* Stats row */}
@@ -289,14 +377,14 @@ export function EnquiryInbox({ enquiries, stats, currentStatus, pagination }: En
           <div className="flex gap-2">
             <button
               disabled={pagination.page <= 1}
-              onClick={() => router.push(`/admin/enquiries?status=${currentStatus}&page=${pagination.page - 1}`)}
+              onClick={() => navigate({ page: String(pagination.page - 1) })}
               className="rounded-lg border border-border px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-accent disabled:opacity-40"
             >
               Previous
             </button>
             <button
               disabled={pagination.page >= pagination.totalPages}
-              onClick={() => router.push(`/admin/enquiries?status=${currentStatus}&page=${pagination.page + 1}`)}
+              onClick={() => navigate({ page: String(pagination.page + 1) })}
               className="rounded-lg border border-border px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-accent disabled:opacity-40"
             >
               Next

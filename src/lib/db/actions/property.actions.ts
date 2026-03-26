@@ -2,14 +2,21 @@
 
 import { revalidatePath } from "next/cache";
 import slugify from "slugify";
+import type { SortOrder } from "mongoose";
 import { connectDB } from "@/lib/db/connection";
 import Property from "@/lib/db/models/Property";
-import { requireAuth, withRole } from "@/lib/auth/utils";
+import { withRole } from "@/lib/auth/utils";
 import {
   deepMerge,
   requireObjectId,
   serialize,
 } from "@/lib/db/actions/helpers";
+import {
+  getScopedDashboardAccess,
+  hasCompanyAccess,
+  hasPropertyAccess,
+  scopedIdsFilter,
+} from "@/lib/db/actions/access";
 import {
   PropertyValidator,
   PropertyFiltersValidator,
@@ -86,18 +93,18 @@ export async function getProperties(
 
     const skip = (page - 1) * limit;
     const sortDirection = sortOrder === "asc" ? 1 : -1;
-    const sortQuery: Record<string, number | { $meta: "textScore" }> =
+    const sortQuery: Record<string, SortOrder | { $meta: "textScore" }> =
       search?.trim()
         ? { score: { $meta: "textScore" } }
         : { [sortBy]: sortDirection };
 
     const [properties, total] = await Promise.all([
-      Property.find(query as any)
-        .sort(sortQuery as any)
+      Property.find(query)
+        .sort(sortQuery)
         .skip(skip)
         .limit(limit)
         .lean(),
-      Property.countDocuments(query as any),
+      Property.countDocuments(query),
     ]);
 
     return {
@@ -112,6 +119,98 @@ export async function getProperties(
     };
   } catch (error) {
     console.error("[getProperties]", error);
+    return { success: false, error: "Failed to fetch properties" };
+  }
+}
+
+// ─── GET ADMIN PROPERTIES (scoped) ───────────────────────────────────────────
+
+export async function getAdminProperties(
+  rawFilters: Partial<PropertyFiltersInput> = {}
+): Promise<ApiResponse<IProperty[]>> {
+  try {
+    await connectDB();
+    const access = await getScopedDashboardAccess("getAdminProperties");
+
+    const filters = PropertyFiltersValidator.parse(rawFilters);
+    const {
+      page,
+      limit,
+      sortBy,
+      sortOrder,
+      search,
+      status,
+      category,
+      propertyType,
+      transactionType,
+      city,
+      locality,
+      minPrice,
+      maxPrice,
+      bhkConfig,
+      possessionStatus,
+      isGatedCommunity,
+      reraRegistered,
+      isFeatured,
+    } = filters;
+
+    const query: PropertyQuery = {};
+
+    if (status) query.status = status;
+    if (isFeatured !== undefined) query.isFeatured = isFeatured;
+    if (category) query["specifications.category"] = category;
+    if (propertyType) query["specifications.propertyType"] = propertyType;
+    if (transactionType) query["specifications.transactionType"] = transactionType;
+    if (bhkConfig) query["specifications.bhkConfig"] = bhkConfig;
+    if (possessionStatus) query["specifications.possessionStatus"] = possessionStatus;
+    if (city) query["location.city"] = { $regex: city, $options: "i" };
+    if (locality) query["location.locality"] = { $regex: locality, $options: "i" };
+    if (isGatedCommunity !== undefined) query["features.isGatedCommunity"] = isGatedCommunity;
+    if (reraRegistered !== undefined) query["legalInfo.reraRegistered"] = reraRegistered;
+
+    if (minPrice !== undefined || maxPrice !== undefined) {
+      const priceFilter: Record<string, number> = {};
+      if (minPrice !== undefined) priceFilter.$gte = minPrice;
+      if (maxPrice !== undefined) priceFilter.$lte = maxPrice;
+      query["financials.listedPrice"] = priceFilter;
+    }
+
+    if (search?.trim()) {
+      query.$text = { $search: search.trim() };
+    }
+
+    if (access.isCompanyManager) {
+      query.companyId = scopedIdsFilter(access.companyIds);
+    }
+
+    const skip = (page - 1) * limit;
+    const sortDirection = sortOrder === "asc" ? 1 : -1;
+    const sortQuery: Record<string, SortOrder | { $meta: "textScore" }> =
+      search?.trim()
+        ? { score: { $meta: "textScore" } }
+        : { [sortBy]: sortDirection };
+
+    const [properties, total] = await Promise.all([
+      Property.find(query)
+        .sort(sortQuery)
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+      Property.countDocuments(query),
+    ]);
+
+    return {
+      success: true,
+      data: properties.map((property) => serialize<IProperty>(property)),
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
+  } catch (error) {
+    console.error("[getAdminProperties]", error);
     return { success: false, error: "Failed to fetch properties" };
   }
 }
@@ -148,11 +247,14 @@ export async function getPropertyById(
   id: string
 ): Promise<ApiResponse<IProperty>> {
   try {
-    await requireAuth();
     await connectDB();
+    const access = await getScopedDashboardAccess("getPropertyById");
 
     const property = await Property.findById(id).lean();
     if (!property) return { success: false, error: "Property not found" };
+    if (!hasPropertyAccess(access, property._id)) {
+      return { success: false, error: "You do not have access to this property" };
+    }
 
     return { success: true, data: serialize<IProperty>(property) };
   } catch (error) {
@@ -175,10 +277,22 @@ export async function createProperty(
   rawData: PropertyInput
 ): Promise<ApiResponse<IProperty>> {
   try {
-    const user = await withRole(["super_admin", "admin"]);
     await connectDB();
+    const access = await getScopedDashboardAccess("createProperty");
+
+    if (!["super_admin", "admin", "company_manager"].includes(access.user.role)) {
+      return { success: false, error: "You do not have permission to create properties" };
+    }
 
     const data = PropertyValidator.parse(rawData);
+    if (access.isCompanyManager) {
+      if (!data.companyId) {
+        return { success: false, error: "Select an assigned company before creating a property" };
+      }
+      if (!hasCompanyAccess(access, data.companyId)) {
+        return { success: false, error: "You do not have access to the selected company" };
+      }
+    }
 
     // Auto-generate slug from title if not provided
     const baseSlug = data.slug || generateSlug(data.title);
@@ -195,8 +309,8 @@ export async function createProperty(
       ...data,
       slug,
       location: { type: "Point", ...data.location },
-      createdBy: requireObjectId(user.id, "createProperty: session user id"),
-    } as any);
+      createdBy: requireObjectId(access.user.id, "createProperty: session user id").toString(),
+    });
 
     revalidatePath("/admin/properties");
     revalidatePath("/projects");
@@ -223,15 +337,28 @@ export async function updateProperty(
   rawData: Partial<PropertyInput>
 ): Promise<ApiResponse<IProperty>> {
   try {
-    await withRole(["super_admin", "admin"]);
     await connectDB();
+    const access = await getScopedDashboardAccess("updateProperty");
+
+    if (!["super_admin", "admin", "company_manager"].includes(access.user.role)) {
+      return { success: false, error: "You do not have permission to update properties" };
+    }
 
     const property = await Property.findById(id);
     if (!property) return { success: false, error: "Property not found" };
+    if (!hasPropertyAccess(access, property._id)) {
+      return { success: false, error: "You do not have access to this property" };
+    }
 
     const current = serialize<IProperty>(property.toObject());
-    const merged = deepMerge(current, rawData as any);
+    const merged = deepMerge(current, rawData as Partial<IProperty>);
     const data = PropertyValidator.parse(merged);
+
+    if (access.isCompanyManager) {
+      if (!data.companyId || !hasCompanyAccess(access, data.companyId)) {
+        return { success: false, error: "You do not have access to the selected company" };
+      }
+    }
 
     // If title changed and no custom slug, regenerate
     if (rawData.title && rawData.title !== property.title && !rawData.slug) {
@@ -247,7 +374,7 @@ export async function updateProperty(
 
     const updated = await Property.findByIdAndUpdate(
       id,
-      { ...data, location: { type: "Point", ...data.location } } as any,
+      { ...data, location: { type: "Point", ...data.location } },
       { new: true, runValidators: true }
     ).lean();
 
@@ -282,8 +409,16 @@ export async function togglePropertyStatus(
   status: "active" | "blocked" | "sold" | "archived"
 ): Promise<ApiResponse<IProperty>> {
   try {
-    await withRole(["super_admin", "admin"]);
     await connectDB();
+    const access = await getScopedDashboardAccess("togglePropertyStatus");
+
+    if (!["super_admin", "admin", "company_manager"].includes(access.user.role)) {
+      return { success: false, error: "You do not have permission to update property status" };
+    }
+
+    if (!hasPropertyAccess(access, id)) {
+      return { success: false, error: "You do not have access to this property" };
+    }
 
     const property = await Property.findByIdAndUpdate(
       id,
@@ -315,8 +450,16 @@ export async function toggleFeatured(
   isFeatured: boolean
 ): Promise<ApiResponse<IProperty>> {
   try {
-    await withRole(["super_admin", "admin"]);
     await connectDB();
+    const access = await getScopedDashboardAccess("toggleFeatured");
+
+    if (!["super_admin", "admin", "company_manager"].includes(access.user.role)) {
+      return { success: false, error: "You do not have permission to update featured status" };
+    }
+
+    if (!hasPropertyAccess(access, id)) {
+      return { success: false, error: "You do not have access to this property" };
+    }
 
     const property = await Property.findByIdAndUpdate(
       id,
@@ -400,16 +543,21 @@ export async function getPropertyStats(): Promise<
   }>
 > {
   try {
-    await requireAuth();
     await connectDB();
+    const access = await getScopedDashboardAccess("getPropertyStats");
+
+    const match = access.isCompanyManager
+      ? { companyId: scopedIdsFilter(access.companyIds) }
+      : {};
 
     const [statusCounts, featuredCount, typeCounts] = await Promise.all([
       Property.aggregate([
+        { $match: match },
         { $group: { _id: "$status", count: { $sum: 1 } } },
       ]),
-      Property.countDocuments({ isFeatured: true }),
+      Property.countDocuments({ ...match, isFeatured: true }),
       Property.aggregate([
-        { $match: { status: "active" } },
+        { $match: { ...match, status: "active" } },
         { $group: { _id: "$specifications.propertyType", count: { $sum: 1 } } },
       ]),
     ]);

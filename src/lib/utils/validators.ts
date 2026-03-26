@@ -23,6 +23,10 @@ import {
   ENQUIRY_INTERESTS,
   SITE_VISIT_STATUSES,
   SITE_VISIT_OUTCOMES,
+  PUBLISH_STATUSES,
+  COMPANY_THEME_PRESETS,
+  PROPERTY_SITE_TEMPLATES,
+  PAGE_CONTEXTS,
 } from "@/lib/utils/constants";
 
 // ─── SHARED ───────────────────────────────────────────────────────────────────
@@ -49,6 +53,39 @@ const mediaUrlSchema = z.string().refine((value) => {
     return false;
   }
 }, "Invalid media URL");
+
+const objectIdSchema = z
+  .string()
+  .regex(/^[a-f\d]{24}$/i, "Invalid identifier format");
+
+const optionalObjectIdSchema = objectIdSchema.optional().or(z.literal(""));
+
+const urlOrRelativeSchema = z
+  .string()
+  .refine((value) => {
+    if (!value) return true;
+    if (value.startsWith("/")) return true;
+
+    try {
+      new URL(value);
+      return true;
+    } catch {
+      return false;
+    }
+  }, "Invalid URL")
+  .optional()
+  .or(z.literal(""));
+
+const TrackingValidator = z.object({
+  sourceTag: z.string().optional(),
+  campaignTag: z.string().optional(),
+  utmSource: z.string().optional(),
+  utmMedium: z.string().optional(),
+  utmCampaign: z.string().optional(),
+  gaMeasurementId: z.string().optional(),
+  tagManagerId: z.string().optional(),
+  metaPixelId: z.string().optional(),
+});
 
 // ─── PROPERTY ────────────────────────────────────────────────────────────────
 
@@ -174,6 +211,20 @@ export const MediaAssetValidator = z.object({
   order: z.number().default(0),
 });
 
+export const UnitPlanValidator = z.object({
+  name: z.string().min(1, "Unit plan name is required"),
+  bhkLabel: z.string().optional(),
+  carpetArea: z.number().positive().optional(),
+  superBuiltUpArea: z.number().positive().optional(),
+  priceLabel: z.string().optional(),
+  availability: z.string().optional(),
+  floorLabel: z.string().optional(),
+  facingDirection: z.enum(FACING_DIRECTIONS).optional(),
+  floorplanUrl: urlOrRelativeSchema,
+  walkthroughUrl: urlOrRelativeSchema,
+  description: z.string().max(500).optional(),
+});
+
 // Full property create/update validator
 export const PropertyValidator = z.object({
   title: z.string().min(5, "Title must be at least 5 characters").max(200),
@@ -185,6 +236,7 @@ export const PropertyValidator = z.object({
     .optional(),
   description: z.string().min(20, "Description must be at least 20 characters"),
   developerName: z.string().min(2, "Developer name required"),
+  companyId: optionalObjectIdSchema.transform((value) => value || undefined),
   projectName: z.string().optional(),
   tagline: z.string().max(160).optional(),
   status: z.enum(PROPERTY_STATUSES).default("active"),
@@ -198,6 +250,7 @@ export const PropertyValidator = z.object({
   brokeragePolicy: BrokeragePolicyValidator,
   mediaAssets: z.array(MediaAssetValidator).default([]),
   nearbyPlaces: z.array(NearbyPlaceValidator).default([]),
+  unitPlans: z.array(UnitPlanValidator).default([]),
 });
 
 export type PropertyInput = z.infer<typeof PropertyValidator>;
@@ -234,8 +287,12 @@ export const EnquiryValidator = z.object({
   email: emailSchema,
   message: z.string().max(2000).optional(),
   propertyId: z.string().optional(),
+  companyId: z.string().optional(),
+  propertySiteId: z.string().optional(),
   propertyName: z.string().optional(),
   propertySlug: z.string().optional(),
+  pageContext: z.enum(PAGE_CONTEXTS).default("main_site"),
+  tracking: TrackingValidator.optional(),
   interestedIn: z.array(z.enum(ENQUIRY_INTERESTS)).default(["general"]),
   budgetRange: z.string().optional(),
   source: z.enum(LEAD_SOURCES).default("website"),
@@ -258,8 +315,12 @@ export const LeadValidator = z.object({
   source: z.enum(LEAD_SOURCES).default("website"),
   score: z.number().min(0).max(100).optional(),
   propertyId: z.string().optional(),
+  companyId: z.string().optional(),
+  propertySiteId: z.string().optional(),
   propertyName: z.string().optional(),
   propertySlug: z.string().optional(),
+  pageContext: z.enum(PAGE_CONTEXTS).default("main_site"),
+  tracking: TrackingValidator.optional(),
   assignedTo: z.string().optional(),
   budget: z.object({
     min: z.number().min(0).optional(),
@@ -297,6 +358,9 @@ export type LeadStageUpdateInput = z.infer<typeof LeadStageUpdateValidator>;
 export const SiteVisitValidator = z.object({
   leadId: z.string().min(1, "Lead ID required"),
   propertyId: z.string().min(1, "Property ID required"),
+  companyId: z.string().optional(),
+  propertySiteId: z.string().optional(),
+  source: z.enum(LEAD_SOURCES).optional(),
   propertyName: z.string().optional(),
   propertySlug: z.string().optional(),
   assignedAgentId: z.string().min(1, "Agent is required"),
@@ -317,6 +381,132 @@ export const SiteVisitStatusUpdateValidator = z.object({
   agentNotes: z.string().max(2000).optional(),
   rescheduledTo: z.string().optional(),
 });
+
+// ─── COMPANIES / CASE STUDIES / PROPERTY SITES ───────────────────────────────
+
+const SocialLinkValidator = z.object({
+  platform: z.string().min(1),
+  label: z.string().optional(),
+  url: z.string().url("Invalid social link URL"),
+});
+
+const CompanyContactValidator = z.object({
+  phone: phoneSchema.optional(),
+  email: emailSchema.optional(),
+  whatsapp: phoneSchema.optional(),
+  website: z.string().url("Invalid website URL").optional().or(z.literal("")),
+  salesLabel: z.string().optional(),
+});
+
+const CompanyAddressValidator = z.object({
+  line1: z.string().optional(),
+  locality: z.string().optional(),
+  city: z.string().optional(),
+  state: z.string().optional(),
+  pincode: z.string().optional(),
+  mapLink: z.string().url("Invalid map link").optional().or(z.literal("")),
+});
+
+const CaseStudyOutcomeValidator = z.object({
+  label: z.string().min(1),
+  value: z.string().min(1),
+});
+
+const PropertySiteNavItemValidator = z.object({
+  label: z.string().min(1),
+  href: z.string().min(1),
+  enabled: z.boolean().default(true),
+});
+
+const PropertySiteSectionValidator = z.object({
+  id: z.string().min(1),
+  label: z.string().min(1),
+  enabled: z.boolean().default(true),
+  order: z.number().min(0),
+});
+
+const PropertySiteContactValidator = z.object({
+  phone: phoneSchema.optional(),
+  email: emailSchema.optional(),
+  whatsapp: phoneSchema.optional(),
+  officeAddress: z.string().optional(),
+  mapLink: z.string().url("Invalid map link").optional().or(z.literal("")),
+});
+
+const SeoOverridesValidator = z.object({
+  title: z.string().max(200).optional(),
+  description: z.string().max(320).optional(),
+  keywords: z.array(z.string()).default([]),
+  canonicalUrl: z.string().url("Invalid canonical URL").optional().or(z.literal("")),
+  ogImage: urlOrRelativeSchema,
+});
+
+export const CompanyValidator = z.object({
+  name: z.string().min(2, "Company name is required"),
+  slug: z
+    .string()
+    .min(3, "Slug too short")
+    .max(100)
+    .regex(/^[a-z0-9-]+$/, "Slug must be lowercase letters, numbers, and hyphens only"),
+  logo: urlOrRelativeSchema,
+  shortIntro: z.string().max(220).optional(),
+  fullProfile: z.string().max(5000).optional(),
+  contact: CompanyContactValidator.default({}),
+  address: CompanyAddressValidator.default({}),
+  socialLinks: z.array(SocialLinkValidator).default([]),
+  themePreset: z.enum(COMPANY_THEME_PRESETS).default("signature_navy"),
+  featured: z.boolean().default(false),
+  status: z.enum(PUBLISH_STATUSES).default("draft"),
+  assignedManagerIds: z.array(objectIdSchema).default([]),
+});
+
+export type CompanyInput = z.infer<typeof CompanyValidator>;
+
+export const CaseStudyValidator = z.object({
+  companyId: objectIdSchema,
+  propertyIds: z.array(objectIdSchema).default([]),
+  title: z.string().min(5, "Title must be at least 5 characters"),
+  slug: z
+    .string()
+    .min(3, "Slug too short")
+    .max(100)
+    .regex(/^[a-z0-9-]+$/, "Slug must be lowercase letters, numbers, and hyphens only"),
+  summary: z.string().min(20, "Summary must be at least 20 characters"),
+  challenge: z.string().max(2000).optional(),
+  solution: z.string().max(2000).optional(),
+  outcomes: z.array(CaseStudyOutcomeValidator).min(1, "Add at least one outcome"),
+  testimonialQuote: z.string().max(500).optional(),
+  media: z.array(MediaAssetValidator).default([]),
+  featured: z.boolean().default(false),
+  publishStatus: z.enum(PUBLISH_STATUSES).default("draft"),
+});
+
+export type CaseStudyInput = z.infer<typeof CaseStudyValidator>;
+
+export const PropertySiteValidator = z.object({
+  propertyId: objectIdSchema,
+  companyId: optionalObjectIdSchema.transform((value) => value || undefined),
+  siteSlug: z
+    .string()
+    .min(3, "Slug too short")
+    .max(100)
+    .regex(/^[a-z0-9-]+$/, "Slug must be lowercase letters, numbers, and hyphens only"),
+  template: z.enum(PROPERTY_SITE_TEMPLATES).default("signature_landing"),
+  themePreset: z.enum(COMPANY_THEME_PRESETS).default("signature_navy"),
+  publishStatus: z.enum(PUBLISH_STATUSES).default("draft"),
+  heroTitle: z.string().max(200).optional(),
+  heroSubtitle: z.string().max(500).optional(),
+  heroCtaLabel: z.string().max(60).optional(),
+  heroSecondaryCtaLabel: z.string().max(60).optional(),
+  contact: PropertySiteContactValidator.default({}),
+  navigation: z.array(PropertySiteNavItemValidator).default([]),
+  sections: z.array(PropertySiteSectionValidator).default([]),
+  seo: SeoOverridesValidator.default({ keywords: [] }),
+  tracking: TrackingValidator.default({}),
+  customDomains: z.array(z.string().min(1)).default([]),
+});
+
+export type PropertySiteInput = z.infer<typeof PropertySiteValidator>;
 
 // ─── AUTH ─────────────────────────────────────────────────────────────────────
 

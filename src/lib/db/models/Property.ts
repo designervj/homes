@@ -248,6 +248,23 @@ const MediaAssetSchema = new Schema(
   { _id: false }
 );
 
+const UnitPlanSchema = new Schema(
+  {
+    name: { type: String, required: true, trim: true },
+    bhkLabel: { type: String, trim: true },
+    carpetArea: { type: Number, min: 0 },
+    superBuiltUpArea: { type: Number, min: 0 },
+    priceLabel: { type: String, trim: true },
+    availability: { type: String, trim: true },
+    floorLabel: { type: String, trim: true },
+    facingDirection: { type: String, enum: FACING_DIRECTIONS },
+    floorplanUrl: { type: String, trim: true },
+    walkthroughUrl: { type: String, trim: true },
+    description: { type: String, trim: true, maxlength: 500 },
+  },
+  { _id: false }
+);
+
 // ─── MAIN PROPERTY SCHEMA ─────────────────────────────────────────────────────
 
 const PropertySchema = new Schema<PropertyDocument>(
@@ -262,6 +279,7 @@ const PropertySchema = new Schema<PropertyDocument>(
     },
     description: { type: String, required: true, trim: true },
     developerName: { type: String, required: true, trim: true },
+    companyId: { type: Schema.Types.ObjectId, ref: "Company" },
     projectName: { type: String, trim: true },
     tagline: { type: String, trim: true, maxlength: 160 },
     status: {
@@ -280,6 +298,7 @@ const PropertySchema = new Schema<PropertyDocument>(
 
     mediaAssets: [MediaAssetSchema],
     nearbyPlaces: [NearbyPlaceSchema],
+    unitPlans: [UnitPlanSchema],
 
     isFeatured: { type: Boolean, default: false },
     viewCount: { type: Number, default: 0 },
@@ -305,6 +324,7 @@ PropertySchema.index({
   "specifications.propertyType": 1,
   "financials.listedPrice": 1,
 });
+PropertySchema.index({ companyId: 1, status: 1 });
 
 // Compound index for category + transaction filtering
 PropertySchema.index({

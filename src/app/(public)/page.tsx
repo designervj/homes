@@ -1,6 +1,9 @@
 import Link from "next/link";
+import { SafeImage as Image } from "@/components/shared/SafeImage";
 import { Building2, CalendarCheck, BadgeCheck, MapPin, ArrowRight } from "lucide-react";
 import { getFeaturedProperties } from "@/lib/db/actions/property.actions";
+import { getFeaturedCompanies } from "@/lib/db/actions/company.actions";
+import { getFeaturedCaseStudies } from "@/lib/db/actions/case-study.actions";
 import { PropertyCard } from "@/components/public/properties/PropertyCard";
 import { EnquiryForm } from "@/components/public/forms/EnquiryForm";
 import { HeroSection } from "@/components/public/hero/HeroSection";
@@ -13,8 +16,14 @@ export const metadata: Metadata = {
 };
 
 export default async function HomePage() {
-  const featuredRes = await getFeaturedProperties(4);
+  const [featuredRes, companiesRes, caseStudiesRes] = await Promise.all([
+    getFeaturedProperties(4),
+    getFeaturedCompanies(6),
+    getFeaturedCaseStudies(3),
+  ]);
   const featured = featuredRes.data ?? [];
+  const companies = companiesRes.data ?? [];
+  const caseStudies = caseStudiesRes.data ?? [];
 
   return (
     <div className="bg-background">
@@ -213,6 +222,92 @@ export default async function HomePage() {
               ))}
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* ── TRUST LAYER: COMPANIES + CASE STUDIES ───────────────────────────── */}
+      <section className="border-t border-border py-24">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+          <div className="grid grid-cols-1 lg:grid-cols-[0.7fr_1.3fr] gap-10 items-start">
+            <div>
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-7 h-px bg-primary" />
+                <span className="text-xs text-primary uppercase tracking-widest font-medium">Proof & Authenticity</span>
+              </div>
+              <h2 className="font-serif text-4xl font-medium text-foreground sm:text-5xl">
+                Companies We&apos;ve Worked With
+              </h2>
+              <p className="mt-4 max-w-md text-muted-foreground leading-relaxed">
+                Builder partnerships, published listings, and proof-led case studies now live inside the same Homes system, so every brand mention can connect back to real inventory and enquiry conversion.
+              </p>
+              <Link
+                href="/companies"
+                className="mt-6 inline-flex items-center gap-2 text-sm text-primary hover:text-primary-light transition-colors"
+              >
+                Explore company profiles <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
+              {companies.map((company) => (
+                <Link
+                  key={company._id}
+                  href={`/companies/${company.slug}`}
+                  className="group rounded-2xl border border-border bg-card p-6 transition-all duration-300 hover:-translate-y-1 hover:border-primary/20"
+                >
+                  <div className="h-20 rounded-xl border border-border bg-background flex items-center justify-center p-4">
+                    {company.logo ? (
+                      <Image
+                        src={company.logo}
+                        alt={company.name}
+                        width={140}
+                        height={60}
+                        className="max-h-12 w-auto object-contain"
+                      />
+                    ) : (
+                      <Building2 className="w-6 h-6 text-primary" />
+                    )}
+                  </div>
+                  <p className="mt-4 text-sm font-medium text-foreground group-hover:text-primary transition-colors">
+                    {company.name}
+                  </p>
+                  <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-muted-foreground">
+                    {company.shortIntro}
+                  </p>
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          {caseStudies.length > 0 && (
+            <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
+              {caseStudies.map((caseStudy) => (
+                <Link
+                  key={caseStudy._id}
+                  href={`/case-studies/${caseStudy.slug}`}
+                  className="group rounded-2xl border border-border bg-card p-6 transition-all duration-300 hover:-translate-y-1 hover:border-primary/20"
+                >
+                  <p className="text-[10px] text-primary uppercase tracking-widest font-medium">Case Study</p>
+                  <h3 className="mt-3 font-serif text-2xl font-medium text-foreground group-hover:text-primary transition-colors">
+                    {caseStudy.title}
+                  </h3>
+                  <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+                    {caseStudy.summary}
+                  </p>
+                  <div className="mt-5 flex flex-wrap gap-2">
+                    {caseStudy.outcomes.slice(0, 3).map((outcome) => (
+                      <span
+                        key={`${outcome.label}-${outcome.value}`}
+                        className="rounded-full bg-primary/10 border border-primary/20 px-3 py-1 text-[11px] text-primary"
+                      >
+                        {outcome.label}: {outcome.value}
+                      </span>
+                    ))}
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 

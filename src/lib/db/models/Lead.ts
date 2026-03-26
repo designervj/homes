@@ -4,9 +4,24 @@ import {
   LEAD_STAGES,
   LEAD_SOURCES,
   ENQUIRY_INTERESTS,
+  PAGE_CONTEXTS,
 } from "@/lib/utils/constants";
 
 export type LeadDocument = ILead & Document;
+
+const TrackingSchema = new Schema(
+  {
+    sourceTag: { type: String, trim: true },
+    campaignTag: { type: String, trim: true },
+    utmSource: { type: String, trim: true },
+    utmMedium: { type: String, trim: true },
+    utmCampaign: { type: String, trim: true },
+    gaMeasurementId: { type: String, trim: true },
+    tagManagerId: { type: String, trim: true },
+    metaPixelId: { type: String, trim: true },
+  },
+  { _id: false }
+);
 
 // ─── ACTIVITY LOG SUB-SCHEMA ──────────────────────────────────────────────────
 
@@ -67,8 +82,16 @@ const LeadSchema = new Schema<LeadDocument>(
 
     // ── Property Reference ────────────────────────────────────────────────────
     propertyId: { type: Schema.Types.ObjectId, ref: "Property" },
+    companyId: { type: Schema.Types.ObjectId, ref: "Company" },
+    propertySiteId: { type: Schema.Types.ObjectId, ref: "PropertySite" },
     propertyName: { type: String, trim: true },
     propertySlug: { type: String, trim: true },
+    pageContext: {
+      type: String,
+      enum: PAGE_CONTEXTS,
+      default: "main_site",
+    },
+    tracking: { type: TrackingSchema, default: undefined },
 
     // ── Agent Assignment ──────────────────────────────────────────────────────
     assignedTo: { type: Schema.Types.ObjectId, ref: "User" },
@@ -107,6 +130,8 @@ LeadSchema.index({ stage: 1, assignedTo: 1, createdAt: -1 });
 
 // Per-property lead reporting
 LeadSchema.index({ propertyId: 1, stage: 1 });
+LeadSchema.index({ companyId: 1, stage: 1 });
+LeadSchema.index({ propertySiteId: 1, createdAt: -1 });
 
 // Recent leads overview
 LeadSchema.index({ createdAt: -1 });

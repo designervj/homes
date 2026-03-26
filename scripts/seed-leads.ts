@@ -75,6 +75,7 @@ type SeedUser = {
 
 type SeedProperty = {
   _id: mongoose.Types.ObjectId;
+  companyId?: mongoose.Types.ObjectId;
   title: string;
   slug: string;
   projectName?: string;
@@ -96,6 +97,9 @@ type SeedLead = {
   source: LeadSource;
   score: number;
   propertyId: mongoose.Types.ObjectId;
+  companyId?: mongoose.Types.ObjectId;
+  propertySiteId?: mongoose.Types.ObjectId;
+  pageContext?: string;
   propertyName: string;
   propertySlug: string;
   assignedTo?: mongoose.Types.ObjectId;
@@ -131,6 +135,7 @@ const UserSchema = new mongoose.Schema(
 
 const PropertySchema = new mongoose.Schema(
   {
+    companyId: mongoose.Schema.Types.ObjectId,
     title: String,
     slug: String,
     projectName: String,
@@ -142,6 +147,13 @@ const PropertySchema = new mongoose.Schema(
       locality: String,
       city: String,
     },
+  },
+  { timestamps: true }
+);
+
+const PropertySiteSchema = new mongoose.Schema(
+  {
+    propertyId: mongoose.Schema.Types.ObjectId,
   },
   { timestamps: true }
 );
@@ -166,6 +178,9 @@ const LeadSchema = new mongoose.Schema(
     source: { type: String, enum: SOURCES },
     score: Number,
     propertyId: mongoose.Schema.Types.ObjectId,
+    companyId: mongoose.Schema.Types.ObjectId,
+    propertySiteId: mongoose.Schema.Types.ObjectId,
+    pageContext: String,
     propertyName: String,
     propertySlug: String,
     assignedTo: mongoose.Schema.Types.ObjectId,
@@ -189,6 +204,9 @@ const User =
 const Property =
   (mongoose.models.Property as mongoose.Model<SeedProperty>) ||
   mongoose.model<SeedProperty>("Property", PropertySchema);
+const PropertySite =
+  (mongoose.models.PropertySite as mongoose.Model<{ _id: mongoose.Types.ObjectId; propertyId: mongoose.Types.ObjectId }>) ||
+  mongoose.model("PropertySite", PropertySiteSchema);
 const Lead =
   (mongoose.models.Lead as mongoose.Model<SeedLead>) ||
   mongoose.model<SeedLead>("Lead", LeadSchema);
@@ -568,7 +586,7 @@ async function main() {
 
   const properties = await Property.find({ status: "active" })
     .sort({ createdAt: 1 })
-    .select("title projectName slug financials location")
+    .select("title projectName slug financials location companyId")
     .lean();
 
   if (properties.length === 0) {
@@ -578,8 +596,16 @@ async function main() {
   await Lead.deleteMany({});
   console.log("Cleared existing leads");
 
+  const propertySites = await PropertySite.find({})
+    .select("propertyId")
+    .lean();
+  const siteByPropertyId = new Map(
+    propertySites.map((site) => [site.propertyId.toString(), site._id])
+  );
+
   const leadsToInsert = LEAD_TEMPLATES.map((template, index) => {
     const property = properties[index % properties.length];
+    const propertySiteId = siteByPropertyId.get(property._id.toString());
     const createdAt = daysAgo(template.daysAgo);
     const budget = buildBudget(property.financials?.listedPrice, template.score);
     const activityLog = buildActivityLog({
@@ -604,6 +630,9 @@ async function main() {
       source: template.source,
       score: template.score,
       propertyId: property._id,
+      companyId: property.companyId,
+      propertySiteId,
+      pageContext: propertySiteId ? "property_site" : "main_site",
       propertyName: property.projectName || property.title,
       propertySlug: property.slug,
       assignedTo: template.assigned ? seedUser._id : undefined,

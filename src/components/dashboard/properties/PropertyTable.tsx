@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import {
   Home, Plus, Search, CheckCircle, XCircle,
   Star, Eye, Pencil, MoreHorizontal, Loader2,
-  Building2, MapPin, BadgeCheck,
+  Building2, MapPin, BadgeCheck, Globe2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { togglePropertyStatus, toggleFeatured } from "@/lib/db/actions/property.actions";
@@ -73,6 +73,9 @@ function RowActions({ property, onAction }: { property: IProperty; onAction: () 
             </Link>
             <Link href={`/projects/${property.slug}`} target="_blank" className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground">
               <Eye className="w-3.5 h-3.5" /> View Listing
+            </Link>
+            <Link href={`/admin/property-sites/new?propertyId=${property._id}`} className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground">
+              <Globe2 className="w-3.5 h-3.5" /> Manage Microsite
             </Link>
             <button onClick={handleFeatured} className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground">
               <Star className={`w-3.5 h-3.5 ${property.isFeatured ? "fill-primary text-primary" : ""}`} />

@@ -9,8 +9,13 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { updateLeadStage } from "@/lib/db/actions/lead.actions";
-import { LEAD_STAGES, LEAD_STAGE_LABELS } from "@/lib/utils/constants";
-import type { ILead, LeadStage } from "@/types";
+import {
+  LEAD_STAGES,
+  LEAD_STAGE_LABELS,
+  LEAD_SOURCES,
+  LEAD_SOURCE_LABELS,
+} from "@/lib/utils/constants";
+import type { ICompany, ILead, IPropertySite, LeadStage } from "@/types";
 
 // ─── TYPES ────────────────────────────────────────────────────────────────────
 
@@ -20,6 +25,11 @@ interface LeadsKanbanProps {
     total: number; active: number; converted: number;
     lost: number; conversionRate: number;
   } | null;
+  currentCompanyId?: string;
+  currentPropertySiteId?: string;
+  currentSource?: string;
+  companies: ICompany[];
+  sites: IPropertySite[];
 }
 
 // ─── STAGE CONFIG ─────────────────────────────────────────────────────────────
@@ -105,6 +115,12 @@ function LeadCard({ lead, onAction }: {
           <span className="truncate">{lead.propertyName}</span>
         </div>
       )}
+
+      <div className="mb-3 flex items-center gap-2">
+        <span className="rounded-full bg-accent px-2 py-0.5 text-[10px] text-muted-foreground">
+          {LEAD_SOURCE_LABELS[lead.source] ?? lead.source}
+        </span>
+      </div>
 
       {/* Interests */}
       {lead.interestedIn && lead.interestedIn.length > 0 && (
@@ -236,9 +252,33 @@ function KanbanColumn({ stage, leads, onAction }: {
 
 // ─── MAIN KANBAN BOARD ────────────────────────────────────────────────────────
 
-export function LeadsKanban({ boardData, stats }: LeadsKanbanProps) {
+export function LeadsKanban({
+  boardData,
+  stats,
+  currentCompanyId,
+  currentPropertySiteId,
+  currentSource,
+  companies,
+  sites,
+}: LeadsKanbanProps) {
   const router = useRouter();
   const refresh = () => router.refresh();
+  const navigate = (overrides: Record<string, string | undefined>) => {
+    const params = new URLSearchParams();
+    const next = {
+      companyId: currentCompanyId,
+      propertySiteId: currentPropertySiteId,
+      source: currentSource,
+      ...overrides,
+    };
+
+    Object.entries(next).forEach(([key, value]) => {
+      if (!value) return;
+      params.set(key, value);
+    });
+
+    router.push(`/admin/leads${params.size ? `?${params.toString()}` : ""}`);
+  };
 
   return (
     <div className="space-y-6">
@@ -256,6 +296,64 @@ export function LeadsKanban({ boardData, stats }: LeadsKanbanProps) {
         >
           <Users2 className="w-4 h-4" /> Add Lead
         </Link>
+      </div>
+
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-[1fr_1fr_1fr_auto]">
+        <select
+          value={currentCompanyId ?? ""}
+          onChange={(event) =>
+            navigate({ companyId: event.target.value || undefined })
+          }
+          className="rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground outline-none transition-colors focus:border-primary/40"
+        >
+          <option value="">All companies</option>
+          {companies.map((company) => (
+            <option key={company._id} value={company._id}>
+              {company.name}
+            </option>
+          ))}
+        </select>
+        <select
+          value={currentPropertySiteId ?? ""}
+          onChange={(event) =>
+            navigate({ propertySiteId: event.target.value || undefined })
+          }
+          className="rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground outline-none transition-colors focus:border-primary/40"
+        >
+          <option value="">All microsites</option>
+          {sites.map((site) => (
+            <option key={site._id} value={site._id}>
+              /sites/{site.siteSlug}
+            </option>
+          ))}
+        </select>
+        <select
+          value={currentSource ?? ""}
+          onChange={(event) =>
+            navigate({ source: event.target.value || undefined })
+          }
+          className="rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground outline-none transition-colors focus:border-primary/40"
+        >
+          <option value="">All sources</option>
+          {LEAD_SOURCES.map((source) => (
+            <option key={source} value={source}>
+              {LEAD_SOURCE_LABELS[source]}
+            </option>
+          ))}
+        </select>
+        <button
+          type="button"
+          onClick={() =>
+            navigate({
+              companyId: undefined,
+              propertySiteId: undefined,
+              source: undefined,
+            })
+          }
+          className="rounded-lg border border-border px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+        >
+          Clear
+        </button>
       </div>
 
       {/* Stats */}

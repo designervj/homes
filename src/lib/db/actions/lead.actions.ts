@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { connectDB } from "@/lib/db/connection";
 import Lead from "@/lib/db/models/Lead";
+import Property from "@/lib/db/models/Property";
 import User from "@/lib/db/models/User";
 import { requireAuth } from "@/lib/auth/utils";
 import {
@@ -10,6 +11,10 @@ import {
   serialize,
   toObjectId,
 } from "@/lib/db/actions/helpers";
+import {
+  getScopedDashboardAccess,
+  scopedIdsFilter,
+} from "@/lib/db/actions/access";
 import {
   LeadValidator,
   LeadStageUpdateValidator,
@@ -21,99 +26,197 @@ import {
 import type { ApiResponse, ILead, LeadStage } from "@/types";
 import { LEAD_STAGE_LABELS } from "@/lib/utils/constants";
 
-type LeadListQuery = {
-  stage?: LeadStage;
-  assignedTo?: any;
-  propertyId?: any;
+type LeadListQuery = Record<string, unknown>;
+type LeadFilters = {
+  stage?: LeadStage | "all";
+  assignedTo?: string;
+  propertyId?: string;
+  companyId?: string;
+  propertySiteId?: string;
   source?: string;
-  $or?: Array<{ name?: RegExp; phone?: RegExp; email?: RegExp }>;
+  search?: string;
+  page?: number;
+  limit?: number;
 };
 
+function createEmptyLeadBoard(): Record<LeadStage, ILead[]> {
+  return {
+    new: [],
+    contacted: [],
+    qualified: [],
+    site_visit_scheduled: [],
+    negotiation: [],
+    converted: [],
+    lost: [],
+  };
+}
+
 function getActorId(userId: string, actionName: string) {
-  requireObjectId(userId, `${actionName}: session user id`);
-  return userId;
+  return requireObjectId(userId, `${actionName}: session user id`).toString();
 }
 
 function sanitizeLeadProperty(
   propertyId: string | undefined,
+  companyId: string | undefined,
+  propertySiteId: string | undefined,
   propertyName: string | undefined,
   propertySlug: string | undefined,
+  pageContext: string | undefined,
+  tracking: Record<string, string | undefined> | undefined,
   actionName: string
 ) {
-  const objectId = toObjectId(propertyId);
+  const propertyObjectId = toObjectId(propertyId);
+  const companyObjectId = toObjectId(companyId);
+  const propertySiteObjectId = toObjectId(propertySiteId);
 
-  if (propertyId && !objectId) {
+  if (propertyId && !propertyObjectId) {
     console.error(`[${actionName}] Invalid propertyId received for lead write`, {
       propertyId,
       propertyName,
       propertySlug,
     });
   }
+  if (companyId && !companyObjectId) {
+    console.error(`[${actionName}] Invalid companyId received for lead write`, {
+      companyId,
+      propertyName,
+      propertySlug,
+    });
+  }
+  if (propertySiteId && !propertySiteObjectId) {
+    console.error(`[${actionName}] Invalid propertySiteId received for lead write`, {
+      propertySiteId,
+      propertyName,
+      propertySlug,
+    });
+  }
 
   return {
-    propertyId: objectId as any,
+    propertyId: propertyObjectId?.toString(),
+    companyId: companyObjectId?.toString(),
+    propertySiteId: propertySiteObjectId?.toString(),
     propertyName,
     propertySlug,
+    pageContext,
+    tracking,
   };
+}
+
+function canAccessLead(
+  access: Awaited<ReturnType<typeof getScopedDashboardAccess>>,
+  lead: {
+    propertyId?: unknown;
+    companyId?: unknown;
+  }
+) {
+  if (!access.isCompanyManager) return true;
+
+  const propertyId = toObjectId(lead.propertyId);
+  if (propertyId) {
+    return access.propertyIds.includes(propertyId.toString());
+  }
+
+  const companyId = toObjectId(lead.companyId);
+  if (companyId) {
+    return access.companyIds.includes(companyId.toString());
+  }
+
+  return false;
+}
+
+function applyLeadScope(
+  query: LeadListQuery,
+  access: Awaited<ReturnType<typeof getScopedDashboardAccess>>
+) {
+  if (!access.isCompanyManager) return true;
+  if (!access.companyIds.length && !access.propertyIds.length) return false;
+
+  query.$and = [
+    {
+      $or: [
+        { propertyId: scopedIdsFilter(access.propertyIds) },
+        { companyId: scopedIdsFilter(access.companyIds) },
+      ],
+    },
+  ];
+
+  return true;
+}
+
+function applyLeadFilters(query: LeadListQuery, filters: LeadFilters) {
+  const {
+    stage,
+    assignedTo,
+    propertyId,
+    companyId,
+    propertySiteId,
+    source,
+    search,
+  } = filters;
+
+  if (stage && stage !== "all") query.stage = stage;
+  if (source && source !== "all") query.source = source;
+
+  if (assignedTo) {
+    const assignedObjectId = toObjectId(assignedTo);
+    if (!assignedObjectId) return false;
+    query.assignedTo = assignedObjectId;
+  }
+
+  if (propertyId) {
+    const propertyObjectId = toObjectId(propertyId);
+    if (!propertyObjectId) return false;
+    query.propertyId = propertyObjectId;
+  }
+
+  if (companyId) {
+    const companyObjectId = toObjectId(companyId);
+    if (!companyObjectId) return false;
+    query.companyId = companyObjectId;
+  }
+
+  if (propertySiteId) {
+    const siteObjectId = toObjectId(propertySiteId);
+    if (!siteObjectId) return false;
+    query.propertySiteId = siteObjectId;
+  }
+
+  if (search?.trim()) {
+    const rx = new RegExp(search.trim(), "i");
+    query.$or = [{ name: rx }, { phone: rx }, { email: rx }];
+  }
+
+  return true;
 }
 
 // ─── GET LEADS (admin) ────────────────────────────────────────────────────────
 
-export async function getLeads(filters: {
-  stage?: LeadStage | "all";
-  assignedTo?: string;
-  propertyId?: string;
-  source?: string;
-  search?: string;
-  page?: number;
-  limit?: number;
-} = {}): Promise<ApiResponse<ILead[]>> {
+export async function getLeads(filters: LeadFilters = {}): Promise<ApiResponse<ILead[]>> {
   try {
-    await requireAuth();
     await connectDB();
+    const access = await getScopedDashboardAccess("getLeads");
 
-    const { stage, assignedTo, propertyId, source, search, page = 1, limit = 50 } = filters;
+    const { page = 1, limit = 50 } = filters;
     const query: LeadListQuery = {};
+    const isValid = applyLeadScope(query, access) && applyLeadFilters(query, filters);
 
-    if (stage && stage !== "all") query.stage = stage;
-    if (assignedTo) {
-      const assignedObjectId = toObjectId(assignedTo);
-      if (!assignedObjectId) {
-        return {
-          success: true,
-          data: [],
-          pagination: { page, limit, total: 0, totalPages: 0 },
-        };
-      }
-      query.assignedTo = assignedObjectId;
-    }
-    if (propertyId) {
-      const propertyObjectId = toObjectId(propertyId);
-      if (!propertyObjectId) {
-        return {
-          success: true,
-          data: [],
-          pagination: { page, limit, total: 0, totalPages: 0 },
-        };
-      }
-      query.propertyId = propertyObjectId;
-    }
-    if (source) query.source = source;
-
-    if (search?.trim()) {
-      const rx = new RegExp(search.trim(), "i");
-      query.$or = [{ name: rx }, { phone: rx }, { email: rx }];
+    if (!isValid) {
+      return {
+        success: true,
+        data: [],
+        pagination: { page, limit, total: 0, totalPages: 0 },
+      };
     }
 
     const skip = (page - 1) * limit;
 
     const [leads, total] = await Promise.all([
-      Lead.find(query as any)
+      Lead.find(query)
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
         .lean(),
-      Lead.countDocuments(query as any),
+      Lead.countDocuments(query),
     ]);
 
     return {
@@ -135,49 +238,31 @@ export async function getLeads(filters: {
  */
 export async function getLeadsKanban(filters: {
   assignedTo?: string;
+  companyId?: string;
+  propertySiteId?: string;
+  source?: string;
 } = {}): Promise<ApiResponse<Record<LeadStage, ILead[]>>> {
   try {
-    await requireAuth();
     await connectDB();
+    const access = await getScopedDashboardAccess("getLeadsKanban");
 
-    const { assignedTo } = filters;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const baseQuery: Record<string, any> = {};
-    if (assignedTo) {
-      const assignedObjectId = toObjectId(assignedTo);
-      if (!assignedObjectId) {
-        return {
-          success: true,
-          data: {
-            new: [],
-            contacted: [],
-            qualified: [],
-            site_visit_scheduled: [],
-            negotiation: [],
-            converted: [],
-            lost: [],
-          },
-        };
-      }
+    const baseQuery: Record<string, unknown> = {};
+    const isValid = applyLeadScope(baseQuery, access) && applyLeadFilters(baseQuery, filters);
 
-      baseQuery.assignedTo = assignedObjectId;
+    if (!isValid) {
+      return {
+        success: true,
+        data: createEmptyLeadBoard(),
+      };
     }
 
-    const leads = await Lead.find(baseQuery as any)
+    const leads = await Lead.find(baseQuery)
       .sort({ createdAt: -1 })
       .limit(500) // cap for performance
       .lean();
 
     // Group by stage
-    const grouped: Record<string, ILead[]> = {
-      new: [],
-      contacted: [],
-      qualified: [],
-      site_visit_scheduled: [],
-      negotiation: [],
-      converted: [],
-      lost: [],
-    };
+    const grouped: Record<string, ILead[]> = createEmptyLeadBoard();
 
     leads.forEach((lead) => {
       const stage = lead.stage as string;
@@ -200,11 +285,14 @@ export async function getLeadsKanban(filters: {
 
 export async function getLeadById(id: string): Promise<ApiResponse<ILead>> {
   try {
-    await requireAuth();
     await connectDB();
+    const access = await getScopedDashboardAccess("getLeadById");
 
     const lead = await Lead.findById(id).lean();
     if (!lead) return { success: false, error: "Lead not found" };
+    if (!canAccessLead(access, lead)) {
+      return { success: false, error: "You do not have access to this lead" };
+    }
 
     return { success: true, data: serialize<ILead>(lead) };
   } catch (error) {
@@ -217,17 +305,45 @@ export async function getLeadById(id: string): Promise<ApiResponse<ILead>> {
 
 export async function createLead(rawData: LeadInput): Promise<ApiResponse<ILead>> {
   try {
-    const user = await requireAuth();
     await connectDB();
+    const access = await getScopedDashboardAccess("createLead");
 
     const data = LeadValidator.parse(rawData);
-    const actorId = getActorId(user.id, "createLead");
+    const actorId = getActorId(access.user.id, "createLead");
     const propertyRef = sanitizeLeadProperty(
       data.propertyId,
+      data.companyId,
+      data.propertySiteId,
       data.propertyName,
       data.propertySlug,
+      data.pageContext,
+      data.tracking as Record<string, string | undefined> | undefined,
       "createLead"
     );
+
+    if (propertyRef.propertyId && !propertyRef.companyId) {
+      const property = await Property.findById(propertyRef.propertyId)
+        .select("companyId")
+        .lean();
+      if (property?.companyId) {
+        propertyRef.companyId = property.companyId.toString();
+      }
+    }
+
+    if (
+      access.isCompanyManager &&
+      !(
+        (propertyRef.propertyId &&
+          access.propertyIds.includes(propertyRef.propertyId)) ||
+        (propertyRef.companyId &&
+          access.companyIds.includes(propertyRef.companyId))
+      )
+    ) {
+      return {
+        success: false,
+        error: "Company managers can create leads only for their assigned properties or companies",
+      };
+    }
 
     const lead = await Lead.create({
       ...data,
@@ -235,13 +351,13 @@ export async function createLead(rawData: LeadInput): Promise<ApiResponse<ILead>
       activityLog: [
         {
           action: "Lead created manually",
-          note: `Created by ${user.name}`,
+          note: `Created by ${access.user.name}`,
           performedBy: actorId,
           performedAt: new Date(),
           stage: "new",
         },
       ],
-    } as any);
+    });
 
     revalidatePath("/admin/leads");
 
@@ -262,14 +378,17 @@ export async function updateLeadStage(
   rawData: LeadStageUpdateInput
 ): Promise<ApiResponse<ILead>> {
   try {
-    const user = await requireAuth();
     await connectDB();
-    const actorId = getActorId(user.id, "updateLeadStage");
+    const access = await getScopedDashboardAccess("updateLeadStage");
+    const actorId = getActorId(access.user.id, "updateLeadStage");
 
     const { leadId, stage, note } = LeadStageUpdateValidator.parse(rawData);
 
     const lead = await Lead.findById(leadId);
     if (!lead) return { success: false, error: "Lead not found" };
+    if (!canAccessLead(access, lead)) {
+      return { success: false, error: "You do not have access to this lead" };
+    }
 
     const previousStage = lead.stage;
 
@@ -280,7 +399,7 @@ export async function updateLeadStage(
       performedBy: actorId,
       performedAt: new Date(),
       stage,
-    } as any);
+    });
 
     lead.stage = stage;
     await lead.save(); // triggers pre-save middleware (sets closedAt)
@@ -307,27 +426,33 @@ export async function assignLead(rawData: {
   agentName: string;
 }): Promise<ApiResponse<ILead>> {
   try {
-    const user = await requireAuth();
     await connectDB();
-    const actorId = getActorId(user.id, "assignLead");
+    const access = await getScopedDashboardAccess("assignLead");
+    const actorId = getActorId(access.user.id, "assignLead");
 
     const { leadId, agentId, agentName } = LeadAssignValidator.parse(rawData);
-    const agentObjectId = requireObjectId(agentId, "assignLead: agent id");
+    const agentObjectId = requireObjectId(
+      agentId,
+      "assignLead: agent id"
+    ).toString();
 
     // Verify agent exists and is active
-    const agent = await User.findOne({ _id: agentObjectId, isActive: true } as any);
+    const agent = await User.findOne({ _id: agentObjectId, isActive: true });
     if (!agent) return { success: false, error: "Agent not found or inactive" };
 
     const lead = await Lead.findById(leadId);
     if (!lead) return { success: false, error: "Lead not found" };
+    if (!canAccessLead(access, lead)) {
+      return { success: false, error: "You do not have access to this lead" };
+    }
 
     const previousAgent = lead.assignedAgentName || "Unassigned";
 
-    lead.assignedTo = agentObjectId as any;
+    lead.assignedTo = agentObjectId;
     lead.assignedAgentName = agentName;
     lead.activityLog.push({
       action: `Lead assigned to ${agentName}`,
-      note: `Previously: ${previousAgent}. Assigned by ${user.name}`,
+      note: `Previously: ${previousAgent}. Assigned by ${access.user.name}`,
       performedBy: actorId,
       performedAt: new Date(),
       stage: lead.stage,
@@ -357,14 +482,17 @@ export async function addLeadActivity(rawData: {
   note?: string;
 }): Promise<ApiResponse<ILead>> {
   try {
-    const user = await requireAuth();
     await connectDB();
-    const actorId = getActorId(user.id, "addLeadActivity");
+    const access = await getScopedDashboardAccess("addLeadActivity");
+    const actorId = getActorId(access.user.id, "addLeadActivity");
 
     const { leadId, action, note } = ActivityLogValidator.parse(rawData);
 
     const lead = await Lead.findById(leadId);
     if (!lead) return { success: false, error: "Lead not found" };
+    if (!canAccessLead(access, lead)) {
+      return { success: false, error: "You do not have access to this lead" };
+    }
 
     lead.activityLog.push({
       action,
@@ -396,9 +524,9 @@ export async function updateLeadScore(
   score: number
 ): Promise<ApiResponse<ILead>> {
   try {
-    const user = await requireAuth();
     await connectDB();
-    const actorId = getActorId(user.id, "updateLeadScore");
+    const access = await getScopedDashboardAccess("updateLeadScore");
+    const actorId = getActorId(access.user.id, "updateLeadScore");
 
     if (score < 0 || score > 100) {
       return { success: false, error: "Score must be between 0 and 100" };
@@ -406,6 +534,9 @@ export async function updateLeadScore(
 
     const lead = await Lead.findById(leadId);
     if (!lead) return { success: false, error: "Lead not found" };
+    if (!canAccessLead(access, lead)) {
+      return { success: false, error: "You do not have access to this lead" };
+    }
 
     const previousScore = lead.score || 0;
     lead.score = score;
@@ -439,12 +570,15 @@ export async function markLeadLost(
   reason: string
 ): Promise<ApiResponse<ILead>> {
   try {
-    const user = await requireAuth();
     await connectDB();
-    const actorId = getActorId(user.id, "markLeadLost");
+    const access = await getScopedDashboardAccess("markLeadLost");
+    const actorId = getActorId(access.user.id, "markLeadLost");
 
     const lead = await Lead.findById(leadId);
     if (!lead) return { success: false, error: "Lead not found" };
+    if (!canAccessLead(access, lead)) {
+      return { success: false, error: "You do not have access to this lead" };
+    }
 
     lead.stage = "lost";
     lead.lostReason = reason;
@@ -454,7 +588,7 @@ export async function markLeadLost(
       performedBy: actorId,
       performedAt: new Date(),
       stage: "lost",
-    } as any);
+    });
 
     await lead.save(); // pre-save sets closedAt
 
@@ -474,7 +608,12 @@ export async function markLeadLost(
 
 // ─── GET LEAD STATS (dashboard) ───────────────────────────────────────────────
 
-export async function getLeadStats(): Promise<
+export async function getLeadStats(
+  filters: Pick<
+    LeadFilters,
+    "assignedTo" | "propertyId" | "companyId" | "propertySiteId" | "source"
+  > = {}
+): Promise<
   ApiResponse<{
     total: number;
     active: number;
@@ -486,12 +625,35 @@ export async function getLeadStats(): Promise<
   }>
 > {
   try {
-    await requireAuth();
     await connectDB();
+    const access = await getScopedDashboardAccess("getLeadStats");
+    const match: LeadListQuery = {};
+    const isValid = applyLeadScope(match, access) && applyLeadFilters(match, filters);
+
+    if (!isValid) {
+      return {
+        success: true,
+        data: {
+          total: 0,
+          active: 0,
+          converted: 0,
+          lost: 0,
+          conversionRate: 0,
+          byStage: {},
+          bySource: {},
+        },
+      };
+    }
 
     const [stageCounts, sourceCounts] = await Promise.all([
-      Lead.aggregate([{ $group: { _id: "$stage", count: { $sum: 1 } } }]),
-      Lead.aggregate([{ $group: { _id: "$source", count: { $sum: 1 } } }]),
+      Lead.aggregate([
+        { $match: match },
+        { $group: { _id: "$stage", count: { $sum: 1 } } },
+      ]),
+      Lead.aggregate([
+        { $match: match },
+        { $group: { _id: "$source", count: { $sum: 1 } } },
+      ]),
     ]);
 
     const byStage: Record<string, number> = {};
@@ -529,7 +691,10 @@ export async function getAgents(): Promise<
     await requireAuth();
     await connectDB();
 
-    const agents = await User.find({ isActive: true })
+    const agents = await User.find({
+      isActive: true,
+      role: { $in: ["agent", "admin", "company_manager"] },
+    })
       .select("name email role")
       .lean();
 

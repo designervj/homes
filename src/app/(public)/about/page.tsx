@@ -1,4 +1,8 @@
-import { BadgeCheck, Building2, Users2, Star, MapPin } from "lucide-react";
+import Link from "next/link";
+import { SafeImage as Image } from "@/components/shared/SafeImage";
+import { BadgeCheck, Building2, Users2, Star, MapPin, ArrowRight } from "lucide-react";
+import { getFeaturedCompanies } from "@/lib/db/actions/company.actions";
+import { getFeaturedCaseStudies } from "@/lib/db/actions/case-study.actions";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -29,7 +33,14 @@ const VALUES = [
   { title: "Buyer Advocacy",      desc: "We work for the buyer, not the builder. Every recommendation is made with your long-term interest in mind." },
 ];
 
-export default function AboutPage() {
+export default async function AboutPage() {
+  const [companiesRes, caseStudiesRes] = await Promise.all([
+    getFeaturedCompanies(6),
+    getFeaturedCaseStudies(2),
+  ]);
+  const companies = companiesRes.data ?? [];
+  const caseStudies = caseStudiesRes.data ?? [];
+
   return (
     <div className="bg-background min-h-screen pt-24 pb-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-24">
@@ -123,6 +134,74 @@ export default function AboutPage() {
               </div>
             ))}
           </div>
+        </div>
+
+        {/* Partner Proof */}
+        <div className="space-y-10">
+          <div className="flex items-center gap-3">
+            <div className="w-7 h-px bg-primary" />
+            <span className="text-xs text-primary uppercase tracking-widest font-medium">Partner Proof</span>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
+            {companies.map((company) => (
+              <Link
+                key={company._id}
+                href={`/companies/${company.slug}`}
+                className="group rounded-2xl border border-border bg-card p-5 transition-all duration-300 hover:-translate-y-1 hover:border-primary/20"
+              >
+                <div className="h-16 rounded-xl border border-border bg-background flex items-center justify-center p-4">
+                  {company.logo ? (
+                    <Image
+                      src={company.logo}
+                      alt={company.name}
+                      width={140}
+                      height={48}
+                      className="max-h-10 w-auto object-contain"
+                    />
+                  ) : (
+                    <Building2 className="w-5 h-5 text-primary" />
+                  )}
+                </div>
+                <p className="mt-4 text-sm font-medium text-foreground group-hover:text-primary transition-colors">
+                  {company.name}
+                </p>
+              </Link>
+            ))}
+          </div>
+
+          {caseStudies.length > 0 && (
+            <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+              {caseStudies.map((caseStudy) => (
+                <Link
+                  key={caseStudy._id}
+                  href={`/case-studies/${caseStudy.slug}`}
+                  className="group rounded-2xl border border-border bg-card p-6 transition-all duration-300 hover:-translate-y-1 hover:border-primary/20"
+                >
+                  <p className="text-[10px] text-primary uppercase tracking-widest font-medium">Featured Story</p>
+                  <h3 className="mt-3 font-serif text-2xl font-medium text-foreground group-hover:text-primary transition-colors">
+                    {caseStudy.title}
+                  </h3>
+                  <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+                    {caseStudy.summary}
+                  </p>
+                  <div className="mt-5 flex flex-wrap gap-2">
+                    {caseStudy.outcomes.slice(0, 3).map((outcome) => (
+                      <span
+                        key={`${outcome.label}-${outcome.value}`}
+                        className="rounded-full bg-primary/10 border border-primary/20 px-3 py-1 text-[11px] text-primary"
+                      >
+                        {outcome.label}: {outcome.value}
+                      </span>
+                    ))}
+                  </div>
+                  <span className="mt-5 inline-flex items-center gap-2 text-sm text-primary group-hover:text-primary-light transition-colors">
+                    Read case study <ArrowRight className="w-4 h-4" />
+                  </span>
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Compliance */}

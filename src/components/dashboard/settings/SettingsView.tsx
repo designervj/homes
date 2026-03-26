@@ -18,12 +18,14 @@ const ROLE_LABELS: Record<UserRole, string> = {
   super_admin: "Super Administrator",
   admin: "Administrator",
   agent: "Sales Agent",
+  company_manager: "Company Manager",
 };
 
 const ROLE_BADGE: Record<UserRole, string> = {
   super_admin: "bg-primary/10 text-primary border-primary/20",
   admin:       "bg-secondary/10 text-secondary border-secondary/20",
   agent:       "bg-accent text-foreground border-border",
+  company_manager: "bg-primary/10 text-primary border-primary/20",
 };
 
 const TABS = [

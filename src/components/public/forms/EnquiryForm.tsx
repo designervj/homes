@@ -28,6 +28,16 @@ interface EnquiryFormProps {
   propertyId?: string;
   propertyName?: string;
   propertySlug?: string;
+  companyId?: string;
+  propertySiteId?: string;
+  pageContext?: "main_site" | "property_site";
+  tracking?: {
+    sourceTag?: string;
+    campaignTag?: string;
+    utmSource?: string;
+    utmMedium?: string;
+    utmCampaign?: string;
+  };
   variant?: "sidebar" | "inline" | "modal";
   className?: string;
 }
@@ -38,6 +48,10 @@ export function EnquiryForm({
   propertyId,
   propertyName,
   propertySlug,
+  companyId,
+  propertySiteId,
+  pageContext = "main_site",
+  tracking,
   variant = "sidebar",
   className,
 }: EnquiryFormProps) {
@@ -64,8 +78,12 @@ export function EnquiryForm({
         email:        data.email || undefined,
         message:      data.message || undefined,
         propertyId,
+        companyId,
+        propertySiteId,
         propertyName,
         propertySlug,
+        pageContext,
+        tracking,
         interestedIn: interestedIn as never,
         source:       "website",
       });

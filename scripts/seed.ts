@@ -3,8 +3,11 @@
  * Run with: node --import tsx scripts/seed.ts
  *
  * This seeds:
- * 1. A default super_admin user
- * 2. All 7 current Lucknow Homes projects as Property documents
+ * 1. Core dashboard users (super admin, agent, company manager)
+ * 2. Company profiles
+ * 3. All 7 current Lucknow Homes projects as Property documents
+ * 4. Featured case studies
+ * 5. Property microsites
  */
 
 import mongoose from "mongoose";
@@ -27,7 +30,7 @@ const UserSchema = new mongoose.Schema(
     email: { type: String, unique: true },
     phone: String,
     password: { type: String, select: false },
-    role: { type: String, enum: ["super_admin", "admin", "agent"], default: "agent" },
+    role: { type: String, enum: ["super_admin", "admin", "agent", "company_manager"], default: "agent" },
     isActive: { type: Boolean, default: true },
     lastLoginAt: Date,
   },
@@ -43,17 +46,31 @@ const LegalInfoSchema = new mongoose.Schema({ ownershipType: String, zoningType:
 const BrokeragePolicySchema = new mongoose.Schema({ listedBy: String, isNegotiable: Boolean, documentationSupport: Boolean, shortlistingSupport: Boolean, siteVisitAvailability: String }, { _id: false });
 const NearbyPlaceSchema = new mongoose.Schema({ name: String, category: String, distanceMinutes: Number, distanceKm: Number }, { _id: false });
 const MediaAssetSchema = new mongoose.Schema({ url: String, type: String, caption: String, isCover: Boolean, order: Number }, { _id: false });
+const UnitPlanSchema = new mongoose.Schema({
+  name: String,
+  bhkLabel: String,
+  carpetArea: Number,
+  superBuiltUpArea: Number,
+  priceLabel: String,
+  availability: String,
+  floorLabel: String,
+  floorplanUrl: String,
+  walkthroughUrl: String,
+  description: String,
+}, { _id: false });
 
 const PropertySchema = new mongoose.Schema(
   {
     title: String, slug: { type: String, unique: true }, description: String,
     developerName: String, projectName: String, tagline: String,
+    companyId: mongoose.Schema.Types.ObjectId,
     status: { type: String, default: "active" },
     location: LocationSchema, specifications: SpecificationsSchema,
     sizeLayout: SizeLayoutSchema, financials: FinancialsSchema,
     features: FeaturesSchema, legalInfo: LegalInfoSchema,
     brokeragePolicy: BrokeragePolicySchema,
     mediaAssets: [MediaAssetSchema], nearbyPlaces: [NearbyPlaceSchema],
+    unitPlans: [UnitPlanSchema],
     isFeatured: { type: Boolean, default: false },
     viewCount: { type: Number, default: 0 },
     enquiryCount: { type: Number, default: 0 },
@@ -62,6 +79,119 @@ const PropertySchema = new mongoose.Schema(
   { timestamps: true }
 );
 PropertySchema.index({ "location": "2dsphere" });
+
+const CompanySchema = new mongoose.Schema(
+  {
+    name: String,
+    slug: { type: String, unique: true },
+    logo: String,
+    shortIntro: String,
+    fullProfile: String,
+    contact: {
+      phone: String,
+      email: String,
+      whatsapp: String,
+      website: String,
+      salesLabel: String,
+    },
+    address: {
+      line1: String,
+      locality: String,
+      city: String,
+      state: String,
+      pincode: String,
+      mapLink: String,
+    },
+    socialLinks: [{ platform: String, label: String, url: String }],
+    themePreset: { type: String, default: "signature_navy" },
+    featured: { type: Boolean, default: false },
+    status: { type: String, default: "published" },
+    assignedManagerIds: [mongoose.Schema.Types.ObjectId],
+  },
+  { timestamps: true }
+);
+
+const OutcomeSchema = new mongoose.Schema(
+  { label: String, value: String },
+  { _id: false }
+);
+
+const CaseStudySchema = new mongoose.Schema(
+  {
+    companyId: mongoose.Schema.Types.ObjectId,
+    propertyIds: [mongoose.Schema.Types.ObjectId],
+    title: String,
+    slug: { type: String, unique: true },
+    summary: String,
+    challenge: String,
+    solution: String,
+    outcomes: [OutcomeSchema],
+    testimonialQuote: String,
+    media: [MediaAssetSchema],
+    featured: { type: Boolean, default: true },
+    publishStatus: { type: String, default: "published" },
+  },
+  { timestamps: true }
+);
+
+const NavItemSchema = new mongoose.Schema(
+  {
+    label: String,
+    href: String,
+    enabled: Boolean,
+  },
+  { _id: false }
+);
+
+const SectionSchema = new mongoose.Schema(
+  {
+    id: String,
+    label: String,
+    enabled: Boolean,
+    order: Number,
+  },
+  { _id: false }
+);
+
+const PropertySiteSchema = new mongoose.Schema(
+  {
+    propertyId: { type: mongoose.Schema.Types.ObjectId, unique: true },
+    companyId: mongoose.Schema.Types.ObjectId,
+    siteSlug: { type: String, unique: true },
+    template: { type: String, default: "signature_landing" },
+    themePreset: { type: String, default: "signature_navy" },
+    publishStatus: { type: String, default: "published" },
+    heroTitle: String,
+    heroSubtitle: String,
+    heroCtaLabel: String,
+    heroSecondaryCtaLabel: String,
+    contact: {
+      phone: String,
+      email: String,
+      whatsapp: String,
+      officeAddress: String,
+      mapLink: String,
+    },
+    navigation: [NavItemSchema],
+    sections: [SectionSchema],
+    seo: {
+      title: String,
+      description: String,
+      keywords: [String],
+      canonicalUrl: String,
+      ogImage: String,
+    },
+    tracking: {
+      sourceTag: String,
+      campaignTag: String,
+      utmSource: String,
+      utmMedium: String,
+      utmCampaign: String,
+    },
+    customDomains: [String],
+  },
+  { timestamps: true }
+);
 
 // ─── SEED DATA ────────────────────────────────────────────────────────────────
 
@@ -626,6 +756,182 @@ const properties = [
   },
 ];
 
+const DEFAULT_SECTIONS = [
+  { id: "overview", label: "Overview", enabled: true, order: 0 },
+  { id: "gallery", label: "Gallery", enabled: true, order: 1 },
+  { id: "unit-plans", label: "Unit Plans", enabled: true, order: 2 },
+  { id: "amenities", label: "Amenities", enabled: true, order: 3 },
+  { id: "location", label: "Location", enabled: true, order: 4 },
+  { id: "enquire", label: "Enquire", enabled: true, order: 5 },
+];
+
+const DEFAULT_NAVIGATION = [
+  { label: "Overview", href: "#overview", enabled: true },
+  { label: "Gallery", href: "#gallery", enabled: true },
+  { label: "Unit Plans", href: "#unit-plans", enabled: true },
+  { label: "Amenities", href: "#amenities", enabled: true },
+  { label: "Location", href: "#location", enabled: true },
+  { label: "Enquire", href: "#enquire", enabled: true },
+];
+
+const COMPANY_FIXTURES = [
+  {
+    name: "Pardos Developers Pvt. Ltd.",
+    slug: "pardos-developers",
+    shortIntro: "Premium plotted and residential development company with strong presence around Sushant Golf City.",
+    fullProfile: "Pardos Developers works on premium residential layouts and launch positioning across Lucknow growth corridors. Inside Homes, this company profile powers linked listings, case studies, and conversion-first property microsites.",
+    themePreset: "signature_navy",
+  },
+  {
+    name: "Attalika Developers",
+    slug: "attalika-developers",
+    shortIntro: "Villa-focused residential developer positioned around premium gated inventory near Amar Shaheed Path.",
+    fullProfile: "Attalika Developers focuses on premium villa inventory and plotted resale opportunities. The Homes platform uses this company layer to connect project storytelling with lead routing and case-study proof.",
+    themePreset: "graphite_reserve",
+  },
+  {
+    name: "Stellar Okas Developers",
+    slug: "stellar-okas-developers",
+    shortIntro: "Premium golf-view plotted inventory for high-intent buyers and investors in South Lucknow.",
+    fullProfile: "Stellar Okas Developers sits in the premium plotted segment around Sushant Golf City. Homes uses this profile to connect high-ticket inventory with brand-level trust and guided advisory.",
+    themePreset: "signature_navy",
+  },
+  {
+    name: "Kailasha Enclave Developers",
+    slug: "kailasha-enclave-developers",
+    shortIntro: "Land-first residential inventory around Sultanpur Road and emerging South Lucknow micro-markets.",
+    fullProfile: "Kailasha Enclave Developers focuses on plotted and low-density residential inventory. This company profile gives Homes a structured way to present land-led advisory and launch support.",
+    themePreset: "cyan_horizon",
+  },
+  {
+    name: "Greenberry Signature",
+    slug: "greenberry-signature",
+    shortIntro: "Luxury apartment positioning with lifestyle-led messaging and family-focused residential planning.",
+    fullProfile: "Greenberry Signature represents premium apartment-led residential positioning. Homes ties this company record to listings, case studies, and future landing-page distribution.",
+    themePreset: "cyan_horizon",
+  },
+  {
+    name: "Lavanya Enclave Group",
+    slug: "lavanya-enclave-group",
+    shortIntro: "High-growth plotted development positioned on Amar Shaheed Path with investor and end-user demand.",
+    fullProfile: "Lavanya Enclave Group connects plotted inventory, investor positioning, and fast-response enquiry funnels through the Homes platform.",
+    themePreset: "signature_navy",
+  },
+  {
+    name: "Vikas Vihar Estates",
+    slug: "vikas-vihar-estates",
+    shortIntro: "Affordable plotted and villa inventory positioned for value-first buyers entering the Lucknow market.",
+    fullProfile: "Vikas Vihar Estates represents practical, value-driven inventory. Homes uses this profile to support guided discovery, proof-led content, and follow-up journeys.",
+    themePreset: "graphite_reserve",
+  },
+] as const;
+
+const PROPERTY_COMPANY_MAP: Record<string, string> = {
+  "okas-enclave": "pardos-developers",
+  "attalika-palms": "attalika-developers",
+  "stellar-okas-golf-view": "stellar-okas-developers",
+  "kailasha-enclave": "kailasha-enclave-developers",
+  "greenberry-signature": "greenberry-signature",
+  "lavanya-enclave": "lavanya-enclave-group",
+  "vikas-vihar": "vikas-vihar-estates",
+};
+
+const UNIT_PLAN_FIXTURES: Record<string, Array<Record<string, string | number>>> = {
+  "attalika-palms": [
+    {
+      name: "4 BHK Premium Villa",
+      bhkLabel: "4 BHK",
+      carpetArea: 1180,
+      superBuiltUpArea: 1450,
+      priceLabel: "Starts at ₹65 Lac",
+      availability: "Ready inventory",
+      floorLabel: "Ground + 1",
+      description: "Large-format family villa with covered parking and gated-community amenities.",
+    },
+  ],
+  "greenberry-signature": [
+    {
+      name: "3 BHK Signature Residence",
+      bhkLabel: "3 BHK",
+      carpetArea: 1260,
+      superBuiltUpArea: 1685,
+      priceLabel: "Starts at ₹88 Lac",
+      availability: "Limited inventory",
+      floorLabel: "Mid-rise tower",
+      description: "Family-oriented premium apartment with clubhouse and green amenity access.",
+    },
+    {
+      name: "4 BHK Corner Residence",
+      bhkLabel: "4 BHK",
+      carpetArea: 1680,
+      superBuiltUpArea: 2140,
+      priceLabel: "Starts at ₹1.32 Cr",
+      availability: "On request",
+      floorLabel: "Corner-stack units",
+      description: "Larger format layout designed for premium buyers looking for golf-city adjacency.",
+    },
+  ],
+  "lavanya-enclave": [
+    {
+      name: "Residential Plot Cluster",
+      bhkLabel: "Plot",
+      superBuiltUpArea: 150,
+      priceLabel: "Starts at ₹39 Lac",
+      availability: "Open inventory",
+      floorLabel: "Plot sizes vary",
+      description: "Investor and end-user friendly plotted inventory with flexible plot sizing.",
+    },
+  ],
+};
+
+const CASE_STUDY_FIXTURES = [
+  {
+    companySlug: "pardos-developers",
+    propertySlugs: ["okas-enclave"],
+    title: "Okas Enclave launch positioning for high-intent plotted buyers",
+    slug: "okas-enclave-launch-positioning",
+    summary: "Homes combined proof-led advisory, developer positioning, and structured enquiry capture to improve plotted lead quality around Sushant Golf City.",
+    challenge: "The launch needed stronger trust, clearer inventory context, and faster handling of plotted-enquiry conversations.",
+    solution: "We aligned company credibility, property storytelling, and enquiry routing so buyers could move from discovery to guided site visits inside a single system.",
+    outcomes: [
+      { label: "Qualified plotted enquiries", value: "185+" },
+      { label: "Site visits arranged", value: "46" },
+      { label: "Average first-response time", value: "< 2 hrs" },
+    ],
+    testimonialQuote: "Homes brought structure to both the listing story and the lead pipeline, making buyer conversations much easier to progress.",
+  },
+  {
+    companySlug: "attalika-developers",
+    propertySlugs: ["attalika-palms"],
+    title: "Villa-led conversion journey for Attalika Palms",
+    slug: "attalika-palms-villa-conversion-journey",
+    summary: "The Homes advisory flow helped Attalika Palms package villa inventory, site visits, and financing conversations into one cleaner journey.",
+    challenge: "Villa buyers were evaluating multiple gated communities and needed stronger differentiation plus faster follow-up.",
+    solution: "Homes packaged buyer FAQs, site-visit CTAs, and comparative inventory framing around the Attalika Palms offer.",
+    outcomes: [
+      { label: "Weekend site visits", value: "31" },
+      { label: "Negotiation-stage leads", value: "12" },
+      { label: "Home-loan assist requests", value: "19" },
+    ],
+    testimonialQuote: "The Homes platform gave our team a sharper presentation layer and far better context on every serious buyer interaction.",
+  },
+  {
+    companySlug: "greenberry-signature",
+    propertySlugs: ["greenberry-signature"],
+    title: "Lifestyle-first apartment storytelling for Greenberry Signature",
+    slug: "greenberry-signature-lifestyle-storytelling",
+    summary: "Homes reframed Greenberry Signature around family lifestyle, layout clarity, and amenity proof to strengthen apartment enquiry quality.",
+    challenge: "The project needed more than listing data; it needed a clearer narrative around liveability, layout choice, and trust.",
+    solution: "We linked room-type planning, amenity clarity, and company proof to a conversion-focused landing journey.",
+    outcomes: [
+      { label: "Apartment leads captured", value: "94" },
+      { label: "Repeat property revisits", value: "27%" },
+      { label: "WhatsApp follow-up opt-ins", value: "61" },
+    ],
+    testimonialQuote: "Homes helped us move from a flat listing presence to a much more confident sales conversation.",
+  },
+] as const;
+
 // ─── SEED FUNCTION ────────────────────────────────────────────────────────────
 
 async function seed() {
@@ -636,10 +942,16 @@ async function seed() {
 
   const User = mongoose.models.User || mongoose.model("User", UserSchema);
   const Property = mongoose.models.Property || mongoose.model("Property", PropertySchema);
+  const Company = mongoose.models.Company || mongoose.model("Company", CompanySchema);
+  const CaseStudy = mongoose.models.CaseStudy || mongoose.model("CaseStudy", CaseStudySchema);
+  const PropertySite = mongoose.models.PropertySite || mongoose.model("PropertySite", PropertySiteSchema);
 
   // ── Clear existing data ──────────────────────────────────────────────────
+  await PropertySite.deleteMany({});
+  await CaseStudy.deleteMany({});
+  await Company.deleteMany({});
   await Property.deleteMany({});
-  console.log("🗑️  Cleared existing properties");
+  console.log("🗑️  Cleared existing companies, case studies, microsites, and properties");
 
   const existingAdmin = await User.findOne({ email: "admin@homes.in" });
   if (!existingAdmin) {
@@ -659,17 +971,174 @@ async function seed() {
     console.log("👤 Admin user already exists — skipping\n");
   }
 
+  const existingAgent = await User.findOne({ email: "sales@homes.in" });
+  if (!existingAgent) {
+    const hashedPassword = await bcrypt.hash("Sales@Homes2025!", 12);
+    await User.create({
+      name: "Sales Agent",
+      email: "sales@homes.in",
+      phone: "+91 7755862936",
+      password: hashedPassword,
+      role: "agent",
+      isActive: true,
+    });
+    console.log("👤 Created agent user: sales@homes.in / Sales@Homes2025!");
+  } else {
+    console.log("👤 Agent user already exists — skipping");
+  }
+
+  const existingCompanyManager = await User.findOne({ email: "manager@homes.in" });
+  if (!existingCompanyManager) {
+    const hashedPassword = await bcrypt.hash("Manager@Homes2025!", 12);
+    await User.create({
+      name: "Company Manager",
+      email: "manager@homes.in",
+      phone: "+91 9876543210",
+      password: hashedPassword,
+      role: "company_manager",
+      isActive: true,
+    });
+    console.log("👤 Created company manager user: manager@homes.in / Manager@Homes2025!\n");
+  } else {
+    console.log("👤 Company manager user already exists — skipping\n");
+  }
+
+  const companyManager = await User.findOne({ email: "manager@homes.in" });
+  const companyManagerId = companyManager?._id;
+
+  const companyIdBySlug = new Map<string, mongoose.Types.ObjectId>();
+  for (const company of COMPANY_FIXTURES) {
+    const created = await Company.create({
+      ...company,
+      status: "published",
+      featured: true,
+      contact: {
+        phone: "+91 88746 25303",
+        email: "info@homes.in",
+        whatsapp: "+91 88746 25303",
+        website: "https://homes.in",
+        salesLabel: "Homes Partner Desk",
+      },
+      address: {
+        line1: "Flat No – 811, Royal Plaza",
+        locality: "Sushant Golf City",
+        city: "Lucknow",
+        state: "Uttar Pradesh",
+        pincode: "226030",
+        mapLink: "https://maps.google.com/",
+      },
+      socialLinks: [
+        { platform: "website", label: "Website", url: "https://homes.in" },
+      ],
+      assignedManagerIds: companyManagerId ? [companyManagerId] : [],
+    });
+    companyIdBySlug.set(company.slug, created._id);
+    console.log(`🏢 Created company: ${created.name}`);
+  }
+  console.log("");
+
+  const propertyIdBySlug = new Map<string, mongoose.Types.ObjectId>();
+
   // ── Seed properties ──────────────────────────────────────────────────────
   for (const property of properties) {
-    const created = await Property.create(property);
+    const companySlug = PROPERTY_COMPANY_MAP[property.slug as string];
+    const created = await Property.create({
+      ...property,
+      companyId: companySlug ? companyIdBySlug.get(companySlug) : undefined,
+      unitPlans: UNIT_PLAN_FIXTURES[property.slug as string] ?? [],
+    });
+    propertyIdBySlug.set(created.slug as string, created._id);
     console.log(`🏠 Created: ${created.title}`);
     console.log(`   Slug: /projects/${created.slug}`);
     console.log(`   RERA: ${(property.legalInfo as { reraId: string }).reraId}`);
     console.log(`   Price: ₹${((property.financials as { listedPrice: number }).listedPrice / 100000).toFixed(0)} Lac onwards\n`);
   }
 
+  for (const caseStudy of CASE_STUDY_FIXTURES) {
+    const companyId = companyIdBySlug.get(caseStudy.companySlug);
+    const propertyIds = caseStudy.propertySlugs
+      .map((slug) => propertyIdBySlug.get(slug))
+      .filter(Boolean);
+
+    if (!companyId || propertyIds.length === 0) continue;
+
+    const created = await CaseStudy.create({
+      companyId,
+      propertyIds,
+      title: caseStudy.title,
+      slug: caseStudy.slug,
+      summary: caseStudy.summary,
+      challenge: caseStudy.challenge,
+      solution: caseStudy.solution,
+      outcomes: caseStudy.outcomes,
+      testimonialQuote: caseStudy.testimonialQuote,
+      featured: true,
+      publishStatus: "published",
+      media: [],
+    });
+
+    console.log(`📚 Created case study: ${created.title}`);
+  }
+  console.log("");
+
+  for (const property of properties) {
+    const propertyId = propertyIdBySlug.get(property.slug as string);
+    const companySlug = PROPERTY_COMPANY_MAP[property.slug as string];
+    const companyId = companySlug ? companyIdBySlug.get(companySlug) : undefined;
+    const mapLink =
+      "googleMapsUrl" in property.location
+        ? property.location.googleMapsUrl
+        : undefined;
+
+    if (!propertyId) continue;
+
+    const created = await PropertySite.create({
+      propertyId,
+      companyId,
+      siteSlug: property.slug,
+      template: "signature_landing",
+      themePreset:
+        companySlug === "attalika-developers"
+          ? "graphite_reserve"
+          : companySlug === "greenberry-signature"
+            ? "cyan_horizon"
+            : "signature_navy",
+      publishStatus: "published",
+      heroTitle: property.projectName || property.title,
+      heroSubtitle: property.tagline || property.description.slice(0, 220),
+      heroCtaLabel: "Book Site Visit",
+      heroSecondaryCtaLabel: "Get Brochure",
+      contact: {
+        phone: "+91 88746 25303",
+        email: "info@homes.in",
+        whatsapp: "+91 88746 25303",
+        officeAddress: "Flat No – 811, Royal Plaza, Sushant Golf City, Lucknow",
+        mapLink: mapLink || "https://maps.google.com/",
+      },
+      navigation: DEFAULT_NAVIGATION,
+      sections: DEFAULT_SECTIONS,
+      seo: {
+        title: `${property.projectName || property.title} | Homes`,
+        description: property.tagline || property.description.slice(0, 160),
+        keywords: [property.projectName, property.location.locality, property.specifications.propertyType].filter(Boolean),
+        canonicalUrl: "",
+        ogImage: property.mediaAssets[0]?.url || "",
+      },
+      tracking: {
+        sourceTag: `${property.slug}-microsite`,
+        campaignTag: `${property.slug}-launch`,
+        utmSource: "microsite",
+        utmMedium: "organic",
+        utmCampaign: property.slug,
+      },
+      customDomains: [],
+    });
+
+    console.log(`🌐 Created microsite: /sites/${created.siteSlug}`);
+  }
+
   console.log("\n✅ Seed complete!");
-  console.log(`📦 ${properties.length} properties seeded into MongoDB (homes database)`);
+  console.log(`📦 ${COMPANY_FIXTURES.length} companies, ${properties.length} properties, ${CASE_STUDY_FIXTURES.length} case studies, and ${properties.length} microsites seeded into MongoDB (homes database)`);
   console.log("🔑 Admin login: admin@homes.in / Admin@Homes2025!\n");
 
   await mongoose.disconnect();

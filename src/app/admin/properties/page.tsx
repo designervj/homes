@@ -1,4 +1,4 @@
-import { getProperties, getPropertyStats } from "@/lib/db/actions/property.actions";
+import { getAdminProperties, getPropertyStats } from "@/lib/db/actions/property.actions";
 import { PropertyTable } from "@/components/dashboard/properties/PropertyTable";
 import type { Metadata } from "next";
 
@@ -13,7 +13,7 @@ export default async function PropertiesPage({
   const page = Number(params.page) || 1;
 
   const [propertiesRes, statsRes] = await Promise.all([
-    getProperties({
+    getAdminProperties({
       status: (params.status as "active" | "archived" | "sold" | "blocked") || "active",
       propertyType: params.type as never,
       search: params.search,

@@ -1,6 +1,5 @@
 import { auth } from "@/lib/auth/middleware-auth";
 import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
 
 /**
  * Route protection matrix:
@@ -40,13 +39,34 @@ export default auth((req) => {
     }
 
     // Role-based enforcement
-    // Only super_admin and admin can access /admin/properties (destructive actions)
+    if (
+      pathname.startsWith("/admin/analytics") &&
+      !["super_admin", "admin"].includes(session.user.role)
+    ) {
+      return NextResponse.redirect(new URL("/admin", req.url));
+    }
+
+    if (
+      pathname.startsWith("/admin/settings") &&
+      session.user.role !== "super_admin"
+    ) {
+      return NextResponse.redirect(new URL("/admin", req.url));
+    }
+
+    if (
+      (pathname.startsWith("/admin/companies") ||
+        pathname.startsWith("/admin/case-studies") ||
+        pathname.startsWith("/admin/property-sites")) &&
+      !["super_admin", "admin", "company_manager"].includes(session.user.role)
+    ) {
+      return NextResponse.redirect(new URL("/admin", req.url));
+    }
+
     if (
       pathname.startsWith("/admin/properties") &&
       pathname !== "/admin/properties" &&
       session.user.role === "agent"
     ) {
-      // Agents can view but not add/edit/delete
       if (
         pathname.includes("/new") ||
         pathname.includes("/edit") ||
