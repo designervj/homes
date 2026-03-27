@@ -1,5 +1,8 @@
 import Link from "next/link";
 import { Building2, Phone, Mail, MapPin } from "lucide-react";
+import { getServerI18n } from "@/lib/i18n/server";
+import { getRequestLocale } from "@/lib/i18n/request";
+import { localizeHref } from "@/lib/i18n/utils";
 
 const PROJECTS = [
   { name: "Okas Enclave",           slug: "okas-enclave" },
@@ -19,15 +22,17 @@ const SERVICES = [
   "RERA Compliance",
 ];
 
-export function Footer() {
+export async function Footer() {
+  const [{ t }, locale] = await Promise.all([getServerI18n(), getRequestLocale()]);
+
   return (
-    <footer className="border-t border-border bg-card">
+    <footer className="surface-card border-t border-border/80 bg-card/80">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-8">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 mb-12">
 
           {/* Brand */}
           <div className="lg:col-span-1">
-            <Link href="/" className="flex items-center gap-2.5 mb-5">
+            <Link href={localizeHref(locale, "/")} className="flex items-center gap-2.5 mb-5">
               <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
                 <Building2 className="w-4 h-4 text-primary-foreground" />
               </div>
@@ -57,13 +62,13 @@ export function Footer() {
           {/* Projects */}
           <div>
             <h3 className="text-xs text-primary uppercase tracking-widest font-medium mb-5">
-              Projects
+              {t("public-nav", "links.projects")}
             </h3>
             <ul className="space-y-3">
               {PROJECTS.map((p) => (
                 <li key={p.slug}>
                   <Link
-                    href={`/projects/${p.slug}`}
+                    href={localizeHref(locale, `/projects/${p.slug}`)}
                     className="text-sm text-muted-foreground hover:text-foreground transition-colors"
                   >
                     {p.name}
@@ -76,7 +81,7 @@ export function Footer() {
           {/* Services */}
           <div>
             <h3 className="text-xs text-primary uppercase tracking-widest font-medium mb-5">
-              Services
+              {t("public-nav", "links.services")}
             </h3>
             <ul className="space-y-3">
               {SERVICES.map((s) => (
@@ -92,12 +97,12 @@ export function Footer() {
           {/* Company + Compliance */}
           <div>
             <h3 className="text-xs text-primary uppercase tracking-widest font-medium mb-5">
-              Company
+              {t("public-nav", "links.companies")}
             </h3>
             <ul className="space-y-3 mb-8">
               {["About Us", "Our Team", "Blogs & Insights", "Contact Us"].map((item) => (
                 <li key={item}>
-                  <Link href={item === "About Us" ? "/about" : item === "Contact Us" ? "/contact" : item === "Blogs & Insights" ? "/blogs" : "/"} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                  <Link href={localizeHref(locale, item === "About Us" ? "/about" : item === "Contact Us" ? "/contact" : item === "Blogs & Insights" ? "/blogs" : "/")} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                     {item}
                   </Link>
                 </li>
@@ -124,7 +129,7 @@ export function Footer() {
           </p>
           <div className="flex gap-6">
             {["Privacy Policy", "Terms of Service", "RERA Disclaimer"].map((link) => (
-              <Link key={link} href="#" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
+              <Link key={link} href={localizeHref(locale, "/")} className="text-xs text-muted-foreground hover:text-foreground transition-colors">
                 {link}
               </Link>
             ))}

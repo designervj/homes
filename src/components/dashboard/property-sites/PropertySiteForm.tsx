@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import slugify from "slugify";
 import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -61,7 +61,7 @@ export function PropertySiteForm({
     site?.sections?.length ? site.sections : DEFAULT_SECTIONS
   );
 
-  const { register, handleSubmit, setValue, watch } =
+  const { control, register, handleSubmit, setValue, getValues } =
     useForm<PropertySiteFormValues, unknown, PropertySiteSubmitValues>({
       resolver: zodResolver(PropertySiteValidator),
       defaultValues: site
@@ -98,11 +98,11 @@ export function PropertySiteForm({
           },
     });
 
-  const propertyId = watch("propertyId");
+  const propertyId = useWatch({ control, name: "propertyId" });
 
   const syncSlugFromProperty = () => {
     const property = properties.find((item) => item._id === propertyId);
-    const current = watch("siteSlug");
+    const current = getValues("siteSlug");
 
     if (!current && property) {
       setValue(

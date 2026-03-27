@@ -1,6 +1,14 @@
+"use client";
+
 import Link from "next/link";
 import { SafeImage as Image } from "@/components/shared/SafeImage";
 import { MapPin, Maximize2, Star } from "lucide-react";
+import {
+  useLocaleContext,
+  useSiteTemplate,
+  useTranslations,
+} from "@/components/shared/LocaleProvider";
+import { localizeHref } from "@/lib/i18n/utils";
 import { ReraBadge } from "./ReraBadge";
 import { formatINR } from "@/lib/utils/constants";
 import { cn } from "@/lib/utils";
@@ -20,6 +28,9 @@ const TYPE_COLORS: Record<string, string> = {
 };
 
 export function PropertyCard({ property, featured = false, className }: PropertyCardProps) {
+  const { locale } = useLocaleContext();
+  const siteTemplate = useSiteTemplate();
+  const t = useTranslations("projects");
   const coverImage = property.mediaAssets?.find((m) => m.isCover && m.type === "image");
   const price = property.financials?.listedPrice;
   const pricePerSqft = property.financials?.pricePerSqft;
@@ -35,10 +46,10 @@ export function PropertyCard({ property, featured = false, className }: Property
 
   return (
     <Link
-      href={`/projects/${property.slug}`}
+      href={localizeHref(locale, `/projects/${property.slug}`)}
       className={cn(
-        "group block bg-card border border-border rounded-2xl overflow-hidden",
-        "hover:border-primary/30 hover:-translate-y-1 transition-all duration-300",
+        "surface-card interactive-card group block overflow-hidden rounded-[1.6rem]",
+        siteTemplate === "immersive" ? "backdrop-blur-xl" : "",
         className
       )}
     >
@@ -76,15 +87,15 @@ export function PropertyCard({ property, featured = false, className }: Property
           </span>
           {property.isFeatured && (
             <span className="flex items-center gap-0.5 text-[10px] px-2 py-0.5 rounded-full bg-primary/20 text-primary border border-primary/30 font-medium">
-              <Star className="w-2.5 h-2.5 fill-primary" /> Featured
+              <Star className="w-2.5 h-2.5 fill-primary" /> {t("card.featured")}
             </span>
           )}
         </div>
 
         {/* Price tag */}
         {price && (
-          <div className="absolute bottom-3 right-3 bg-background/90 backdrop-blur-sm border border-border rounded-lg px-2.5 py-1.5 text-right">
-            <p className="text-[9px] text-muted-foreground leading-none mb-0.5">Starting From</p>
+          <div className="secondary-cta absolute bottom-3 right-3 rounded-xl px-2.5 py-1.5 text-right">
+            <p className="text-[9px] text-muted-foreground leading-none mb-0.5">{t("card.startingFrom")}</p>
             <p className="text-sm font-semibold text-primary leading-none">{formatINR(price)}</p>
             {pricePerSqft && (
               <p className="text-[9px] text-muted-foreground mt-0.5">₹{pricePerSqft.toLocaleString("en-IN")}/sqft</p>
@@ -113,13 +124,13 @@ export function PropertyCard({ property, featured = false, className }: Property
         <div className="flex items-center gap-4 pt-4 border-t border-border">
           {property.specifications?.possessionStatus && (
             <div className="flex flex-col gap-0.5">
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Possession</p>
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wide">{t("card.possession")}</p>
               <p className="text-xs font-medium text-muted-foreground">{property.specifications.possessionStatus}</p>
             </div>
           )}
           {primaryArea && (
             <div className="flex flex-col gap-0.5">
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Area</p>
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wide">{t("card.area")}</p>
               <p className="text-xs font-medium text-muted-foreground flex items-center gap-1">
                 <Maximize2 className="w-3 h-3" />
                 {primaryArea.toLocaleString("en-IN")} {areaUnit}
@@ -128,7 +139,7 @@ export function PropertyCard({ property, featured = false, className }: Property
           )}
           {property.specifications?.bhkConfig && (
             <div className="flex flex-col gap-0.5">
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Config</p>
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wide">{t("card.config")}</p>
               <p className="text-xs font-medium text-muted-foreground">{property.specifications.bhkConfig}</p>
             </div>
           )}

@@ -1,30 +1,37 @@
 import { EnquiryForm } from "@/components/public/forms/EnquiryForm";
 import { Phone, Mail, MapPin, Clock } from "lucide-react";
+import { MotionReveal } from "@/components/shared/motion/MotionReveal";
+import { getServerI18n } from "@/lib/i18n/server";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = {
-  title: "Contact Us — Homes Real Estate Advisory",
-  description: "Get in touch with our property experts. Schedule a site visit, get loan advisory, or enquire about any property.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return {
+    title: "Contact Us — Homes Real Estate Advisory",
+    description:
+      "Get in touch with our property experts. Schedule a site visit, get loan advisory, or enquire about any property.",
+  };
+}
 
-export default function ContactPage() {
+export default async function ContactPage() {
+  const { t } = await getServerI18n();
+
   return (
     <div className="bg-background min-h-screen pt-24 pb-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
-        <div className="max-w-2xl mx-auto text-center mb-14">
+        <MotionReveal className="max-w-2xl mx-auto text-center mb-14">
           <div className="flex items-center justify-center gap-3 mb-4">
             <div className="w-7 h-px bg-primary" />
-            <span className="text-xs text-primary uppercase tracking-widest font-medium">Get In Touch</span>
+            <span className="text-xs text-primary uppercase tracking-widest font-medium">{t("home", "enquiry.eyebrow")}</span>
             <div className="w-7 h-px bg-primary" />
           </div>
           <h1 className="mb-4 font-serif text-4xl font-medium text-foreground sm:text-5xl">
-            Talk to a Property Expert
+            {t("home", "enquiry.titleLine1")} {t("home", "enquiry.titleLine2")}
           </h1>
           <p className="text-muted-foreground">
-            Our advisory team responds within 2–4 hours on business days. No pushy sales — just honest guidance.
+            {t("home", "enquiry.description")}
           </p>
-        </div>
+        </MotionReveal>
 
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 max-w-5xl mx-auto">
 
@@ -38,7 +45,7 @@ export default function ContactPage() {
             ].map((item) => {
               const Icon = item.icon;
               const content = (
-                <div className="flex gap-4 p-4 bg-card border border-border rounded-xl hover:border-primary/20 transition-colors">
+                <div className="surface-card interactive-card flex gap-4 rounded-2xl p-4">
                   <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center flex-shrink-0">
                     <Icon className="w-4 h-4 text-primary" />
                   </div>
@@ -58,8 +65,8 @@ export default function ContactPage() {
           </div>
 
           {/* Form */}
-          <div className="lg:col-span-3 bg-card border border-border rounded-2xl p-8">
-            <h2 className="mb-6 font-serif text-xl font-medium text-foreground">Send an Enquiry</h2>
+          <div className="surface-card lg:col-span-3 rounded-[1.75rem] p-8">
+            <h2 className="mb-6 font-serif text-xl font-medium text-foreground">{t("home", "enquiry.formTitle")}</h2>
             <EnquiryForm variant="inline" />
           </div>
         </div>

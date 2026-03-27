@@ -129,6 +129,84 @@
   }
   body {
     @apply bg-background text-foreground;
+    min-height: 100vh;
+    background-image:
+      radial-gradient(circle at top left, color-mix(in srgb, var(--color-primary) 8%, transparent) 0%, transparent 28%),
+      linear-gradient(180deg, color-mix(in srgb, var(--color-background) 94%, white 6%) 0%, var(--color-background) 100%);
+    background-attachment: fixed;
+  }
+  body[data-site-template="immersive"] {
+    background-image:
+      radial-gradient(circle at top left, color-mix(in srgb, var(--color-primary) 18%, transparent) 0%, transparent 32%),
+      radial-gradient(circle at top right, color-mix(in srgb, var(--color-secondary) 12%, transparent) 0%, transparent 28%),
+      linear-gradient(180deg, color-mix(in srgb, var(--color-background) 92%, white 8%) 0%, var(--color-background) 100%);
+  }
+}
+
+@layer components {
+  .surface-card {
+    background: color-mix(in srgb, var(--color-card) 90%, transparent);
+    border: 1px solid color-mix(in srgb, var(--color-border) 78%, transparent);
+    box-shadow: 0 18px 48px -34px rgba(20, 41, 102, 0.22);
+  }
+
+  .surface-subtle {
+    background: color-mix(in srgb, var(--color-accent) 58%, transparent);
+    border: 1px solid color-mix(in srgb, var(--color-border) 68%, transparent);
+  }
+
+  .interactive-card {
+    transition:
+      transform 220ms ease,
+      border-color 220ms ease,
+      box-shadow 220ms ease,
+      background-color 220ms ease;
+  }
+
+  .primary-cta {
+    background:
+      linear-gradient(135deg, color-mix(in srgb, var(--color-primary) 94%, white 6%), color-mix(in srgb, var(--color-primary-light) 88%, white 12%));
+    color: var(--color-foreground);
+    box-shadow: 0 16px 34px -22px rgba(41, 194, 242, 0.68);
+    transition:
+      transform 220ms ease,
+      box-shadow 220ms ease,
+      filter 220ms ease;
+  }
+
+  .primary-cta:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 22px 40px -22px rgba(41, 194, 242, 0.72);
+    filter: brightness(1.02);
+  }
+
+  .secondary-cta {
+    background: color-mix(in srgb, var(--color-card) 72%, transparent);
+    border: 1px solid color-mix(in srgb, var(--color-border) 70%, transparent);
+    backdrop-filter: blur(12px);
+  }
+
+  .admin-panel {
+    background: color-mix(in srgb, var(--color-card) 94%, transparent);
+    border: 1px solid color-mix(in srgb, var(--color-border) 75%, transparent);
+    box-shadow: 0 14px 36px -30px rgba(20, 41, 102, 0.2);
+    backdrop-filter: blur(12px);
+  }
+
+  body[data-site-template="immersive"] .surface-card,
+  body[data-site-template="immersive"] .secondary-cta {
+    backdrop-filter: blur(18px);
+    box-shadow: 0 20px 50px -34px rgba(20, 41, 102, 0.28);
+  }
+
+  body[data-site-template="immersive"] .interactive-card:hover {
+    transform: translateY(-6px);
+    border-color: color-mix(in srgb, var(--color-primary) 28%, var(--color-border));
+    box-shadow: 0 26px 60px -34px rgba(20, 41, 102, 0.36);
+  }
+
+  body[data-site-template="classic"] .interactive-card:hover {
+    transform: translateY(-2px);
   }
 }
 /* Custom Utilities */
@@ -162,11 +240,21 @@
 }
 
 @utility scroll-mt-20 { scroll-margin-top: 5rem; }
+@utility animate-pulse-slow { animation: pulse-slow 4s ease-in-out infinite; }
 
 @utility no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
   &::-webkit-scrollbar {
     display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

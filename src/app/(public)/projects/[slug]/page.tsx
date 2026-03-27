@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Script from "next/script";
 import { notFound } from "next/navigation";
 import { SafeImage as Image } from "@/components/shared/SafeImage";
 import { getPropertyBySlug, getAllPropertySlugs } from "@/lib/db/actions/property.actions";
@@ -11,6 +12,8 @@ import {
   MapPin, Maximize2, BedDouble, Bath, Car,
   CheckCircle, ChevronRight, BadgeCheck, Phone,
 } from "lucide-react";
+import { getServerI18n } from "@/lib/i18n/server";
+import { localizeHref } from "@/lib/i18n/utils";
 import { formatINR } from "@/lib/utils/constants";
 import type { Metadata } from "next";
 
@@ -53,6 +56,7 @@ export default async function PropertyDetailPage({
 }: {
   params: Promise<{ slug: string }>;
 }) {
+  const { locale } = await getServerI18n();
   const { slug } = await params;
   const res = await getPropertyBySlug(slug);
 
@@ -99,8 +103,10 @@ export default async function PropertyDetailPage({
 
   return (
     <>
-      <script
+      <Script
+        id={`property-jsonld-${slug}`}
         type="application/ld+json"
+        strategy="afterInteractive"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
@@ -111,9 +117,9 @@ export default async function PropertyDetailPage({
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between flex-wrap gap-3">
             <div>
               <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
-                <Link href="/" className="transition-colors hover:text-primary">Home</Link>
+                <Link href={localizeHref(locale, "/")} className="transition-colors hover:text-primary">Home</Link>
                 <ChevronRight className="w-3 h-3" />
-                <Link href="/projects" className="transition-colors hover:text-primary">Projects</Link>
+                <Link href={localizeHref(locale, "/projects")} className="transition-colors hover:text-primary">Projects</Link>
                 <ChevronRight className="w-3 h-3" />
                 <span className="text-muted-foreground">{p.projectName ?? p.title}</span>
               </div>
@@ -138,7 +144,7 @@ export default async function PropertyDetailPage({
                 )}
                 {site && (
                   <Link
-                    href={`/sites/${site.siteSlug}`}
+                    href={localizeHref(locale, `/sites/${site.siteSlug}`)}
                     className="mt-2 inline-flex items-center gap-1 text-xs text-primary hover:text-primary-light"
                   >
                     Open Property Microsite <ChevronRight className="w-3 h-3" />

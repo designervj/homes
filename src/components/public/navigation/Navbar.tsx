@@ -7,7 +7,14 @@ import { usePathname } from "next/navigation";
 import {
   ChevronDown, Menu, X, MapPin,
 } from "lucide-react";
+import { LanguageSwitcher } from "@/components/shared/LanguageSwitcher";
+import {
+  useLocaleContext,
+  useSiteTemplate,
+  useTranslations,
+} from "@/components/shared/LocaleProvider";
 import { ThemeToggle } from "@/components/shared/ThemeToggle";
+import { localizeHref, stripLocaleFromPathname } from "@/lib/i18n/utils";
 import { cn } from "@/lib/utils";
 
 // ─── PROJECTS DATA ────────────────────────────────────────────────────────────
@@ -23,17 +30,21 @@ const PROJECTS = [
 ];
 
 const NAV_LINKS = [
-  { href: "/",        label: "Home" },
-  { href: "/about",   label: "About" },
-  { href: "/services",label: "Services" },
-  { href: "/blogs",   label: "Blogs" },
-  { href: "/contact", label: "Contact" },
+  { href: "/", key: "home" },
+  { href: "/about", key: "about" },
+  { href: "/services", key: "services" },
+  { href: "/blogs", key: "blogs" },
+  { href: "/contact", key: "contact" },
 ];
 
 // ─── COMPONENT ────────────────────────────────────────────────────────────────
 
 export function Navbar() {
   const pathname = usePathname();
+  const normalizedPathname = stripLocaleFromPathname(pathname);
+  const { locale } = useLocaleContext();
+  const siteTemplate = useSiteTemplate();
+  const tNav = useTranslations("public-nav");
   const [scrolled, setScrolled]           = useState(false);
   const [mobileOpen, setMobileOpen]       = useState(false);
   const [dropdownOpen, setDropdownOpen]   = useState(false);
@@ -63,14 +74,14 @@ export function Navbar() {
         className={cn(
           "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
           scrolled
-            ? "bg-background/95 backdrop-blur-xl border-b border-border shadow-2xl"
+            ? "surface-card border-b border-border/80 backdrop-blur-2xl"
             : "bg-transparent"
         )}
       >
         <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
 
           {/* Logo */}
-          <Link href="/" className="flex items-center flex-shrink-0">
+          <Link href={localizeHref(locale, "/")} className="flex items-center flex-shrink-0">
             <Image
               src="/homes/Homes-Logo.webp"
               alt="Homes Logo"
@@ -83,35 +94,45 @@ export function Navbar() {
 
           {/* Desktop nav */}
           <div className="hidden lg:flex items-center gap-1">
-            <Link href="/" className={cn("px-3 py-2 text-sm rounded-lg transition-colors", pathname === "/" ? "text-foreground" : "text-muted-foreground hover:text-foreground hover:bg-accent")}>
-              Home
-            </Link>
-            <Link href="/about" className={cn("px-3 py-2 text-sm rounded-lg transition-colors", pathname === "/about" ? "text-foreground" : "text-muted-foreground hover:text-foreground hover:bg-accent")}>
-              About
-            </Link>
+            {NAV_LINKS.slice(0, 2).map((link) => (
+              <Link
+                key={link.href}
+                href={localizeHref(locale, link.href)}
+                className={cn(
+                  "rounded-xl px-3 py-2 text-sm transition-colors",
+                  normalizedPathname === link.href
+                    ? "surface-subtle text-foreground"
+                    : "text-muted-foreground hover:text-foreground hover:bg-accent/70"
+                )}
+              >
+                {tNav(`links.${link.key}`)}
+              </Link>
+            ))}
 
             {/* Projects dropdown */}
             <div className="relative" ref={dropdownRef}>
               <button
                 onClick={() => setDropdownOpen((v) => !v)}
                 className={cn(
-                  "flex items-center gap-1.5 px-3 py-2 text-sm rounded-lg transition-colors",
-                  pathname.startsWith("/projects") ? "text-foreground" : "text-muted-foreground hover:text-foreground hover:bg-accent"
+                  "flex items-center gap-1.5 rounded-xl px-3 py-2 text-sm transition-colors",
+                  normalizedPathname.startsWith("/projects")
+                    ? "surface-subtle text-foreground"
+                    : "text-muted-foreground hover:text-foreground hover:bg-accent/70"
                 )}
               >
-                Projects
+                {tNav("projects.menuLabel")}
                 <ChevronDown className={cn("w-3.5 h-3.5 transition-transform duration-200", dropdownOpen && "rotate-180")} />
               </button>
 
               {dropdownOpen && (
-                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-[340px] bg-card border border-border rounded-2xl shadow-2xl overflow-hidden">
+                <div className="surface-card absolute top-full left-1/2 mt-2 w-[340px] -translate-x-1/2 overflow-hidden rounded-[1.75rem]">
                   <div className="p-2">
                     {PROJECTS.map((project) => (
                       <Link
                         key={project.slug}
-                        href={`/projects/${project.slug}`}
+                        href={localizeHref(locale, `/projects/${project.slug}`)}
                         onClick={() => setDropdownOpen(false)}
-                        className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-accent/80 transition-colors group"
+                        className="interactive-card flex items-center gap-3 rounded-2xl px-3 py-2.5 transition-colors group hover:bg-accent/80"
                       >
                         <div className="w-2 h-2 rounded-full bg-primary flex-shrink-0 opacity-60 group-hover:opacity-100 transition-opacity" />
                         <div className="flex-1 min-w-0">
@@ -132,40 +153,49 @@ export function Navbar() {
                   </div>
                   <div className="border-t border-border p-2">
                     <Link
-                      href="/projects"
+                      href={localizeHref(locale, "/projects")}
                       onClick={() => setDropdownOpen(false)}
-                      className="flex items-center justify-center gap-2 w-full py-2.5 text-sm text-primary hover:text-primary-light hover:bg-primary/5 rounded-xl transition-colors font-medium"
+                      className="flex w-full items-center justify-center gap-2 rounded-2xl py-2.5 text-sm font-medium text-primary transition-colors hover:bg-primary/5 hover:text-primary-light"
                     >
-                      View All Projects →
+                      {tNav("projects.viewAll")} →
                     </Link>
                   </div>
                 </div>
               )}
             </div>
 
-            <Link href="/services" className={cn("px-3 py-2 text-sm rounded-lg transition-colors", pathname === "/services" ? "text-foreground" : "text-muted-foreground hover:text-foreground hover:bg-accent")}>
-              Services
-            </Link>
-            <Link href="/blogs" className={cn("px-3 py-2 text-sm rounded-lg transition-colors", pathname === "/blogs" ? "text-foreground" : "text-muted-foreground hover:text-foreground hover:bg-accent")}>
-              Blogs
-            </Link>
-            <Link href="/contact" className={cn("px-3 py-2 text-sm rounded-lg transition-colors", pathname === "/contact" ? "text-foreground" : "text-muted-foreground hover:text-foreground hover:bg-accent")}>
-              Contact
-            </Link>
+            {NAV_LINKS.slice(2).map((link) => (
+              <Link
+                key={link.href}
+                href={localizeHref(locale, link.href)}
+                className={cn(
+                  "rounded-xl px-3 py-2 text-sm transition-colors",
+                  normalizedPathname === link.href
+                    ? "surface-subtle text-foreground"
+                    : "text-muted-foreground hover:text-foreground hover:bg-accent/70"
+                )}
+              >
+                {tNav(`links.${link.key}`)}
+              </Link>
+            ))}
           </div>
 
           {/* CTA + mobile toggle */}
           <div className="flex items-center gap-3">
+            <LanguageSwitcher className="hidden lg:inline-flex" />
             <ThemeToggle className="hidden lg:inline-flex" />
             <Link
-              href="/#enquire"
-              className="hidden sm:flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-light text-foreground text-sm font-semibold rounded-lg transition-colors"
+              href={localizeHref(locale, "/#enquire")}
+              className={cn(
+                "primary-cta hidden items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold sm:flex",
+                siteTemplate === "immersive" && "animate-pulse-slow"
+              )}
             >
-              Book Site Visit
+              {tNav("cta.bookSiteVisit")}
             </Link>
             <button
               onClick={() => setMobileOpen((v) => !v)}
-              className="lg:hidden p-2 text-muted-foreground hover:text-foreground transition-colors"
+              className="secondary-cta lg:hidden rounded-xl p-2 text-muted-foreground transition-colors hover:text-foreground"
             >
               {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
@@ -175,27 +205,30 @@ export function Navbar() {
 
       {/* Mobile menu */}
       {mobileOpen && (
-        <div className="fixed inset-0 z-40 bg-background/98 backdrop-blur-xl flex flex-col pt-16">
+        <div className="fixed inset-0 z-40 flex flex-col bg-background/96 pt-16 backdrop-blur-2xl">
           <div className="flex-1 overflow-y-auto px-4 py-6 space-y-1">
-            <div className="px-4 pb-3">
+            <div className="flex items-center gap-3 px-4 pb-3">
+              <LanguageSwitcher />
               <ThemeToggle />
             </div>
             {NAV_LINKS.map((link) => (
               <Link
                 key={link.href}
-                href={link.href}
+                href={localizeHref(locale, link.href)}
                 onClick={() => setMobileOpen(false)}
                 className="flex items-center gap-3 px-4 py-3 rounded-xl text-base text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
               >
-                {link.label}
+                {tNav(`links.${link.key}`)}
               </Link>
             ))}
             <div className="pt-2">
-              <p className="text-xs text-muted-foreground uppercase tracking-widest px-4 mb-2">Projects</p>
+              <p className="mb-2 px-4 text-xs uppercase tracking-widest text-muted-foreground">
+                {tNav("mobile.projects")}
+              </p>
               {PROJECTS.map((p) => (
                 <Link
                   key={p.slug}
-                  href={`/projects/${p.slug}`}
+                  href={localizeHref(locale, `/projects/${p.slug}`)}
                   onClick={() => setMobileOpen(false)}
                   className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
                 >
@@ -207,10 +240,10 @@ export function Navbar() {
           </div>
           <div className="p-4 border-t border-border">
             <Link
-              href="/#enquire"
-              className="flex items-center justify-center gap-2 w-full py-3.5 bg-primary hover:bg-primary-light text-foreground font-semibold rounded-xl transition-colors"
+              href={localizeHref(locale, "/#enquire")}
+              className="primary-cta flex w-full items-center justify-center gap-2 rounded-2xl py-3.5 font-semibold"
             >
-              Book Site Visit
+              {tNav("cta.bookSiteVisit")}
             </Link>
           </div>
         </div>

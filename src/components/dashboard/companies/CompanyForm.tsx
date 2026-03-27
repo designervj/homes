@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import slugify from "slugify";
 import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -64,7 +64,7 @@ export function CompanyForm({
     company?.assignedManagerIds ?? []
   );
 
-  const { register, handleSubmit, setValue, watch } = useForm<
+  const { control, register, handleSubmit, setValue, getValues } = useForm<
     CompanyFormValues,
     unknown,
     CompanySubmitValues
@@ -96,10 +96,10 @@ export function CompanyForm({
         },
   });
 
-  const nameValue = watch("name");
+  const nameValue = useWatch({ control, name: "name" });
 
   const syncSlug = () => {
-    const current = watch("slug");
+    const current = getValues("slug");
     if (!current && nameValue) {
       setValue(
         "slug",

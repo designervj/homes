@@ -3,13 +3,24 @@ import { SafeImage as Image } from "@/components/shared/SafeImage";
 import { BadgeCheck, Building2, Users2, Star, MapPin, ArrowRight } from "lucide-react";
 import { getFeaturedCompanies } from "@/lib/db/actions/company.actions";
 import { getFeaturedCaseStudies } from "@/lib/db/actions/case-study.actions";
+import {
+  MotionReveal,
+  MotionStagger,
+  MotionStaggerItem,
+} from "@/components/shared/motion/MotionReveal";
+import { getServerI18n } from "@/lib/i18n/server";
+import { localizeHref } from "@/lib/i18n/utils";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = {
-  title: "About Us — Homes Real Estate Advisory",
-  description:
-    "Learn about Homes — a trusted real estate advisory firm serving buyers and investors across Lucknow and Uttar Pradesh since 2019.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await getServerI18n();
+
+  return {
+    title: `${t("public-nav", "links.about")} — Homes`,
+    description:
+      "Learn about Homes — a trusted real estate advisory firm serving buyers and investors across Lucknow and Uttar Pradesh since 2019.",
+  };
+}
 
 const TEAM = [
   {
@@ -34,6 +45,7 @@ const VALUES = [
 ];
 
 export default async function AboutPage() {
+  const { t, locale } = await getServerI18n();
   const [companiesRes, caseStudiesRes] = await Promise.all([
     getFeaturedCompanies(6),
     getFeaturedCaseStudies(2),
@@ -46,109 +58,113 @@ export default async function AboutPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-24">
 
         {/* Hero */}
-        <div className="max-w-3xl">
+        <MotionReveal className="max-w-3xl">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-7 h-px bg-primary" />
-            <span className="text-xs text-primary uppercase tracking-widest font-medium">Our Story</span>
+            <span className="text-xs text-primary uppercase tracking-widest font-medium">{t("about", "hero.eyebrow")}</span>
           </div>
             <h1 className="mb-6 font-serif text-4xl font-semibold leading-tight text-foreground sm:text-5xl lg:text-5xl">
-              Guiding You <br className="hidden sm:block" />
-              <span className="text-gradient-primary italic">Every Step</span> of the Way.
+              {t("about", "hero.titleLine1")} <br className="hidden sm:block" />
+              <span className="text-gradient-primary italic">{t("about", "hero.titleHighlight")}</span> {t("about", "hero.titleLine2")}
             </h1>
           <p className="text-lg text-muted-foreground leading-relaxed max-w-2xl">
-            Homes was built on a single premise — property buyers in Lucknow deserved better. Better information, better legal clarity, and an advisor who actually works for them.
+            {t("about", "hero.description")}
           </p>
-        </div>
+        </MotionReveal>
 
         {/* Stats */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <MotionStagger className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           {[
-            { icon: Users2,    num: "500+", label: "Families Served" },
-            { icon: Building2, num: "7",    label: "Active Projects" },
-            { icon: BadgeCheck,num: "100%", label: "RERA Verified" },
-            { icon: Star,      num: "5★",   label: "Client Rating" },
+            { icon: Users2,    num: "500+", label: t("about", "stats.families") },
+            { icon: Building2, num: "7",    label: t("about", "stats.projects") },
+            { icon: BadgeCheck,num: "100%", label: t("about", "stats.verified") },
+            { icon: Star,      num: "5★",   label: t("about", "stats.rating") },
           ].map(({ icon: Icon, num, label }) => (
-            <div key={label} className="bg-card border border-border rounded-xl p-6 text-center">
+            <MotionStaggerItem key={label} className="surface-card rounded-2xl p-6 text-center">
               <Icon className="w-5 h-5 text-primary mx-auto mb-3" />
               <p className="mb-1 font-serif text-3xl font-semibold text-foreground">{num}</p>
               <p className="text-xs text-muted-foreground">{label}</p>
-            </div>
+            </MotionStaggerItem>
           ))}
-        </div>
+        </MotionStagger>
 
         {/* Story */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-          <div>
+          <MotionReveal>
             <div className="flex items-center gap-3 mb-4">
               <div className="w-7 h-px bg-primary" />
-              <span className="text-xs text-primary uppercase tracking-widest font-medium">Who We Are</span>
+              <span className="text-xs text-primary uppercase tracking-widest font-medium">{t("about", "story.eyebrow")}</span>
             </div>
             <h2 className="mb-6 font-serif text-3xl font-medium text-foreground">
-              A Consultancy Built on Relationships, Not Commissions
+              {t("about", "story.title")}
             </h2>
             <div className="space-y-4 text-muted-foreground leading-relaxed text-[15px]">
-              <p>
-                Homes operates as a strategic intermediary and brokerage — connecting prospective homebuyers and institutional investors with residential assets developed by trusted builders across Uttar Pradesh.
-              </p>
-              <p>
-                We serve three fundamental needs: helping buyers find the right property, arranging site visits at their convenience, and providing fair, unbiased home loan guidance through partner banks.
-              </p>
-              <p>
-                Our office is in Sushant Golf City, Lucknow — the heart of the city&apos;s most active residential corridors. Every property we list, we know personally.
-              </p>
+              <p>{t("about", "story.paragraphOne")}</p>
+              <p>{t("about", "story.paragraphTwo")}</p>
+              <p>{t("about", "story.paragraphThree")}</p>
             </div>
             <div className="mt-6 flex items-start gap-2 text-sm text-muted-foreground">
               <MapPin className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
               Royal Plaza, Sushant Golf City, Sultanpur Road, Lucknow – 226030
             </div>
-          </div>
-          <div className="space-y-3">
+          </MotionReveal>
+          <MotionStagger className="space-y-3">
             {VALUES.map((value) => (
-              <div key={value.title} className="bg-card border border-border rounded-xl p-5">
-                <p className="mb-2 text-sm font-medium text-foreground">{value.title}</p>
-                <p className="text-sm leading-relaxed text-muted-foreground">{value.desc}</p>
-              </div>
+              <MotionStaggerItem key={value.title}>
+                <div className="surface-card rounded-2xl p-5">
+                  <p className="mb-2 text-sm font-medium text-foreground">{value.title}</p>
+                  <p className="text-sm leading-relaxed text-muted-foreground">{value.desc}</p>
+                </div>
+              </MotionStaggerItem>
             ))}
-          </div>
+          </MotionStagger>
         </div>
 
         {/* Team */}
-        <div>
+        <MotionReveal>
           <div className="flex items-center gap-3 mb-10">
             <div className="w-7 h-px bg-primary" />
-            <span className="text-xs text-primary uppercase tracking-widest font-medium">Our Team</span>
+            <span className="text-xs text-primary uppercase tracking-widest font-medium">{t("about", "team.eyebrow")}</span>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             {TEAM.map((member) => (
-              <div key={member.name} className="bg-card border border-border rounded-2xl p-7">
+              <div key={member.name} className="surface-card rounded-[1.6rem] p-7">
                 <div className="flex items-start gap-4 mb-5">
                   <div className="w-14 h-14 rounded-xl bg-primary/15 border border-primary/25 flex items-center justify-center flex-shrink-0">
                     <span className="font-serif text-lg font-semibold text-primary">{member.initials}</span>
                   </div>
                   <div>
                     <p className="text-base font-medium text-foreground">{member.name}</p>
-                    <p className="text-sm text-primary mt-0.5">{member.role}</p>
+                    <p className="text-sm text-primary mt-0.5">
+                      {member.initials === "MR"
+                        ? t("about", "team.founderRole")
+                        : t("about", "team.advisoryRole")}
+                    </p>
                   </div>
                 </div>
-                <p className="text-sm leading-relaxed text-muted-foreground">{member.bio}</p>
+                <p className="text-sm leading-relaxed text-muted-foreground">
+                  {member.initials === "MR"
+                    ? t("about", "team.founderBio")
+                    : t("about", "team.advisoryBio")}
+                </p>
               </div>
             ))}
           </div>
-        </div>
+        </MotionReveal>
 
         {/* Partner Proof */}
         <div className="space-y-10">
           <div className="flex items-center gap-3">
             <div className="w-7 h-px bg-primary" />
-            <span className="text-xs text-primary uppercase tracking-widest font-medium">Partner Proof</span>
+            <span className="text-xs text-primary uppercase tracking-widest font-medium">{t("about", "proof.eyebrow")}</span>
           </div>
 
           <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
             {companies.map((company) => (
               <Link
                 key={company._id}
-                href={`/companies/${company.slug}`}
-                className="group rounded-2xl border border-border bg-card p-5 transition-all duration-300 hover:-translate-y-1 hover:border-primary/20"
+                href={localizeHref(locale, `/companies/${company.slug}`)}
+                className="surface-card interactive-card group rounded-[1.6rem] p-5"
               >
                 <div className="h-16 rounded-xl border border-border bg-background flex items-center justify-center p-4">
                   {company.logo ? (
@@ -175,10 +191,10 @@ export default async function AboutPage() {
               {caseStudies.map((caseStudy) => (
                 <Link
                   key={caseStudy._id}
-                  href={`/case-studies/${caseStudy.slug}`}
-                  className="group rounded-2xl border border-border bg-card p-6 transition-all duration-300 hover:-translate-y-1 hover:border-primary/20"
+                  href={localizeHref(locale, `/case-studies/${caseStudy.slug}`)}
+                  className="surface-card interactive-card group rounded-[1.6rem] p-6"
                 >
-                  <p className="text-[10px] text-primary uppercase tracking-widest font-medium">Featured Story</p>
+                  <p className="text-[10px] text-primary uppercase tracking-widest font-medium">{t("about", "proof.featuredStory")}</p>
                   <h3 className="mt-3 font-serif text-2xl font-medium text-foreground group-hover:text-primary transition-colors">
                     {caseStudy.title}
                   </h3>
@@ -196,7 +212,7 @@ export default async function AboutPage() {
                     ))}
                   </div>
                   <span className="mt-5 inline-flex items-center gap-2 text-sm text-primary group-hover:text-primary-light transition-colors">
-                    Read case study <ArrowRight className="w-4 h-4" />
+                    {t("about", "proof.readCaseStudy")} <ArrowRight className="w-4 h-4" />
                   </span>
                 </Link>
               ))}
@@ -205,13 +221,18 @@ export default async function AboutPage() {
         </div>
 
         {/* Compliance */}
-        <div className="bg-card border border-primary/15 rounded-2xl p-8">
+        <div className="surface-card rounded-[1.8rem] p-8">
           <div className="flex items-center gap-3 mb-6">
             <BadgeCheck className="h-5 w-5 text-secondary" />
-            <h2 className="font-serif text-xl font-medium text-foreground">Our Compliance Commitment</h2>
+            <h2 className="font-serif text-xl font-medium text-foreground">{t("about", "compliance.title")}</h2>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            {["UP-RERA Registered", "GST Compliant", "LDA Approved Projects", "SBI / HDFC Approved"].map((c) => (
+            {[
+              t("about", "compliance.one"),
+              t("about", "compliance.two"),
+              t("about", "compliance.three"),
+              t("about", "compliance.four"),
+            ].map((c) => (
               <div key={c} className="flex items-center gap-2 text-sm text-muted-foreground">
                 <span className="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-secondary" />
                 {c}

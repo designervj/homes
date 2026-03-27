@@ -1,4 +1,6 @@
 import { auth } from "@/lib/auth/config";
+import { getRequestLocale } from "@/lib/i18n/request";
+import { localizeHref } from "@/lib/i18n/utils";
 import { redirect } from "next/navigation";
 import { DashboardSidebar } from "@/components/dashboard/Sidebar";
 import { DashboardHeader } from "@/components/dashboard/Header";
@@ -17,12 +19,12 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const session = await auth();
+  const [session, locale] = await Promise.all([auth(), getRequestLocale()]);
 
   // Double-check server-side (middleware is the primary guard,
   // this is a defence-in-depth fallback)
   if (!session?.user) {
-    redirect("/auth/login");
+    redirect(localizeHref(locale, "/auth/login"));
   }
 
   return (

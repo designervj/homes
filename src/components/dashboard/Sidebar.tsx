@@ -17,13 +17,18 @@ import {
   FileText,
   Globe2,
 } from "lucide-react";
+import {
+  useLocaleContext,
+  useTranslations,
+} from "@/components/shared/LocaleProvider";
+import { localizeHref, stripLocaleFromPathname } from "@/lib/i18n/utils";
 import { cn } from "@/lib/utils";
 import type { UserRole } from "@/types";
 
 // ─── NAV CONFIG ───────────────────────────────────────────────────────────────
 
 interface NavItem {
-  label: string;
+  labelKey: string;
   href: string;
   icon: React.ElementType;
   allowedRoles: UserRole[];
@@ -32,61 +37,61 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
   {
-    label: "Overview",
+    labelKey: "overview",
     href: "/admin",
     icon: LayoutDashboard,
     allowedRoles: ["super_admin", "admin", "agent", "company_manager"],
   },
   {
-    label: "Properties",
+    labelKey: "properties",
     href: "/admin/properties",
     icon: Home,
     allowedRoles: ["super_admin", "admin", "agent", "company_manager"],
   },
   {
-    label: "Enquiries",
+    labelKey: "enquiries",
     href: "/admin/enquiries",
     icon: MessageSquare,
     allowedRoles: ["super_admin", "admin", "agent", "company_manager"],
   },
   {
-    label: "Leads",
+    labelKey: "leads",
     href: "/admin/leads",
     icon: Users2,
     allowedRoles: ["super_admin", "admin", "agent", "company_manager"],
   },
   {
-    label: "Site Visits",
+    labelKey: "siteVisits",
     href: "/admin/site-visits",
     icon: CalendarCheck,
     allowedRoles: ["super_admin", "admin", "agent", "company_manager"],
   },
   {
-    label: "Companies",
+    labelKey: "companies",
     href: "/admin/companies",
     icon: BriefcaseBusiness,
     allowedRoles: ["super_admin", "admin", "company_manager"],
   },
   {
-    label: "Case Studies",
+    labelKey: "caseStudies",
     href: "/admin/case-studies",
     icon: FileText,
     allowedRoles: ["super_admin", "admin", "company_manager"],
   },
   {
-    label: "Microsites",
+    labelKey: "microsites",
     href: "/admin/property-sites",
     icon: Globe2,
     allowedRoles: ["super_admin", "admin", "company_manager"],
   },
   {
-    label: "Analytics",
+    labelKey: "analytics",
     href: "/admin/analytics",
     icon: BarChart3,
     allowedRoles: ["super_admin", "admin"],
   },
   {
-    label: "Settings",
+    labelKey: "settings",
     href: "/admin/settings",
     icon: Settings,
     allowedRoles: ["super_admin"],
@@ -101,17 +106,20 @@ interface DashboardSidebarProps {
 
 export function DashboardSidebar({ role }: DashboardSidebarProps) {
   const pathname = usePathname();
+  const normalizedPathname = stripLocaleFromPathname(pathname);
+  const { locale } = useLocaleContext();
+  const t = useTranslations("admin-nav");
 
   const visibleItems = NAV_ITEMS.filter((item) =>
     item.allowedRoles.includes(role)
   );
 
   return (
-    <aside className="w-60 min-h-screen bg-background border-r border-border flex flex-col flex-shrink-0">
+    <aside className="surface-card w-60 min-h-screen border-r border-border/70 flex flex-col flex-shrink-0">
 
       {/* Logo */}
       <div className="h-20 flex items-center px-6 border-b border-border">
-        <Link href="/admin" className="block w-36 h-auto relative">
+        <Link href={localizeHref(locale, "/admin")} className="block w-36 h-auto relative">
           <Image
             src="/homes/Homes-Logo.webp"
             alt="Homes Logo"
@@ -126,7 +134,7 @@ export function DashboardSidebar({ role }: DashboardSidebarProps) {
       {/* Section label */}
       <div className="px-5 pt-6 pb-2">
         <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-medium">
-          Main Menu
+          {t("sidebar.mainMenu")}
         </p>
       </div>
 
@@ -137,18 +145,18 @@ export function DashboardSidebar({ role }: DashboardSidebarProps) {
           // Active if exact match for /admin, or starts-with for sub-routes
           const isActive =
             item.href === "/admin"
-              ? pathname === "/admin"
-              : pathname.startsWith(item.href);
+              ? normalizedPathname === "/admin"
+              : normalizedPathname.startsWith(item.href);
 
           return (
             <Link
               key={item.href}
-              href={item.href}
+              href={localizeHref(locale, item.href)}
               className={cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all duration-150 group",
+                "group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-all duration-150",
                 isActive
-                  ? "bg-primary/10 text-primary font-medium"
-                  : "text-muted-foreground hover:text-foreground hover:bg-accent"
+                  ? "surface-subtle text-primary font-medium"
+                  : "text-muted-foreground hover:text-foreground hover:bg-accent/70"
               )}
             >
               <Icon
@@ -157,7 +165,7 @@ export function DashboardSidebar({ role }: DashboardSidebarProps) {
                   isActive ? "text-primary" : "text-muted-foreground group-hover:text-foreground"
                 )}
               />
-              <span className="flex-1">{item.label}</span>
+              <span className="flex-1">{t(`sidebar.${item.labelKey}`)}</span>
               {item.badge && (
                 <span className="text-[10px] bg-primary/20 text-primary px-1.5 py-0.5 rounded-full font-medium">
                   {item.badge}
@@ -174,12 +182,12 @@ export function DashboardSidebar({ role }: DashboardSidebarProps) {
       {/* Bottom — view public site */}
       <div className="p-3 border-t border-border">
         <Link
-          href="/"
+          href={localizeHref(locale, "/")}
           target="_blank"
-          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-accent transition-all"
+          className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-muted-foreground transition-all hover:bg-accent/70 hover:text-foreground"
         >
           <Building2 className="w-4 h-4" />
-          <span>View Public Site</span>
+          <span>{t("sidebar.viewPublicSite")}</span>
         </Link>
       </div>
     </aside>

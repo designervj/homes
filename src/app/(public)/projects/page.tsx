@@ -2,13 +2,20 @@ import Link from "next/link";
 import { getProperties } from "@/lib/db/actions/property.actions";
 import { PropertyCard } from "@/components/public/properties/PropertyCard";
 import { ProjectsFilter } from "@/components/public/properties/ProjectsFilter";
+import { MotionReveal } from "@/components/shared/motion/MotionReveal";
+import { getServerI18n } from "@/lib/i18n/server";
+import { localizeHref } from "@/lib/i18n/utils";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = {
-  title: "All Projects — Browse RERA Verified Properties",
-  description:
-    "Browse all RERA-verified residential plots, apartments, and villas in Lucknow. Filter by type, location, and budget.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await getServerI18n();
+
+  return {
+    title: t("projects", "page.eyebrow"),
+    description:
+      "Browse all RERA-verified residential plots, apartments, and villas in Lucknow. Filter by type, location, and budget.",
+  };
+}
 
 export const dynamic = "force-dynamic";
 
@@ -21,6 +28,7 @@ export default async function ProjectsPage({
   }>;
 }) {
   const params = await searchParams;
+  const { t, locale } = await getServerI18n();
   const page = Number(params.page) || 1;
 
   const res = await getProperties({
@@ -44,18 +52,20 @@ export default async function ProjectsPage({
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
         {/* Header */}
-        <div className="mb-10">
+        <MotionReveal className="mb-10">
           <div className="flex items-center gap-3 mb-3">
             <div className="w-7 h-px bg-primary" />
-            <span className="text-xs text-primary uppercase tracking-widest font-medium">All Projects</span>
+            <span className="text-xs text-primary uppercase tracking-widest font-medium">{t("projects", "page.eyebrow")}</span>
           </div>
           <h1 className="mb-3 font-serif text-4xl font-medium text-foreground sm:text-5xl">
-            Find Your Property
+            {t("projects", "page.title")}
           </h1>
           <p className="text-muted-foreground">
-            {pagination?.total ?? properties.length} properties across Lucknow&apos;s prime corridors.
+            {t("projects", "page.countSummary", {
+              count: pagination?.total ?? properties.length,
+            })}
           </p>
-        </div>
+        </MotionReveal>
 
         {/* Filters */}
         <ProjectsFilter currentFilters={params} />
@@ -66,9 +76,10 @@ export default async function ProjectsPage({
             <div className="w-16 h-16 rounded-full bg-card border border-border flex items-center justify-center mb-5">
               <span className="text-2xl">🏠</span>
             </div>
-            <p className="mb-2 text-lg font-medium text-foreground">No properties found</p>
+            <p className="mb-2 text-lg font-medium text-foreground">{t("projects", "page.emptyTitle")}</p>
             <p className="text-sm text-muted-foreground">Try adjusting your filters or&nbsp;
-              <Link href="/projects" className="text-primary hover:underline">clear all filters</Link>.
+              {t("projects", "page.emptyDescription")}{" "}
+              <Link href={localizeHref(locale, "/projects")} className="text-primary hover:underline">{t("projects", "page.clearAllLink")}</Link>.
             </p>
           </div>
         ) : (
@@ -85,7 +96,10 @@ export default async function ProjectsPage({
                 {Array.from({ length: pagination.totalPages }, (_, i) => i + 1).map((p) => (
                   <a
                     key={p}
-                    href={`/projects?page=${p}${params.type ? `&type=${params.type}` : ""}${params.search ? `&search=${params.search}` : ""}`}
+                    href={localizeHref(
+                      locale,
+                      `/projects?page=${p}${params.type ? `&type=${params.type}` : ""}${params.search ? `&search=${params.search}` : ""}`
+                    )}
                     className={`w-9 h-9 flex items-center justify-center rounded-xl text-sm font-medium transition-colors ${
                       p === pagination.page
                         ? "bg-primary text-foreground"

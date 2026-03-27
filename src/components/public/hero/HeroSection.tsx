@@ -3,6 +3,16 @@
 import { useState, useEffect } from "react";
 import { BadgeCheck } from "lucide-react";
 import { EnquiryForm } from "@/components/public/forms/EnquiryForm";
+import { AmbientOrbs } from "@/components/shared/motion/AmbientOrbs";
+import {
+  MotionReveal,
+  MotionStagger,
+  MotionStaggerItem,
+} from "@/components/shared/motion/MotionReveal";
+import {
+  useSiteTemplate,
+  useTranslations,
+} from "@/components/shared/LocaleProvider";
 import { cn } from "@/lib/utils";
 
 const SLIDES = [
@@ -12,6 +22,8 @@ const SLIDES = [
 ];
 
 export function HeroSection() {
+  const t = useTranslations("home");
+  const siteTemplate = useSiteTemplate();
   const [current, setCurrent] = useState(0);
 
   useEffect(() => {
@@ -23,6 +35,7 @@ export function HeroSection() {
 
   return (
     <section className="relative min-h-screen flex items-center overflow-hidden pt-16">
+      <AmbientOrbs />
       {/* Background Slider */}
       {SLIDES.map((slide, index) => (
         <div
@@ -46,42 +59,46 @@ export function HeroSection() {
           {/* Left Column - Text & Stats */}
           <div className="lg:col-span-7 xl:col-span-6">
             {/* Eyebrow */}
-            <div className="flex items-center gap-3 mb-8 animate-fade-in-up">
-              <div className="flex items-center gap-2 bg-primary/10 border border-primary/20 px-3 py-1.5 rounded-full">
+            <MotionReveal className="mb-8 flex items-center gap-3">
+              <div className="secondary-cta flex items-center gap-2 rounded-full px-3 py-1.5">
                 <BadgeCheck className="w-3.5 h-3.5 text-primary" />
-                <span className="text-xs text-primary font-medium">RERA Verified Properties</span>
+                <span className="text-xs text-primary font-medium">{t("hero.eyebrowVerified")}</span>
               </div>
               <div className="w-12 h-px bg-primary/30" />
-              <span className="text-xs text-muted-foreground font-medium">Lucknow, Uttar Pradesh</span>
-            </div>
+              <span className="text-xs text-muted-foreground font-medium">{t("hero.eyebrowLocation")}</span>
+            </MotionReveal>
 
             {/* Headline */}
-            <h1 className="font-serif text-[clamp(2.5rem,5vw,4.5rem)] leading-[1.05] tracking-tight text-foreground mb-6 animate-fade-in-up delay-100">
-              Find Your <br className="hidden sm:block" />
+            <MotionReveal delay={0.08}>
+              <h1 className="mb-6 font-serif text-[clamp(2.5rem,5vw,4.5rem)] leading-[1.05] tracking-tight text-foreground">
+                {t("hero.titleLine1")} <br className="hidden sm:block" />
               <span className="text-gradient-primary italic">Perfect</span>
-              <br className="hidden sm:block" /> Property in Lucknow
-            </h1>
+                <br className="hidden sm:block" /> {t("hero.titleLine2")}
+              </h1>
+            </MotionReveal>
 
-            <p className="text-lg text-muted-foreground leading-relaxed max-w-lg mb-12 animate-fade-in-up delay-200">
-              Trusted real estate consultancy connecting buyers with verified residential plots, premium villas, and modern apartments — with full legal transparency.
-            </p>
+            <MotionReveal delay={0.16}>
+              <p className="mb-12 max-w-lg text-lg leading-relaxed text-muted-foreground">
+                {t("hero.description")}
+              </p>
+            </MotionReveal>
 
             {/* Stats */}
-            <div className="flex items-center gap-8 animate-fade-in-up delay-300">
+            <MotionStagger className="flex items-center gap-8">
               {[
-                { num: "500+", label: "Families Served" },
-                { num: "7",    label: "Active Projects" },
-                { num: "100%", label: "RERA Verified" },
+                { num: "500+", label: t("hero.stats.families") },
+                { num: "7",    label: t("hero.stats.projects") },
+                { num: "100%", label: t("hero.stats.verified") },
               ].map((stat, i) => (
-                <div key={i} className="flex flex-col gap-1">
+                <MotionStaggerItem key={i} className="flex flex-col gap-1">
                   <span className="font-serif text-3xl font-semibold text-foreground">{stat.num}</span>
                   <span className="text-xs text-muted-foreground uppercase tracking-wider font-medium">{stat.label}</span>
-                </div>
+                </MotionStaggerItem>
               ))}
-            </div>
+            </MotionStagger>
             
             {/* Slide Indicators */}
-            <div className="flex gap-2 mt-12 animate-fade-in-up delay-400">
+            <MotionReveal delay={0.24} className="mt-12 flex gap-2">
               {SLIDES.map((_, i) => (
                 <button
                   key={i}
@@ -93,19 +110,27 @@ export function HeroSection() {
                   aria-label={`Go to slide ${i + 1}`}
                 />
               ))}
-            </div>
+            </MotionReveal>
           </div>
 
           {/* Right Column - Enquiry Form */}
-          <div className="lg:col-span-5 xl:col-span-4 xl:col-start-9 animate-fade-in-up delay-400">
-            <div className="bg-card/60 backdrop-blur-xl border border-border shadow-2xl rounded-2xl p-6 sm:p-8">
+          <MotionReveal
+            delay={0.28}
+            className="lg:col-span-5 xl:col-span-4 xl:col-start-9"
+          >
+            <div
+              className={cn(
+                "rounded-[1.9rem] p-6 sm:p-8",
+                siteTemplate === "immersive" ? "surface-card" : "admin-panel"
+              )}
+            >
               <div className="mb-6">
-                <h3 className="font-serif text-2xl font-medium text-foreground mb-2">Interested?</h3>
-                <p className="text-sm text-muted-foreground">Drop your details and we&apos;ll get back with the best matching properties.</p>
+                <h3 className="mb-2 font-serif text-2xl font-medium text-foreground">{t("hero.form.title")}</h3>
+                <p className="text-sm text-muted-foreground">{t("hero.form.subtitle")}</p>
               </div>
               <EnquiryForm variant="sidebar" className="[&_label_span]:text-muted-foreground [&_label:hover_span]:text-foreground" />
             </div>
-          </div>
+          </MotionReveal>
           
         </div>
       </div>

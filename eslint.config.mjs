@@ -12,6 +12,10 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    "files/**",
+    "test-results/**",
+    "test_query.ts",
+    "theme-updater.mjs",
   ]),
 ]);
 

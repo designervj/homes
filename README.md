@@ -26,6 +26,12 @@
 
 **Homes** is a white-label real estate SaaS platform. One codebase, one database — any real estate consultancy runs their entire business on it.
 
+It now supports:
+- clean default English URLs with locale-prefixed alternate languages
+- a repo-managed translation system for English and Hindi, with Croatian and Arabic scaffolded
+- a two-mode presentation layer: `classic` and `immersive`
+- Playwright regression coverage for routing, auth, and core public/admin smoke paths
+
 | Interface | Audience | Purpose |
 |---|---|---|
 | Public Portal | Buyers, investors | RERA-verified listings, enquire, book site visits |
@@ -59,6 +65,17 @@ All Server Actions use the full `config.ts` via `auth()`.
 | `/admin/*` | SSR | Always fresh, auth-protected |
 | `/sitemap.xml` | Dynamic | Includes all active slugs |
 
+### Localization + Template Strategy
+
+| Concern | Decision |
+|---|---|
+| Default locale | English with clean URLs (`/about`, not `/en/about`) |
+| Alternate locales | Prefixed (`/hi/about`, `/hr/about`, `/ar/about`) |
+| Translation source | JSON catalogs under `src/locales/<locale>/<namespace>.json` |
+| Locale persistence | `homes-locale` cookie + proxy header forwarding |
+| Presentation modes | `classic` for restrained UI, `immersive` for glass + motion experience |
+| Admin editing | Locale configuration is managed in settings; translation text stays file-based in v1 |
+
 ### RBAC Matrix
 
 | Route | super_admin | admin | company_manager | agent |
@@ -87,6 +104,9 @@ All Server Actions use the full `config.ts` via `auth()`.
 | Charts | Recharts | Analytics — BarChart, PieChart, FunnelChart |
 | Icons | Lucide React | |
 | Notifications | Sonner | Toast system |
+| Localization | Custom App Router i18n layer | Locale-aware proxy, JSON dictionaries, clean default URLs |
+| Motion / UX | Framer Motion | Ambient motion, reveal primitives, hover polish, reduced-motion support |
+| QA | Playwright | Route, auth, locale, and smoke regression coverage |
 
 ---
 
@@ -185,15 +205,19 @@ homes/
 │   │   │   ├── models/                  ✅ Property, CRM, company, case-study, and microsite schemas
 │   │   │   └── actions/                 ✅ Property, company, case-study, microsite, lead, enquiry, visit, and media actions
 │   │   ├── auth/                        ✅ Edge-split
+│   │   ├── i18n/                        ✅ Locale config, dictionary loading, route helpers
 │   │   └── utils/
 │   │       ├── constants.ts             ✅
 │   │       └── validators.ts            ✅
 │   │
+│   ├── locales/                         ✅ JSON translation catalogs by locale + namespace
 │   ├── types/index.ts                   ✅
 │   ├── types/next-auth.d.ts             ✅
 │   └── proxy.ts                         ✅
 │
 ├── scripts/seed.ts                      ✅
+├── scripts/validate-locales.ts          ✅
+├── tests/e2e/                           ✅ Playwright end-to-end coverage
 ├── next.config.ts                       ✅ Image domains
 └── package.json
 ```
@@ -295,6 +319,9 @@ These fixes were made during development and are already incorporated:
 | **Property edit stability** | Edit flow now deep-merges nested payloads, preserves `mediaAssets`, and tolerates blank optional number inputs |
 | **Local media gallery** | Admin property edit supports upload, cover selection, drag reorder, and safe delete for local `/uploads/properties/*` assets |
 | **Theme parity** | Public navbar and admin header now expose a reusable light/dark toggle and core CRM/property screens use semantic tokens |
+| **Locale routing stability** | Proxy now preserves locale context without self-fetch loops, keeps English URLs clean, and normalizes stray `/en/*` requests |
+| **Client/server hook boundaries** | Locale-aware interactive property cards now render as client components, eliminating server-side hook invocation errors |
+| **Playwright smoke coverage** | Auth, locale routing, public smoke pages, and admin guards are covered by automated browser tests |
 | **Edge runtime error** | Auth config split: `auth.config.ts` (edge-safe) + full `config.ts` (node only). `proxy.ts` uses edge-safe instance |
 | **useSearchParams Suspense** | Login page wrapped in `<Suspense>` boundary for static prerendering |
 
@@ -312,7 +339,8 @@ These fixes were made during development and are already incorporated:
 | **Phase 5** | Public Portal — homepage, project pages, enquiry forms | ✅ Complete |
 | **Phase 6** | Analytics, property form, about page, sitemap, robots | ✅ Complete |
 | **Phase 7** | Companies, case studies, property microsites, scoped company-manager RBAC | ✅ Complete |
-| **Phase 8** | QA, long-term custom domains, AI growth features, platform ops split | 🔄 Next |
+| **Phase 8** | Localization foundation, site-template system, premium motion layer, Playwright smoke coverage | ✅ Complete |
+| **Phase 9** | Long-term custom domains, AI growth features, platform ops split | 🔄 Next |
 
 ---
 
@@ -325,7 +353,10 @@ cp .env.example .env.local
 npm run seed
 npm run seed:leads
 npm run dev
-npm run build  # run in a networked environment so Google Fonts can be fetched
+npx playwright install chromium
+npm run build
+npm run validate:locales
+npm run test:e2e
 ```
 
 ```env
@@ -341,10 +372,12 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 ```json
 "scripts": {
   "dev":   "next dev",
-  "build": "next build",
+  "build": "next build --webpack",
   "start": "next start",
   "seed":  "node --import tsx scripts/seed.ts",
-  "seed:leads": "node --import tsx scripts/seed-leads.ts"
+  "seed:leads": "node --import tsx scripts/seed-leads.ts",
+  "validate:locales": "node --import tsx scripts/validate-locales.ts",
+  "test:e2e": "playwright test"
 }
 ```
 
@@ -353,6 +386,13 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 - `npm run seed` creates the base users, companies, 7 company-linked properties, case studies, and published property microsites.
 - `npm run seed:leads` clears and reseeds the `leads` collection with 18 realistic records spanning all stages and sources.
 - Property gallery uploads are stored locally under `public/uploads/properties/<slug>/` and assume persistent disk storage.
+
+### Operational Notes
+
+- Public locale switching is cookie-backed and intentionally uses a full navigation so server-rendered locale context always refreshes correctly.
+- Default English routes stay unprefixed. Hindi and future locales stay prefixed.
+- Playwright uses `http://127.0.0.1:3100` during tests to avoid local auth callback mismatches.
+- If you change translation catalogs, run `npm run validate:locales` before pushing.
 
 ---
 
@@ -381,6 +421,13 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 - `bg-grid-pattern` — subtle primary grid overlay for hero backgrounds
 - `line-clamp-2 / -3` — Text truncation utilities
 
+### Presentation Modes
+
+| Template | Use Case | Characteristics |
+|---|---|---|
+| `classic` | Safer, restrained commercial presentation | Cleaner surfaces, lighter hover states, minimal motion |
+| `immersive` | Premium showcase experience | Glass surfaces, ambient motion, reveal effects, stronger CTA feedback |
+
 ---
 
 ## Current Project Status
@@ -392,12 +439,17 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 - Admin users can manage companies, case studies, and microsites from the dashboard.
 - `company_manager` is a scoped role that can work only inside assigned companies, properties, leads, enquiries, and site visits.
 - Properties now support `companyId`, `unitPlans[]`, preserved media galleries, and microsite inheritance.
+- English and Hindi are live across public pages and shared admin UI, with Croatian and Arabic scaffolded for later rollout.
+- The app ships with both `classic` and `immersive` site templates through shared presentation settings.
+- Playwright smoke coverage is in place for locale routing, admin auth, public pages, and key guard flows.
 
-### 🔄 Up Next — Phase 7: Production Deploy
+### 🔄 Up Next — Production Deploy and Expansion
 
 Final QA checklist before going live:
 - [ ] Test full enquiry → lead → site visit → converted flow end-to-end
 - [ ] Verify all 7 seeded properties render correctly on public pages
+- [ ] Verify both `classic` and `immersive` presentation modes across public core pages
+- [ ] Expand Playwright from smoke coverage into full CRM create/edit flows
 - [ ] Run Lighthouse audit — target 90+ Performance, 100 SEO, 100 Accessibility
 - [ ] Set `NEXT_PUBLIC_APP_URL` to production domain
 - [ ] Configure MongoDB Atlas IP allowlist for production server

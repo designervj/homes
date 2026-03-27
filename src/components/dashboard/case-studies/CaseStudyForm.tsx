@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import slugify from "slugify";
 import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -70,7 +70,7 @@ export function CaseStudyForm({
     caseStudy?.propertyIds ?? []
   );
 
-  const { register, handleSubmit, setValue, watch } = useForm<
+  const { control, register, handleSubmit, setValue, getValues } = useForm<
     CaseStudyFormValues,
     unknown,
     CaseStudySubmitValues
@@ -100,10 +100,10 @@ export function CaseStudyForm({
         },
   });
 
-  const titleValue = watch("title");
+  const titleValue = useWatch({ control, name: "title" });
 
   const syncSlug = () => {
-    const current = watch("slug");
+    const current = getValues("slug");
     if (!current && titleValue) {
       setValue(
         "slug",

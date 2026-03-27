@@ -6,6 +6,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Send, Loader2, CheckCircle, Phone, Mail, User } from "lucide-react";
 import { toast } from "sonner";
+import {
+  useSiteTemplate,
+  useTranslations,
+} from "@/components/shared/LocaleProvider";
 import { submitEnquiry } from "@/lib/db/actions/enquiry.actions";
 import { cn } from "@/lib/utils";
 
@@ -55,6 +59,8 @@ export function EnquiryForm({
   variant = "sidebar",
   className,
 }: EnquiryFormProps) {
+  const t = useTranslations("forms");
+  const siteTemplate = useSiteTemplate();
   const [submitted, setSubmitted] = useState(false);
   const [isPending, startTransition] = useTransition();
 
@@ -91,7 +97,7 @@ export function EnquiryForm({
       if (res.success) {
         setSubmitted(true);
         reset();
-        toast.success(res.message ?? "Enquiry submitted!");
+        toast.success(res.message ?? t("enquiry.successTitle"));
       } else {
         toast.error(res.error ?? "Something went wrong. Please try again.");
       }
@@ -113,14 +119,14 @@ export function EnquiryForm({
           <CheckCircle className="w-7 h-7 text-primary" />
         </div>
         <div>
-          <p className="text-base font-medium text-foreground mb-1">Enquiry Received!</p>
-          <p className="text-sm text-muted-foreground">We&apos;ll reach out within 2–4 hours on business days.</p>
+          <p className="mb-1 text-base font-medium text-foreground">{t("enquiry.successTitle")}</p>
+          <p className="text-sm text-muted-foreground">{t("enquiry.successDescription")}</p>
         </div>
         <button
           onClick={() => setSubmitted(false)}
           className="text-sm text-primary hover:text-primary-light transition-colors mt-2"
         >
-          Submit another enquiry
+          {t("enquiry.successAction")}
         </button>
       </div>
     );
@@ -135,7 +141,7 @@ export function EnquiryForm({
           <User className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
           <input
             {...register("name")}
-            placeholder="Full Name *"
+            placeholder={t("enquiry.namePlaceholder")}
             className={cn(inputCls, "pl-9")}
           />
         </div>
@@ -149,7 +155,7 @@ export function EnquiryForm({
           <input
             {...register("phone")}
             type="tel"
-            placeholder="Phone / WhatsApp *"
+            placeholder={t("enquiry.phonePlaceholder")}
             className={cn(inputCls, "pl-9")}
           />
         </div>
@@ -163,7 +169,7 @@ export function EnquiryForm({
           <input
             {...register("email")}
             type="email"
-            placeholder="Email Address (optional)"
+            placeholder={t("enquiry.emailPlaceholder")}
             className={cn(inputCls, "pl-9")}
           />
         </div>
@@ -174,7 +180,7 @@ export function EnquiryForm({
         <textarea
           {...register("message")}
           rows={3}
-          placeholder="Your message or requirements…"
+          placeholder={t("enquiry.messagePlaceholder")}
           className={cn(inputCls, "resize-none")}
         />
       )}
@@ -188,7 +194,7 @@ export function EnquiryForm({
             className="w-4 h-4 rounded border-border bg-accent accent-primary cursor-pointer"
           />
           <span className="text-sm text-muted-foreground group-hover:text-foreground transition-colors">
-            I&apos;d like to schedule a site visit
+            {t("enquiry.siteVisit")}
           </span>
         </label>
         <label className="flex items-center gap-2.5 cursor-pointer group">
@@ -198,7 +204,7 @@ export function EnquiryForm({
             className="w-4 h-4 rounded border-border bg-accent accent-primary cursor-pointer"
           />
           <span className="text-sm text-muted-foreground group-hover:text-foreground transition-colors">
-            I need home loan assistance
+            {t("enquiry.homeLoan")}
           </span>
         </label>
       </div>
@@ -208,20 +214,21 @@ export function EnquiryForm({
         type="submit"
         disabled={isPending}
         className={cn(
-          "w-full flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-sm",
-          "bg-primary hover:bg-primary-light text-foreground",
-          "disabled:opacity-60 transition-colors"
+          "w-full flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-sm disabled:opacity-60 transition-colors",
+          siteTemplate === "immersive"
+            ? "primary-cta"
+            : "bg-primary hover:bg-primary-light text-foreground"
         )}
       >
         {isPending ? (
-          <><Loader2 className="w-4 h-4 animate-spin" /> Submitting…</>
+          <><Loader2 className="w-4 h-4 animate-spin" /> {t("enquiry.submitting")}</>
         ) : (
-          <><Send className="w-4 h-4" /> Send Enquiry</>
+          <><Send className="w-4 h-4" /> {t("enquiry.submit")}</>
         )}
       </button>
 
       <p className="text-center text-xs text-muted-foreground">
-        We respond within 2–4 hours · No spam, ever.
+        {t("enquiry.footer")}
       </p>
     </form>
   );

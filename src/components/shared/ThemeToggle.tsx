@@ -3,6 +3,7 @@
 import { useSyncExternalStore } from "react";
 import { Moon, SunMedium } from "lucide-react";
 import { useTheme } from "next-themes";
+import { useTranslations } from "@/components/shared/LocaleProvider";
 import { cn } from "@/lib/utils";
 
 function subscribe() {
@@ -19,6 +20,7 @@ function getServerSnapshot() {
 
 export function ThemeToggle({ className }: { className?: string }) {
   const { resolvedTheme, setTheme } = useTheme();
+  const t = useTranslations("common");
   const mounted = useSyncExternalStore(
     subscribe,
     getClientSnapshot,
@@ -32,15 +34,19 @@ export function ThemeToggle({ className }: { className?: string }) {
       type="button"
       onClick={() => mounted && setTheme(isDark ? "light" : "dark")}
       className={cn(
-        "inline-flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-card text-muted-foreground transition-colors hover:text-foreground hover:bg-accent",
+        "secondary-cta inline-flex h-9 w-9 items-center justify-center rounded-xl text-muted-foreground transition-colors hover:text-foreground hover:bg-accent/70",
         className
       )}
       aria-label={mounted
-        ? `Switch to ${isDark ? "light" : "dark"} mode`
-        : "Toggle theme"}
+        ? isDark
+          ? t("themeToggle.light")
+          : t("themeToggle.dark")
+        : t("themeToggle.toggle")}
       title={mounted
-        ? `Switch to ${isDark ? "light" : "dark"} mode`
-        : "Toggle theme"}
+        ? isDark
+          ? t("themeToggle.light")
+          : t("themeToggle.dark")
+        : t("themeToggle.toggle")}
     >
       {!mounted ? (
         <SunMedium className="h-4 w-4" />

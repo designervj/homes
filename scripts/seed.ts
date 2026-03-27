@@ -361,7 +361,7 @@ const properties = [
       { name: "Ram Manohar Lohia Hospital", category: "Hospitals", distanceMinutes: 10 },
     ],
     mediaAssets: [
-      { url: "/images/attalika-palms-cover.jpg", type: "image", isCover: true, order: 1 },
+      { url: "/homes/banner.jpg.jpeg", type: "image", isCover: true, order: 1 },
     ],
   },
 
@@ -436,7 +436,7 @@ const properties = [
       { name: "Airport", category: "Key Landmarks", distanceMinutes: 22 },
     ],
     mediaAssets: [
-      { url: "/images/stellar-okas-cover.jpg", type: "image", isCover: true, order: 1 },
+      { url: "/homes/pl.jpg.jpeg", type: "image", isCover: true, order: 1 },
     ],
   },
 
@@ -507,7 +507,7 @@ const properties = [
       { name: "Amity University", category: "Schools & Colleges", distanceMinutes: 15 },
     ],
     mediaAssets: [
-      { url: "/images/kailasha-enclave-cover.jpg", type: "image", isCover: true, order: 1 },
+      { url: "/homes/download-3.jpg.jpeg", type: "image", isCover: true, order: 1 },
     ],
   },
 
@@ -596,7 +596,7 @@ const properties = [
       { name: "Lulu Mall", category: "Malls & Multiplex", distanceMinutes: 18 },
     ],
     mediaAssets: [
-      { url: "/images/greenberry-signature-cover.jpg", type: "image", isCover: true, order: 1 },
+      { url: "/homes/real-estate-06.jpg.jpeg", type: "image", isCover: true, order: 1 },
     ],
   },
 
@@ -751,7 +751,7 @@ const properties = [
       { name: "Lucknow City Centre", category: "Key Landmarks", distanceMinutes: 20 },
     ],
     mediaAssets: [
-      { url: "/images/vikas-vihar-cover.jpg", type: "image", isCover: true, order: 1 },
+      { url: "/homes/download-1.jpg.jpeg", type: "image", isCover: true, order: 1 },
     ],
   },
 ];

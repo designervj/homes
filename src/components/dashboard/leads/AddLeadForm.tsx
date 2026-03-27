@@ -7,6 +7,7 @@ import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft, Loader2, Save } from "lucide-react";
 import { toast } from "sonner";
+import { z } from "zod";
 import { createLead } from "@/lib/db/actions/lead.actions";
 import {
   ENQUIRY_INTERESTS,
@@ -19,6 +20,9 @@ type PropertyOption = {
   name: string;
   slug: string;
 };
+
+type AddLeadFormValues = z.input<typeof LeadValidator>;
+type AddLeadSubmitValues = z.output<typeof LeadValidator>;
 
 const fieldCls = "w-full rounded-lg border border-border bg-background px-3.5 py-2.5 text-sm text-foreground placeholder:text-muted-foreground outline-none transition-colors focus:border-primary/50";
 const labelCls = "mb-1.5 block text-xs uppercase tracking-wide text-muted-foreground";
@@ -41,8 +45,8 @@ export function AddLeadForm({
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<LeadInput>({
-    resolver: zodResolver(LeadValidator as any),
+  } = useForm<AddLeadFormValues, unknown, AddLeadSubmitValues>({
+    resolver: zodResolver(LeadValidator),
     defaultValues: {
       stage: "new",
       source: "website",
@@ -63,7 +67,7 @@ export function AddLeadForm({
     });
   };
 
-  const onSubmit = (data: LeadInput) => {
+  const onSubmit = (data: AddLeadSubmitValues) => {
     startTransition(async () => {
       const leadPayload: LeadInput = {
         ...data,

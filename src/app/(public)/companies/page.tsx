@@ -1,45 +1,51 @@
 import Link from "next/link";
 import { BriefcaseBusiness, ChevronRight } from "lucide-react";
 import { getPublishedCompanies } from "@/lib/db/actions/company.actions";
+import { MotionReveal } from "@/components/shared/motion/MotionReveal";
 import { SafeImage as Image } from "@/components/shared/SafeImage";
+import { getServerI18n } from "@/lib/i18n/server";
+import { localizeHref } from "@/lib/i18n/utils";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = {
-  title: "Companies — Homes",
-  description:
-    "Explore the builders, developers, and listing partners Homes has worked with across Lucknow.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await getServerI18n();
+
+  return {
+    title: t("companies", "page.eyebrow"),
+    description:
+      "Explore the builders, developers, and listing partners Homes has worked with across Lucknow.",
+  };
+}
 
 export default async function CompaniesPage() {
+  const { t, locale } = await getServerI18n();
   const companiesRes = await getPublishedCompanies();
   const companies = companiesRes.data ?? [];
 
   return (
     <div className="min-h-screen bg-background pt-24 pb-20">
       <div className="mx-auto max-w-7xl space-y-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-3xl">
+        <MotionReveal className="max-w-3xl">
           <div className="mb-4 flex items-center gap-3">
             <div className="h-px w-7 bg-primary" />
             <span className="text-xs font-medium uppercase tracking-widest text-primary">
-              Companies
+              {t("companies", "page.eyebrow")}
             </span>
           </div>
           <h1 className="font-serif text-4xl font-semibold text-foreground sm:text-5xl">
-            Builders and Listing Partners We Work With
+            {t("companies", "page.title")}
           </h1>
           <p className="mt-5 text-lg leading-relaxed text-muted-foreground">
-            Company profiles on Homes connect verified properties, proof-led
-            case studies, and shared enquiry routing so every listing has
-            accountable context behind it.
+            {t("companies", "page.description")}
           </p>
-        </div>
+        </MotionReveal>
 
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
           {companies.map((company) => (
             <Link
               key={company._id}
-              href={`/companies/${company.slug}`}
-              className="group rounded-2xl border border-border bg-card p-6 transition-all duration-300 hover:-translate-y-1 hover:border-primary/25"
+              href={localizeHref(locale, `/companies/${company.slug}`)}
+              className="surface-card interactive-card group rounded-[1.6rem] p-6"
             >
               <div className="mb-5 flex h-20 items-center justify-center rounded-2xl border border-border bg-background p-4">
                 {company.logo ? (
@@ -58,10 +64,10 @@ export default async function CompaniesPage() {
                 {company.name}
               </h2>
               <p className="mt-3 line-clamp-3 text-sm leading-relaxed text-muted-foreground">
-                {company.shortIntro || "See linked listings, case studies, and Homes-led positioning work for this company."}
+                {company.shortIntro || t("companies", "card.fallbackIntro")}
               </p>
               <span className="mt-5 inline-flex items-center gap-2 text-sm font-medium text-primary transition-colors group-hover:text-primary-light">
-                View company profile <ChevronRight className="h-4 w-4" />
+                {t("companies", "card.cta")} <ChevronRight className="h-4 w-4" />
               </span>
             </Link>
           ))}
