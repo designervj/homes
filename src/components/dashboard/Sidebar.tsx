@@ -125,7 +125,7 @@ export function DashboardSidebar({ role }: DashboardSidebarProps) {
             alt="Homes Logo"
             width={160}
             height={50}
-            className="object-contain"
+            className="h-auto w-auto object-contain"
             priority
           />
         </Link>

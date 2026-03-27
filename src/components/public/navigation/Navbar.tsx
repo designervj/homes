@@ -87,7 +87,7 @@ export function Navbar() {
               alt="Homes Logo"
               width={140}
               height={44}
-              className="object-contain"
+              className="h-auto w-auto object-contain"
               priority
             />
           </Link>

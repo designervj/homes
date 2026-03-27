@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { auth } from "@/lib/auth/config";
+import { requireAuth } from "@/lib/auth/utils";
 import { Building2, Users2, MessageSquare, CalendarCheck, TrendingUp, ArrowUpRight } from "lucide-react";
 import { getPropertyStats } from "@/lib/db/actions/property.actions";
 import { getLeadStats } from "@/lib/db/actions/lead.actions";
@@ -11,8 +11,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = { title: "Overview" };
 
 export default async function AdminPage() {
-  const session = await auth();
-  const user = session!.user;
+  const user = await requireAuth();
 
   const hour = new Date().getHours();
   const greeting =

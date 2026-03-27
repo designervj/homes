@@ -1,16 +1,49 @@
 "use server";
 
-import { auth } from "@/lib/auth/config";
+import { getToken } from "next-auth/jwt";
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import type { UserRole } from "@/types";
+import { getAuthSecret, isSecureAuthCookie } from "./secret";
+
+type SessionUser = {
+  id: string;
+  role: UserRole;
+  name: string;
+  email: string;
+};
 
 /**
  * Returns the current session user, or null if unauthenticated.
  * Safe to call from any Server Component or Server Action.
  */
-export async function getCurrentUser() {
-  const session = await auth();
-  return session?.user ?? null;
+export async function getCurrentUser(): Promise<SessionUser | null> {
+  const secret = getAuthSecret();
+
+  if (!secret) {
+    return null;
+  }
+
+  try {
+    const token = await getToken({
+      req: { headers: new Headers(await headers()) },
+      secret,
+      secureCookie: isSecureAuthCookie(),
+    });
+
+    if (!token) {
+      return null;
+    }
+
+    return {
+      id: String(token.userId ?? token.sub ?? ""),
+      role: (token.role as UserRole) ?? "agent",
+      name: typeof token.name === "string" ? token.name : "",
+      email: typeof token.email === "string" ? token.email : "",
+    };
+  } catch {
+    return null;
+  }
 }
 
 /**
@@ -23,7 +56,7 @@ export async function getCurrentUser() {
  *   // ... rest of action
  * }
  */
-export async function requireAuth() {
+export async function requireAuth(): Promise<SessionUser> {
   const user = await getCurrentUser();
   if (!user) {
     redirect("/auth/login");
@@ -43,9 +76,9 @@ export async function requireAuth() {
  *   // ... rest of action
  * }
  */
-export async function withRole(allowedRoles: UserRole[]) {
+export async function withRole(allowedRoles: UserRole[]): Promise<SessionUser> {
   const user = await requireAuth();
-  if (!allowedRoles.includes(user.role as UserRole)) {
+  if (!allowedRoles.includes(user.role)) {
     redirect("/admin?error=insufficient_permissions");
   }
   return user;

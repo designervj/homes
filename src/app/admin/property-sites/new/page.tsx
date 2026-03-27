@@ -1,4 +1,3 @@
-import { auth } from "@/lib/auth/config";
 import { withRole } from "@/lib/auth/utils";
 import { getAdminCompanies } from "@/lib/db/actions/company.actions";
 import { getAdminProperties } from "@/lib/db/actions/property.actions";
@@ -12,9 +11,8 @@ export default async function NewPropertySitePage({
 }: {
   searchParams: Promise<{ propertyId?: string }>;
 }) {
-  await withRole(["super_admin", "admin", "company_manager"]);
+  const user = await withRole(["super_admin", "admin", "company_manager"]);
   const params = await searchParams;
-  const session = await auth();
   const [propertiesRes, companiesRes] = await Promise.all([
     getAdminProperties({ status: "active", limit: 50 }),
     getAdminCompanies(),
@@ -24,7 +22,7 @@ export default async function NewPropertySitePage({
     <PropertySiteForm
       properties={propertiesRes.data ?? []}
       companies={companiesRes.data ?? []}
-      canPublish={["super_admin", "admin"].includes(session!.user.role)}
+      canPublish={["super_admin", "admin"].includes(user.role)}
       initialPropertyId={params.propertyId}
     />
   );

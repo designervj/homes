@@ -1,4 +1,4 @@
-import { auth } from "@/lib/auth/config";
+import { getCurrentUser } from "@/lib/auth/utils";
 import { getRequestLocale } from "@/lib/i18n/request";
 import { localizeHref } from "@/lib/i18n/utils";
 import { redirect } from "next/navigation";
@@ -19,19 +19,19 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const [session, locale] = await Promise.all([auth(), getRequestLocale()]);
+  const [user, locale] = await Promise.all([getCurrentUser(), getRequestLocale()]);
 
   // Double-check server-side (middleware is the primary guard,
   // this is a defence-in-depth fallback)
-  if (!session?.user) {
+  if (!user) {
     redirect(localizeHref(locale, "/auth/login"));
   }
 
   return (
     <div className="min-h-screen bg-background flex">
-      <DashboardSidebar role={session.user.role} />
+      <DashboardSidebar role={user.role} />
       <div className="flex-1 flex flex-col min-w-0">
-        <DashboardHeader user={session.user} />
+        <DashboardHeader user={user} />
         <main className="flex-1 p-6 overflow-auto">
           {children}
         </main>

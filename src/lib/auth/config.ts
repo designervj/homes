@@ -5,6 +5,7 @@ import { connectDB } from "@/lib/db/connection";
 import User from "@/lib/db/models/User";
 import type { UserRole } from "@/types";
 import { authConfig } from "./auth.config";
+import { getAuthSecret } from "./secret";
 
 /**
  * Main NextAuth configuration for Node.js environments.
@@ -59,5 +60,5 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       },
     }),
   ],
-  secret: process.env.NEXTAUTH_SECRET,
+  secret: getAuthSecret(),
 });

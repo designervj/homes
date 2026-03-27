@@ -1,12 +1,9 @@
-"use client";
-
-import { SessionProvider } from "next-auth/react";
+import type { ReactNode } from "react";
 
 /**
- * Thin wrapper around NextAuth's SessionProvider.
- * Placed in a "use client" boundary so it can be safely imported
- * from the root layout which is a Server Component.
+ * App Router pages use server-side auth helpers, so we do not need to
+ * hydrate a client session context on every page load.
  */
-export function AuthProvider({ children }: { children: React.ReactNode }) {
-  return <SessionProvider>{children}</SessionProvider>;
+export function AuthProvider({ children }: { children: ReactNode }) {
+  return children;
 }

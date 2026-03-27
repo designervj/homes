@@ -1,5 +1,4 @@
 import { notFound } from "next/navigation";
-import { auth } from "@/lib/auth/config";
 import { withRole } from "@/lib/auth/utils";
 import { getAgents } from "@/lib/db/actions/lead.actions";
 import { getCompanyById } from "@/lib/db/actions/company.actions";
@@ -13,10 +12,9 @@ export default async function EditCompanyPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  await withRole(["super_admin", "admin", "company_manager"]);
+  const user = await withRole(["super_admin", "admin", "company_manager"]);
   const { id } = await params;
-  const [session, companyRes, managersRes] = await Promise.all([
-    auth(),
+  const [companyRes, managersRes] = await Promise.all([
     getCompanyById(id),
     getAgents(),
   ]);
@@ -29,7 +27,7 @@ export default async function EditCompanyPage({
       managers={(managersRes.data ?? []).filter(
         (agent) => agent.role === "company_manager"
       )}
-      canManageAssignments={session!.user.role !== "company_manager"}
+      canManageAssignments={user.role !== "company_manager"}
     />
   );
 }

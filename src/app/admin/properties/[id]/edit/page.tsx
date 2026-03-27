@@ -1,7 +1,6 @@
 import { getPropertyById } from "@/lib/db/actions/property.actions";
 import { PropertyForm } from "@/components/dashboard/properties/PropertyForm";
 import { withRole } from "@/lib/auth/utils";
-import { auth } from "@/lib/auth/config";
 import { getAdminCompanies } from "@/lib/db/actions/company.actions";
 import { getPropertySiteByPropertyId } from "@/lib/db/actions/property-site.actions";
 import { PropertySiteWorkflowActions } from "@/components/dashboard/property-sites/PropertySiteWorkflowActions";
@@ -17,9 +16,8 @@ export default async function EditPropertyPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  await withRole(["super_admin", "admin", "company_manager"]);
+  const user = await withRole(["super_admin", "admin", "company_manager"]);
   const { id } = await params;
-  const session = await auth();
 
   const [res, companiesRes, siteRes] = await Promise.all([
     getPropertyById(id),
@@ -27,7 +25,7 @@ export default async function EditPropertyPage({
     getPropertySiteByPropertyId(id),
   ]);
   if (!res.success || !res.data) notFound();
-  const canPublish = ["super_admin", "admin"].includes(session!.user.role);
+  const canPublish = ["super_admin", "admin"].includes(user.role);
   const site = siteRes.success ? siteRes.data : undefined;
   const canCreateMicrosite = siteRes.error === "Microsite not configured yet";
 
