@@ -12,6 +12,7 @@ import {
 } from "@/lib/i18n/utils";
 import { getToken } from "next-auth/jwt";
 import { NextResponse, type NextRequest } from "next/server";
+import { getAuthSecret, isSecureAuthCookie } from "@/lib/auth/secret";
 
 /**
  * Route protection matrix:
@@ -107,21 +108,32 @@ function forwardWithLocaleContext(
 }
 
 async function getSessionUser(req: NextRequest) {
-  const token = await getToken({
-    req,
-    secret: process.env.NEXTAUTH_SECRET,
-  });
+  const secret = getAuthSecret();
 
-  if (!token) {
+  if (!secret) {
     return null;
   }
 
-  return {
-    id: String(token.userId ?? token.sub ?? ""),
-    role: String(token.role ?? "agent"),
-    name: typeof token.name === "string" ? token.name : "",
-    email: typeof token.email === "string" ? token.email : "",
-  };
+  try {
+    const token = await getToken({
+      req,
+      secret,
+      secureCookie: isSecureAuthCookie(),
+    });
+
+    if (!token) {
+      return null;
+    }
+
+    return {
+      id: String(token.userId ?? token.sub ?? ""),
+      role: String(token.role ?? "agent"),
+      name: typeof token.name === "string" ? token.name : "",
+      email: typeof token.email === "string" ? token.email : "",
+    };
+  } catch {
+    return null;
+  }
 }
 
 export async function proxy(req: NextRequest) {

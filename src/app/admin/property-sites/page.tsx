@@ -1,4 +1,4 @@
-import { auth } from "@/lib/auth/config";
+import { requireAuth } from "@/lib/auth/utils";
 import { getAdminCompanies } from "@/lib/db/actions/company.actions";
 import { getAdminProperties } from "@/lib/db/actions/property.actions";
 import { getAdminPropertySites } from "@/lib/db/actions/property-site.actions";
@@ -8,7 +8,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = { title: "Property Microsites" };
 
 export default async function PropertySitesPage() {
-  const session = await auth();
+  const user = await requireAuth();
   const [sitesRes, propertiesRes, companiesRes] = await Promise.all([
     getAdminPropertySites(),
     getAdminProperties({ limit: 50 }),
@@ -20,7 +20,7 @@ export default async function PropertySitesPage() {
       sites={sitesRes.data ?? []}
       properties={propertiesRes.data ?? []}
       companies={companiesRes.data ?? []}
-      role={session!.user.role}
+      role={user.role}
     />
   );
 }

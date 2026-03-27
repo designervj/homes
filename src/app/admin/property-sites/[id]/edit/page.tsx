@@ -1,5 +1,4 @@
 import { notFound } from "next/navigation";
-import { auth } from "@/lib/auth/config";
 import { withRole } from "@/lib/auth/utils";
 import { getAdminCompanies } from "@/lib/db/actions/company.actions";
 import { getAdminProperties } from "@/lib/db/actions/property.actions";
@@ -16,9 +15,8 @@ export default async function EditPropertySitePage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  await withRole(["super_admin", "admin", "company_manager"]);
+  const user = await withRole(["super_admin", "admin", "company_manager"]);
   const { id } = await params;
-  const session = await auth();
 
   const [siteRes, propertiesRes, companiesRes] = await Promise.all([
     getPropertySiteById(id),
@@ -31,7 +29,7 @@ export default async function EditPropertySitePage({
   const property = (propertiesRes.data ?? []).find(
     (item) => item._id === siteRes.data?.propertyId
   );
-  const canPublish = ["super_admin", "admin"].includes(session!.user.role);
+  const canPublish = ["super_admin", "admin"].includes(user.role);
 
   return (
     <div className="space-y-6">

@@ -1,5 +1,4 @@
 import { notFound } from "next/navigation";
-import { auth } from "@/lib/auth/config";
 import { withRole } from "@/lib/auth/utils";
 import { getAdminCompanies } from "@/lib/db/actions/company.actions";
 import { getCaseStudyById } from "@/lib/db/actions/case-study.actions";
@@ -14,9 +13,8 @@ export default async function EditCaseStudyPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  await withRole(["super_admin", "admin", "company_manager"]);
+  const user = await withRole(["super_admin", "admin", "company_manager"]);
   const { id } = await params;
-  const session = await auth();
 
   const [caseStudyRes, companiesRes, propertiesRes] = await Promise.all([
     getCaseStudyById(id),
@@ -31,7 +29,7 @@ export default async function EditCaseStudyPage({
       caseStudy={caseStudyRes.data}
       companies={companiesRes.data ?? []}
       properties={propertiesRes.data ?? []}
-      canPublish={["super_admin", "admin"].includes(session!.user.role)}
+      canPublish={["super_admin", "admin"].includes(user.role)}
     />
   );
 }
