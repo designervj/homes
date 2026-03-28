@@ -10,7 +10,7 @@ import { Toaster } from "sonner";
 import "./globals.css";
 
 const metadataBase = new URL(
-  process.env.NEXT_PUBLIC_APP_URL?.trim() || "https://lucknowhomes.in"
+  process.env.NEXT_PUBLIC_APP_URL?.trim() || "https://lucknowhomes.in" || "http://localhost:3000"
 );
 
 export const metadata: Metadata = {
