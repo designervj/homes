@@ -13,7 +13,7 @@ import {
 } from "@/components/shared/LocaleProvider";
 import { ThemeToggle } from "@/components/shared/ThemeToggle";
 import { localizeHref, stripLocaleFromPathname } from "@/lib/i18n/utils";
-import { useTheme } from "next-themes";
+import { ThemeImage } from "@/components/shared/ThemeImage";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -80,17 +80,11 @@ export function Navbar() {
   const { locale } = useLocaleContext();
   const siteTemplate = useSiteTemplate();
   const tNav = useTranslations("public-nav");
-  const { resolvedTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
 
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   // Scroll detection
   useEffect(() => {
@@ -127,10 +121,9 @@ export function Navbar() {
             href={localizeHref(locale, "/")}
             className="flex flex-shrink-0 items-center rounded-xl backdrop-blur-sm transition-colors"
           >
-            <Image
-              src={mounted && resolvedTheme === "dark" 
-                ? "/images/white-logo.png" 
-                : "/images/Homes-Logo.webp"}
+            <ThemeImage
+              lightSrc="/images/Homes-Logo.webp"
+              darkSrc="/images/white-logo.png"
               alt="Homes Logo"
               width={250}
               height={90}
@@ -296,10 +289,9 @@ export function Navbar() {
                 onClick={() => setMobileOpen(false)}
                 className="flex items-center"
               >
-                <Image
-                  src={mounted && resolvedTheme === "dark" 
-                    ? "/images/white-logo.png" 
-                    : "/images/Homes-Logo.webp"}
+                <ThemeImage
+                  lightSrc="/images/Homes-Logo.webp"
+                  darkSrc="/images/white-logo.png"
                   alt="Homes Logo"
                   width={200}
                   height={72}

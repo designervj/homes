@@ -3,6 +3,7 @@ import { Building2, Phone, Mail, MapPin } from "lucide-react";
 import { getServerI18n } from "@/lib/i18n/server";
 import { getRequestLocale } from "@/lib/i18n/request";
 import { localizeHref } from "@/lib/i18n/utils";
+import { ThemeImage } from "@/components/shared/ThemeImage";
 
 const PROJECTS = [
   { name: "Okas Enclave",           slug: "okas-enclave" },
@@ -32,22 +33,13 @@ export async function Footer() {
 
           <div className="lg:col-span-1">
             <Link href={localizeHref(locale, "/")} className="flex items-center mb-6">
-              {/* Light mode logo */}
-              <img
-                src="/images/Homes-Logo.webp"
+              <ThemeImage
+                lightSrc="/images/Homes-Logo.webp"
+                darkSrc="/images/white-logo.png"
                 alt="Homes Logo"
                 width={160}
                 height={52}
-                className="h-7 w-auto object-contain block dark:hidden"
-                loading="lazy"
-              />
-              {/* Dark mode logo */}
-              <img
-                src="/images/white-logo.png"
-                alt="Homes Logo"
-                width={160}
-                height={52}
-                className="hidden h-7 w-auto object-contain dark:block"
+                className="h-14 w-auto object-contain"
                 loading="lazy"
               />
             </Link>
