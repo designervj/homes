@@ -4,9 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { SafeImage as Image } from "@/components/shared/SafeImage";
 import { usePathname } from "next/navigation";
-import {
-  ChevronDown, Menu, X, MapPin,
-} from "lucide-react";
+import { ChevronDown, Menu, X, MapPin } from "lucide-react";
 import { LanguageSwitcher } from "@/components/shared/LanguageSwitcher";
 import {
   useLocaleContext,
@@ -15,18 +13,55 @@ import {
 } from "@/components/shared/LocaleProvider";
 import { ThemeToggle } from "@/components/shared/ThemeToggle";
 import { localizeHref, stripLocaleFromPathname } from "@/lib/i18n/utils";
+import { useTheme } from "next-themes";
 import { cn } from "@/lib/utils";
+import { motion, AnimatePresence } from "framer-motion";
 
 // ─── PROJECTS DATA ────────────────────────────────────────────────────────────
 
 const PROJECTS = [
-  { name: "Okas Enclave",          slug: "okas-enclave",          type: "Plots",     location: "Sushant Golf City" },
-  { name: "Attalika Palms",        slug: "attalika-palms",        type: "Villas",    location: "Pursaini, Lucknow" },
-  { name: "Stellar Okas Golf View",slug: "stellar-okas-golf-view",type: "Plots",     location: "Sushant Golf City" },
-  { name: "Kailasha Enclave",      slug: "kailasha-enclave",      type: "Plots",     location: "Sultanpur Road" },
-  { name: "Greenberry Signature",  slug: "greenberry-signature",  type: "Apartments",location: "Vrindavan Yojana" },
-  { name: "Lavanya Enclave",       slug: "lavanya-enclave",       type: "Apts & Plots",location: "Amar Shaheed Path" },
-  { name: "Vikas Vihar",           slug: "vikas-vihar",           type: "Mixed",     location: "Lucknow" },
+  {
+    name: "Okas Enclave",
+    slug: "okas-enclave",
+    type: "Plots",
+    location: "Sushant Golf City",
+  },
+  {
+    name: "Attalika Palms",
+    slug: "attalika-palms",
+    type: "Villas",
+    location: "Pursaini, Lucknow",
+  },
+  {
+    name: "Stellar Okas Golf View",
+    slug: "stellar-okas-golf-view",
+    type: "Plots",
+    location: "Sushant Golf City",
+  },
+  {
+    name: "Kailasha Enclave",
+    slug: "kailasha-enclave",
+    type: "Plots",
+    location: "Sultanpur Road",
+  },
+  {
+    name: "Greenberry Signature",
+    slug: "greenberry-signature",
+    type: "Apartments",
+    location: "Vrindavan Yojana",
+  },
+  {
+    name: "Lavanya Enclave",
+    slug: "lavanya-enclave",
+    type: "Apts & Plots",
+    location: "Amar Shaheed Path",
+  },
+  {
+    name: "Vikas Vihar",
+    slug: "vikas-vihar",
+    type: "Mixed",
+    location: "Lucknow",
+  },
 ];
 
 const NAV_LINKS = [
@@ -45,10 +80,17 @@ export function Navbar() {
   const { locale } = useLocaleContext();
   const siteTemplate = useSiteTemplate();
   const tNav = useTranslations("public-nav");
-  const [scrolled, setScrolled]           = useState(false);
-  const [mobileOpen, setMobileOpen]       = useState(false);
-  const [dropdownOpen, setDropdownOpen]   = useState(false);
-  const dropdownRef                        = useRef<HTMLDivElement>(null);
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  const [scrolled, setScrolled] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Scroll detection
   useEffect(() => {
@@ -64,6 +106,7 @@ export function Navbar() {
         setDropdownOpen(false);
       }
     };
+
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, []);
@@ -79,35 +122,50 @@ export function Navbar() {
         )}
       >
         <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-
           {/* Logo */}
-          <Link href={localizeHref(locale, "/")} className="flex items-center flex-shrink-0">
+          <Link
+            href={localizeHref(locale, "/")}
+            className="flex flex-shrink-0 items-center rounded-xl backdrop-blur-sm transition-colors"
+          >
             <Image
-              src="/homes/Homes-Logo.webp"
+              src={mounted && resolvedTheme === "dark" 
+                ? "/images/white-logo.png" 
+                : "/images/Homes-Logo.webp"}
               alt="Homes Logo"
-              width={140}
-              height={44}
-              className="h-auto w-auto object-contain"
+              width={250}
+              height={90}
+              className="h-11 w-auto object-contain bg-transparent"
               priority
             />
           </Link>
 
-          {/* Desktop nav */}
           <div className="hidden lg:flex items-center gap-1">
-            {NAV_LINKS.slice(0, 2).map((link) => (
-              <Link
-                key={link.href}
-                href={localizeHref(locale, link.href)}
-                className={cn(
-                  "rounded-xl px-3 py-2 text-sm transition-colors",
-                  normalizedPathname === link.href
-                    ? "surface-subtle text-foreground"
-                    : "text-muted-foreground hover:text-foreground hover:bg-accent/70"
-                )}
-              >
-                {tNav(`links.${link.key}`)}
-              </Link>
-            ))}
+            {NAV_LINKS.slice(0, 2).map((link) => {
+              const isActive = normalizedPathname === link.href;
+              return (
+                <Link
+                  key={link.href}
+                  href={localizeHref(locale, link.href)}
+                  className={cn(
+                    "relative px-4 py-2 text-sm font-medium transition-all duration-300 rounded-xl group",
+                    isActive ? "text-primary" : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  <span className="relative z-10">{tNav(`links.${link.key}`)}</span>
+                  
+                  {isActive && (
+                    <motion.div
+                      layoutId="activeNavBackground"
+                      className="absolute inset-0 bg-primary/5 rounded-xl -z-0"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ type: "spring", bounce: 0.25, duration: 0.5 }}
+                    />
+                  )}
+
+                </Link>
+              );
+            })}
 
             {/* Projects dropdown */}
             <div className="relative" ref={dropdownRef}>
@@ -121,11 +179,16 @@ export function Navbar() {
                 )}
               >
                 {tNav("projects.menuLabel")}
-                <ChevronDown className={cn("w-3.5 h-3.5 transition-transform duration-200", dropdownOpen && "rotate-180")} />
+                <ChevronDown
+                  className={cn(
+                    "w-3.5 h-3.5 transition-transform duration-200",
+                    dropdownOpen && "rotate-180"
+                  )}
+                />
               </button>
 
               {dropdownOpen && (
-                <div className="surface-card absolute top-full left-1/2 mt-2 w-[340px] -translate-x-1/2 overflow-hidden rounded-[1.75rem]">
+                <div className="surface-card absolute top-full left-1/2 mt-2 w-[340px] -translate-x-1/2 overflow-hidden rounded-[1.75rem] shadow-xl">
                   <div className="p-2">
                     {PROJECTS.map((project) => (
                       <Link
@@ -135,22 +198,27 @@ export function Navbar() {
                         className="interactive-card flex items-center gap-3 rounded-2xl px-3 py-2.5 transition-colors group hover:bg-accent/80"
                       >
                         <div className="w-2 h-2 rounded-full bg-primary flex-shrink-0 opacity-60 group-hover:opacity-100 transition-opacity" />
+
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium text-foreground group-hover:text-primary-light transition-colors truncate">
                             {project.name}
                           </p>
+
                           <div className="flex items-center gap-2 mt-0.5">
                             <span className="text-[11px] text-muted-foreground bg-accent px-1.5 py-0.5 rounded-md">
                               {project.type}
                             </span>
+
                             <span className="flex items-center gap-0.5 text-[11px] text-muted-foreground">
-                              <MapPin className="w-2.5 h-2.5" /> {project.location}
+                              <MapPin className="w-2.5 h-2.5" />
+                              {project.location}
                             </span>
                           </div>
                         </div>
                       </Link>
                     ))}
                   </div>
+
                   <div className="border-t border-border p-2">
                     <Link
                       href={localizeHref(locale, "/projects")}
@@ -164,26 +232,39 @@ export function Navbar() {
               )}
             </div>
 
-            {NAV_LINKS.slice(2).map((link) => (
-              <Link
-                key={link.href}
-                href={localizeHref(locale, link.href)}
-                className={cn(
-                  "rounded-xl px-3 py-2 text-sm transition-colors",
-                  normalizedPathname === link.href
-                    ? "surface-subtle text-foreground"
-                    : "text-muted-foreground hover:text-foreground hover:bg-accent/70"
-                )}
-              >
-                {tNav(`links.${link.key}`)}
-              </Link>
-            ))}
+            {NAV_LINKS.slice(2).map((link) => {
+              const isActive = normalizedPathname === link.href;
+              return (
+                <Link
+                  key={link.href}
+                  href={localizeHref(locale, link.href)}
+                  className={cn(
+                    "relative px-4 py-2 text-sm font-medium transition-all duration-300 rounded-xl group",
+                    isActive ? "text-primary" : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  <span className="relative z-10">{tNav(`links.${link.key}`)}</span>
+
+                  {isActive && (
+                    <motion.div
+                      layoutId="activeNavBackground"
+                      className="absolute inset-0 bg-primary/5 rounded-xl -z-0"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ type: "spring", bounce: 0.25, duration: 0.5 }}
+                    />
+                  )}
+
+                </Link>
+              );
+            })}
           </div>
 
           {/* CTA + mobile toggle */}
           <div className="flex items-center gap-3">
             <LanguageSwitcher className="hidden lg:inline-flex" />
             <ThemeToggle className="hidden lg:inline-flex" />
+
             <Link
               href={localizeHref(locale, "/#enquire")}
               className={cn(
@@ -193,9 +274,11 @@ export function Navbar() {
             >
               {tNav("cta.bookSiteVisit")}
             </Link>
+
             <button
               onClick={() => setMobileOpen((v) => !v)}
               className="secondary-cta lg:hidden rounded-xl p-2 text-muted-foreground transition-colors hover:text-foreground"
+              aria-label="Toggle Menu"
             >
               {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
@@ -207,10 +290,28 @@ export function Navbar() {
       {mobileOpen && (
         <div className="fixed inset-0 z-40 flex flex-col bg-background/96 pt-16 backdrop-blur-2xl">
           <div className="flex-1 overflow-y-auto px-4 py-6 space-y-1">
-            <div className="flex items-center gap-3 px-4 pb-3">
-              <LanguageSwitcher />
-              <ThemeToggle />
+            <div className="flex items-center justify-between px-4 pb-6 border-b border-border/50 mb-4">
+              <Link
+                href={localizeHref(locale, "/")}
+                onClick={() => setMobileOpen(false)}
+                className="flex items-center"
+              >
+                <Image
+                  src={mounted && resolvedTheme === "dark" 
+                    ? "/images/white-logo.png" 
+                    : "/images/Homes-Logo.webp"}
+                  alt="Homes Logo"
+                  width={200}
+                  height={72}
+                  className="h-11 w-auto object-contain"
+                />
+              </Link>
+              <div className="flex items-center gap-2">
+                <LanguageSwitcher />
+                <ThemeToggle />
+              </div>
             </div>
+
             {NAV_LINKS.map((link) => (
               <Link
                 key={link.href}
@@ -221,10 +322,12 @@ export function Navbar() {
                 {tNav(`links.${link.key}`)}
               </Link>
             ))}
+
             <div className="pt-2">
               <p className="mb-2 px-4 text-xs uppercase tracking-widest text-muted-foreground">
                 {tNav("mobile.projects")}
               </p>
+
               {PROJECTS.map((p) => (
                 <Link
                   key={p.slug}
@@ -238,9 +341,11 @@ export function Navbar() {
               ))}
             </div>
           </div>
+
           <div className="p-4 border-t border-border">
             <Link
               href={localizeHref(locale, "/#enquire")}
+              onClick={() => setMobileOpen(false)}
               className="primary-cta flex w-full items-center justify-center gap-2 rounded-2xl py-3.5 font-semibold"
             >
               {tNav("cta.bookSiteVisit")}

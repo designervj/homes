@@ -30,15 +30,26 @@ export async function Footer() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-8">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 mb-12">
 
-          {/* Brand */}
           <div className="lg:col-span-1">
-            <Link href={localizeHref(locale, "/")} className="flex items-center gap-2.5 mb-5">
-              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                <Building2 className="w-4 h-4 text-primary-foreground" />
-              </div>
-              <span className="font-serif text-xl font-semibold text-foreground">
-                Homes<span className="text-primary">.</span>
-              </span>
+            <Link href={localizeHref(locale, "/")} className="flex items-center mb-6">
+              {/* Light mode logo */}
+              <img
+                src="/images/Homes-Logo.webp"
+                alt="Homes Logo"
+                width={160}
+                height={52}
+                className="h-7 w-auto object-contain block dark:hidden"
+                loading="lazy"
+              />
+              {/* Dark mode logo */}
+              <img
+                src="/images/white-logo.png"
+                alt="Homes Logo"
+                width={160}
+                height={52}
+                className="hidden h-7 w-auto object-contain dark:block"
+                loading="lazy"
+              />
             </Link>
             <p className="text-sm text-muted-foreground leading-relaxed mb-6 max-w-xs">
               Premium real estate advisory connecting buyers with RERA-verified properties across Lucknow and Uttar Pradesh.
